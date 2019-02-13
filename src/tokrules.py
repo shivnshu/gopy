@@ -33,8 +33,6 @@ t_RUNELIT = r'\'([^’\n]|\\u[0-9a-fA-F]{4}|\\U[0-9a-fA-F]{8}|\\(a|b|f|n|r|t|v|\
 t_FLOATINGLIT = r'[0-9]+\.[0-9]*([eE][+-]?[0-9]+)?|[0-9]+[eE][+-]?[0-9]+|\.[0-9]+([eE][+-]?[0-9]+)?'
 t_IMAGINARYLIT = r'([0-9]+|[0-9]+\.[0-9]*([eE][+-]?[0-9]+)?|[0-9]+[eE][+-]?[0-9]+|\.[0-9]+([eE][+-]?[0-9]+)?)i'
 t_INTEGERLIT = r'0|[1-9][0-9]*|0[0-7]+|0[xX][0-9a-fA-F]+'
-# t_PUNCTUATION = r'\(|\)|\[|\]|\{|\}|,|;'
-#t_OPERATION   = r'\+|&|\+=|&=|&&|==|!=|-|\||-=|\|=|\|\||<|<=|\*|\^|\*=|\^=|<-|>|>=|<<|/=|<<=|\+\+|=|:=|%|>>|%=|>>=|--|!|\.\.\.|\.|:|&\^|&\^='
 
 t_ADD = r'\+'
 t_MINUS = r'-'
@@ -96,3 +94,16 @@ def t_error(t):
      print("Illegal character '%s'" % t.value[0])
 
 lexer = lex.lex()
+
+# data = '''
+#  3 + 4 * 10
+#    + -20 *2
+# (){;:
+#  '''
+
+# lexer.input(data)
+# while True:
+#     tok = lexer.token()
+#     if not tok:
+#         break
+#     print(tok)
