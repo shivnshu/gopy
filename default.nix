@@ -9,5 +9,6 @@ in
             pkgs.python3
             pkgs.python36Packages.ipython
             pkgs.python36Packages.ply
+            pkgs.python36Packages.graphviz
         ];
     }
