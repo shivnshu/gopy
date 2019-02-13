@@ -7,5 +7,7 @@ in
         name = "GoPy";
         buildInputs = [
             pkgs.python3
+            pkgs.python36Packages.ipython
+            pkgs.python36Packages.ply
         ];
     }
