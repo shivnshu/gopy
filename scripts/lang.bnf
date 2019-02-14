@@ -1,163 +1,79 @@
-Start     : PackageClause stmt_end ImportDeclList TopLevelDeclList
-<<
-p[0]['children'] = [p[1], p[2], p[3], p[4]]
->>
+Start : PackageClause stmt_end ImportDeclList TopLevelDeclList
 
 PackageClause  : keyword_package PackageName
-<<
-p[0]['children'] = [p[1], p[2], p[3], p[4]]
->>
 
 PackageName    : identifier
-<<
-p[0]['children'] = [p[1], p[2], p[3], p[4]]
->>
 
 ImportPath     : string_literal
-<<
-p[0]['children'] = [p[1], p[2], p[3], p[4]]
->>
 
 ImportSpec     : ImportPath
                | dot ImportPath
                | PackageName ImportPath
-<<
-p[0]['children'] = [p[1], p[2], p[3], p[4]]
->>
 
 ImportList     : empty
                | ImportList ImportSpec stmt_end
-<<
-p[0]['children'] = [p[1], p[2], p[3], p[4]]
->>
 
 ImportDecl     : keyword_import ImportSpec
                | keyword_import left_paren ImportList right_paren
-<<
-p[0]['children'] = [p[1], p[2], p[3], p[4]]
->>
 
 ImportDeclList : empty
                | ImportDeclList ImportDecl stmt_end
-<<
-p[0]['children'] = [p[1], p[2], p[3], p[4]]
->>
 
 TopLevelDeclList : empty
                  | TopLevelDeclList TopLevelDecl stmt_end
-<<
-p[0]['children'] = [p[1], p[2], p[3], p[4]]
->>
 
 TopLevelDecl : Declaration
              | FunctionDecl
              | MethodDecl
-<<
-p[0]['children'] = [p[1], p[2], p[3], p[4]]
->>
 
 FunctionDecl : keyword_func FunctionName Function
              | keyword_func FunctionName Signature
-<<
-p[0]['children'] = [p[1], p[2], p[3], p[4]]
->>
 
 FunctionName : identifier
-<<
-p[0]['children'] = [p[1], p[2], p[3], p[4]]
->>
 
 MethodDecl : keyword_func Receiver MethodName Function
            | keyword_func Receiver MethodName Signature
-<<
-p[0]['children'] = [p[1], p[2], p[3], p[4]]
->>
 
 Receiver : Parameters
-<<
-p[0]['children'] = [p[1], p[2], p[3], p[4]]
->>
 
 Declaration : ConstDecl
             | TypeDecl
             | VarDecl
-<<
-p[0]['children'] = [p[1], p[2], p[3], p[4]]
->>
 
 ConstDecl : keyword_const ConstGroup
-<<
-p[0]['children'] = [p[1], p[2], p[3], p[4]]
->>
 
 ConstGroup : ConstSpec
            | left_paren ConstSpecList right_paren
-<<
-p[0]['children'] = [p[1], p[2], p[3], p[4]]
->>
 
 ConstSpecList : empty
               | ConstSpecList ConstSpec stmt_end
-<<
-p[0]['children'] = [p[1], p[2], p[3], p[4]]
->>
 
 ConstSpec : IdentifierList Type '=' IdentifierList
-<<
-p[0]['children'] = [p[1], p[2], p[3], p[4]]
->>
 
 IdentifierList : identifier
                | IdentifierList comma identifier
-<<
-p[0]['children'] = [p[1], p[2], p[3], p[4]]
->>
 
 TypeDecl  : keyword_type TypeSpecGroup
-<<
-p[0]['children'] = [p[1], p[2], p[3], p[4]]
->>
 
 TypeSpecGroup : TypeSpec
               | left_paren TypeSpecList right_paren
-<<
-p[0]['children'] = [p[1], p[2], p[3], p[4]]
->>
 
 TypeSpecList : empty
              | TypeSpecList TypeSpec stmt_end
-<<
-p[0]['children'] = [p[1], p[2], p[3], p[4]]
->>
 
 TypeSpec     : AliasDecl
              | TypeDef
-<<
-p[0]['children'] = [p[1], p[2], p[3], p[4]]
->>
 
 AliasDecl    : identifier '=' Type
-<<
-p[0]['children'] = [p[1], p[2], p[3], p[4]]
->>
 
 TypeDef      : identifier Type
-<<
-p[0]['children'] = [p[1], p[2], p[3], p[4]]
->>
 
 Type      : TypeName
           | TypeLit
           | left_paren Type right_paren
-<<
-p[0]['children'] = [p[1], p[2], p[3], p[4]]
->>
 
 TypeName  : identifier
           | QualifiedIdent
-<<
-p[0]['children'] = [p[1], p[2], p[3], p[4]]
->>
 
 TypeLit   : ArrayType
           | StructType
@@ -166,205 +82,100 @@ TypeLit   : ArrayType
           | InterfaceType
           | SliceType
           | MapType
-<<
-p[0]['children'] = [p[1], p[2], p[3], p[4]]
->>
 
 ArrayType   : left_sq_paren ArrayLength right_sq_paren ElementType
-<<
-p[0]['children'] = [p[1], p[2], p[3], p[4]]
->>
 
 ArrayLength : Expression
-<<
-p[0]['children'] = [p[1], p[2], p[3], p[4]]
->>
 
 ElementType : Type
-<<
-p[0]['children'] = [p[1], p[2], p[3], p[4]]
->>
 
 SliceType : left_sq_paren right_sq_paren ElementType
-<<
-p[0]['children'] = [p[1], p[2], p[3], p[4]]
->>
 
 StructType    : keyword_struct left_block_bracket FieldDeclList right_block_bracket
-<<
-p[0]['children'] = [p[1], p[2], p[3], p[4]]
->>
 
 FieldDeclList : empty
               | FieldDeclList FieldDecl stmt_end
-<<
-p[0]['children'] = [p[1], p[2], p[3], p[4]]
->>
 
 FieldDecl     : IdentifierList Type
               | EmbeddedField
-<<
-p[0]['children'] = [p[1], p[2], p[3], p[4]]
->>
 
 EmbeddedField : '*' TypeName
               | TypeName
-<<
-p[0]['children'] = [p[1], p[2], p[3], p[4]]
->>
 
 PointerType : '*' BaseType
-<<
-p[0]['children'] = [p[1], p[2], p[3], p[4]]
->>
 
 BaseType    : Type
-<<
-p[0]['children'] = [p[1], p[2], p[3], p[4]]
->>
 
 FunctionType   : keyword_func Signature
-<<
-p[0]['children'] = [p[1], p[2], p[3], p[4]]
->>
 
 Signature      : Parameters ParametersList Result
                | Parameters ParametersList
-<<
-p[0]['children'] = [p[1], p[2], p[3], p[4]]
->>
 
 ParametersList : empty
                | ParametersList Parameters
-<<
-p[0]['children'] = [p[1], p[2], p[3], p[4]]
->>
 
 Result         : Type
-<<
-p[0]['children'] = [p[1], p[2], p[3], p[4]]
->>
 
 Parameters     : left_paren ParameterList comma right_paren
                | left_paren ParameterList right_paren
                | left_paren right_paren
-<<
-p[0]['children'] = [p[1], p[2], p[3], p[4]]
->>
 
 ParameterList  : ParameterDecl
                | ParameterList comma ParameterDecl
-<<
-p[0]['children'] = [p[1], p[2], p[3], p[4]]
->>
 
 ParameterDecl  : Type
                | spread_op Type
                | IdentifierList Type
                | IdentifierList spread_op Type
-<<
-p[0]['children'] = [p[1], p[2], p[3], p[4]]
->>
 
 InterfaceType      : keyword_interface left_block_bracket MethodSpecList right_block_bracket
-<<
-p[0]['children'] = [p[1], p[2], p[3], p[4]]
->>
 
 MethodSpecList : empty
                | MethodSpecList MethodSpec stmt_end
-<<
-p[0]['children'] = [p[1], p[2], p[3], p[4]]
->>
 
 MethodSpec         : MethodName Signature
                    | InterfaceTypeName
-<<
-p[0]['children'] = [p[1], p[2], p[3], p[4]]
->>
 
 MethodName         : identifier
-<<
-p[0]['children'] = [p[1], p[2], p[3], p[4]]
->>
 
 InterfaceTypeName  : TypeName
-<<
-p[0]['children'] = [p[1], p[2], p[3], p[4]]
->>
 
 MapType     : keyword_map left_sq_paren KeyType right_sq_paren ElementType
-<<
-p[0]['children'] = [p[1], p[2], p[3], p[4]]
->>
 
 KeyType     : Type
-<<
-p[0]['children'] = [p[1], p[2], p[3], p[4]]
->>
 
 QualifiedIdent : PackageName dot identifier
-<<
-p[0]['children'] = [p[1], p[2], p[3], p[4]]
->>
 
 VarDecl     : keyword_var VarSpec
             | keyword_var left_paren VarSpecList right_paren
-<<
-p[0]['children'] = [p[1], p[2], p[3], p[4]]
->>
 
 VarSpecList : empty
             | VarSpecList VarSpec stmt_end
-<<
-p[0]['children'] = [p[1], p[2], p[3], p[4]]
->>
 
 VarSpec     : IdentifierList ExpressionListGroup
-<<
-p[0]['children'] = [p[1], p[2], p[3], p[4]]
->>
 
 ExpressionListGroup : Type
                     | Type '=' ExpressionList
                     | '=' ExpressionList
-<<
-p[0]['children'] = [p[1], p[2], p[3], p[4]]
->>
 
 Operand     : Literal
             | OperandName
             | MethodExpr
             | left_paren Expression right_paren
-<<
-p[0]['children'] = [p[1], p[2], p[3], p[4]]
->>
 
 OperandName : identifier
             | QualifiedIdent
-<<
-p[0]['children'] = [p[1], p[2], p[3], p[4]]
->>
 
 Literal     : BasicLit
             | CompositeLit
             | FunctionLit
-<<
-p[0]['children'] = [p[1], p[2], p[3], p[4]]
->>
 
 BasicLit    : int_lit
             | float_lit
             | rune_lit
             | string_literal
-<<
-p[0]['children'] = [p[1], p[2], p[3], p[4]]
->>
 
 CompositeLit : LiteralType LiteralValue
-<<
-p[0]['children'] = [p[1], p[2], p[3], p[4]]
->>
 
 LiteralType : StructType
             | ArrayType
@@ -372,72 +183,36 @@ LiteralType : StructType
             | SliceType
             | MapType
             | TypeName
-<<
-p[0]['children'] = [p[1], p[2], p[3], p[4]]
->>
 
 LiteralValue : left_block_bracket right_block_bracket
              | left_block_bracket ElementList right_block_bracket
              | left_block_bracket ElementList comma right_block_bracket
-<<
-p[0]['children'] = [p[1], p[2], p[3], p[4]]
->>
 
 ElementList : KeyedElement
             | ElementList comma KeyedElement
-<<
-p[0]['children'] = [p[1], p[2], p[3], p[4]]
->>
 
 KeyedElement : Element
              | Key label_op Element
-<<
-p[0]['children'] = [p[1], p[2], p[3], p[4]]
->>
 
 Key          : FieldName
              | Expression
              | LiteralValue
-<<
-p[0]['children'] = [p[1], p[2], p[3], p[4]]
->>
 
 FieldName    : identifier
-<<
-p[0]['children'] = [p[1], p[2], p[3], p[4]]
->>
 
 Element      : Expression
              | LiteralValue
-<<
-p[0]['children'] = [p[1], p[2], p[3], p[4]]
->>
 
 FunctionLit  : keyword_func Function
-<<
-p[0]['children'] = [p[1], p[2], p[3], p[4]]
->>
 
 Function     : Signature FunctionBody
-<<
-p[0]['children'] = [p[1], p[2], p[3], p[4]]
->>
 
 FunctionBody : Block
-<<
-p[0]['children'] = [p[1], p[2], p[3], p[4]]
->>
 
 Block        : left_block_bracket StatementList right_block_bracket
-<<
-p[0]['children'] = [p[1], p[2], p[3], p[4]]
->>
 
 StatementList : empty
               | StatementList Statement stmt_end
-<<
-p[0]['children'] = [p[1], p[2], p[3], p[4]]
->>
 
 Statement    : Declaration
              | LabeledStmt
@@ -452,143 +227,71 @@ Statement    : Declaration
              | SwitchStmt
              | ForStmt
              | DeferStmt
-<<
-p[0]['children'] = [p[1], p[2], p[3], p[4]]
->>
 
 LabeledStmt : Label label_op Statement
-<<
-p[0]['children'] = [p[1], p[2], p[3], p[4]]
->>
 
 Label       : identifier
-<<
-p[0]['children'] = [p[1], p[2], p[3], p[4]]
->>
 
 SimpleStmt : EmptyStmt
            | ExpressionStmt
            | IncDecStmt
            | Assignment
            | ShortVarDecl
-<<
-p[0]['children'] = [p[1], p[2], p[3], p[4]]
->>
 
 EmptyStmt : empty
-<<
-p[0]['children'] = [p[1], p[2], p[3], p[4]]
->>
 
 ExpressionStmt : Expression
-<<
-p[0]['children'] = [p[1], p[2], p[3], p[4]]
->>
 
 IncDecStmt : Expression inc_dec_op
-<<
-p[0]['children'] = [p[1], p[2], p[3], p[4]]
->>
 
 Assignment : ExpressionList assign_op ExpressionList
-<<
-p[0]['children'] = [p[1], p[2], p[3], p[4]]
->>
 
 ShortVarDecl : IdentifierList ':=' ExpressionList
-<<
-p[0]['children'] = [p[1], p[2], p[3], p[4]]
->>
 
 ReturnStmt : keyword_return
            | keyword_return ExpressionList
-<<
-p[0]['children'] = [p[1], p[2], p[3], p[4]]
->>
 
 BreakStmt  : keyword_break
            | keyword_break Label
-<<
-p[0]['children'] = [p[1], p[2], p[3], p[4]]
->>
 
 ContinueStmt : keyword_continue
              | keyword_continue Label
-<<
-p[0]['children'] = [p[1], p[2], p[3], p[4]]
->>
 
 GotoStmt : keyword_goto Label
-<<
-p[0]['children'] = [p[1], p[2], p[3], p[4]]
->>
 
 FallthroughStmt : keyword_fallthrough
-<<
-p[0]['children'] = [p[1], p[2], p[3], p[4]]
->>
 
 IfStmt : keyword_if Expression Block
        | keyword_if SimpleStmt stmt_end Expression Block
        | keyword_if Expression Block keyword_else IfStmtGrp
        | keyword_if SimpleStmt stmt_end Expression Block keyword_else IfStmtGrp
-<<
-p[0]['children'] = [p[1], p[2], p[3], p[4]]
->>
 
 IfStmtGrp : IfStmt
           | Block
-<<
-p[0]['children'] = [p[1], p[2], p[3], p[4]]
->>
 
 SwitchStmt : ExprSwitchStmt
-<<
-p[0]['children'] = [p[1], p[2], p[3], p[4]]
->>
 
 ExprSwitchStmt : keyword_switch left_block_bracket ExprCaseClauseList right_block_bracket
                | keyword_switch SimpleStmt stmt_end left_block_bracket ExprCaseClauseList right_block_bracket
                | keyword_switch Expression left_block_bracket ExprCaseClauseList right_block_bracket
                | keyword_switch SimpleStmt stmt_end Expression left_block_bracket ExprCaseClauseList right_block_bracket
-<<
-p[0]['children'] = [p[1], p[2], p[3], p[4]]
->>
 
 ExprCaseClauseList : empty
                    | ExprCaseClauseList ExprCaseClause
-<<
-p[0]['children'] = [p[1], p[2], p[3], p[4]]
->>
 
 ExprCaseClause : ExprSwitchCase label_op StatementList
-<<
-p[0]['children'] = [p[1], p[2], p[3], p[4]]
->>
 
 ExprSwitchCase : keyword_case ExpressionList
                | keyword_default
-<<
-p[0]['children'] = [p[1], p[2], p[3], p[4]]
->>
 
 ForStmt : keyword_for Block
         | keyword_for ConditionGrp Block
-<<
-p[0]['children'] = [p[1], p[2], p[3], p[4]]
->>
 
 ConditionGrp : Condition
              | ForClause
              | RangeClause
-<<
-p[0]['children'] = [p[1], p[2], p[3], p[4]]
->>
 
 Condition : Expression
-<<
-p[0]['children'] = [p[1], p[2], p[3], p[4]]
->>
 
 ForClause : stmt_end stmt_end
           | InitStmt stmt_end stmt_end
@@ -598,49 +301,25 @@ ForClause : stmt_end stmt_end
           | stmt_end Condition stmt_end PostStmt
           | InitStmt stmt_end stmt_end PostStmt
           | InitStmt stmt_end Condition stmt_end PostStmt
-<<
-p[0]['children'] = [p[1], p[2], p[3], p[4]]
->>
 
 InitStmt : SimpleStmt
-<<
-p[0]['children'] = [p[1], p[2], p[3], p[4]]
->>
 
 PostStmt : SimpleStmt
-<<
-p[0]['children'] = [p[1], p[2], p[3], p[4]]
->>
 
 RangeClause : keyword_range Expression
             | ExpressionList '=' keyword_range Expression
             | IdentifierList ':=' keyword_range Expression
-<<
-p[0]['children'] = [p[1], p[2], p[3], p[4]]
->>
 
 DeferStmt : keyword_defer Expression
-<<
-p[0]['children'] = [p[1], p[2], p[3], p[4]]
->>
 
 ExpressionList : Expression
                | ExpressionList comma Expression
-<<
-p[0]['children'] = [p[1], p[2], p[3], p[4]]
->>
 
 Expression : UnaryExpr
            | Expression binary_op Expression
-<<
-p[0]['children'] = [p[1], p[2], p[3], p[4]]
->>
 
 UnaryExpr : PrimaryExpr
           | unary_op UnaryExpr
-<<
-p[0]['children'] = [p[1], p[2], p[3], p[4]]
->>
 
 PrimaryExpr : Operand
             | Conversion
@@ -650,42 +329,21 @@ PrimaryExpr : Operand
             | PrimaryExpr Slice
             | PrimaryExpr TypeAssertion
             | PrimaryExpr Arguments
-<<
-p[0]['children'] = [p[1], p[2], p[3], p[4]]
->>
 
 Conversion : Type left_paren Expression right_paren
            | Type left_paren Expression comma right_paren
-<<
-p[0]['children'] = [p[1], p[2], p[3], p[4]]
->>
 
 MethodExpr : ReceiverType dot MethodName
-<<
-p[0]['children'] = [p[1], p[2], p[3], p[4]]
->>
 
 ReceiverType : TypeName
              | left_paren '*' TypeName right_paren
              | left_paren ReceiverType right_paren
-<<
-p[0]['children'] = [p[1], p[2], p[3], p[4]]
->>
 
 ForCompExpr : left_sq_paren Expression '|' RangeClause right_sq_paren
-<<
-p[0]['children'] = [p[1], p[2], p[3], p[4]]
->>
 
 Selector : dot identifier
-<<
-p[0]['children'] = [p[1], p[2], p[3], p[4]]
->>
 
 Index : left_sq_paren Expression right_sq_paren
-<<
-p[0]['children'] = [p[1], p[2], p[3], p[4]]
->>
 
 Slice : left_sq_paren label_op right_sq_paren
       | left_sq_paren Expression label_op right_sq_paren
@@ -693,20 +351,11 @@ Slice : left_sq_paren label_op right_sq_paren
       | left_sq_paren Expression label_op Expression right_sq_paren
       | left_sq_paren label_op Expression label_op Expression right_sq_paren
       | left_sq_paren Expression label_op Expression label_op Expression right_sq_paren
-<<
-p[0]['children'] = [p[1], p[2], p[3], p[4]]
->>
 
 TypeAssertion : dot left_paren Type right_paren
-<<
-p[0]['children'] = [p[1], p[2], p[3], p[4]]
->>
 
 Arguments : left_paren right_paren
           | left_paren ArgIerGroup right_paren
-<<
-p[0]['children'] = [p[1], p[2], p[3], p[4]]
->>
 
 ArgIerGroup : ExpressionList
               | ExpressionList spread_op
@@ -720,6 +369,3 @@ ArgIerGroup : ExpressionList
               | Type comma ExpressionList spread_op
               | Type comma ExpressionList comma
               | Type comma ExpressionList spread_op comma
-<<
-p[0]['children'] = [p[1], p[2], p[3], p[4]]
->>

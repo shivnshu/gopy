@@ -6,34 +6,72 @@ if (len(sys.argv) < 2):
     print("Usage: ./bin grammer")
     sys.exit(0)
 
-output = ''
-counter = 0
-
 def camelToSnake(name):
     s1 = re.sub('(.)([A-Z][a-z]+)', r'\1_\2', name)
     return re.sub('([a-z0-9])([A-Z])', r'\1_\2', s1).lower()
+
+def children_helper(length):
+    res = "p[0]['children'] = ["
+    for i in range(1, length-1):
+        res += "p[" + str(i) + "], "
+    res += "p[" + str(length-1) + "]]"
+    return res
+
+output = ''
+counter = 0
+
+output += "import ply.yacc as yacc\n\n"
+output += "from tokrules import tokens\n\n"
+output += "counter = 0\n\n"
 
 data = open(sys.argv[1], "r").read()
 
 grammers = data.split('\n\n')
 
 for grammer in grammers:
-    # print(grammer)
     words = grammer.split()
     clause_name = words[0]
-    m = re.match(r"([\w\s:|\'=\*]*)<<([\w\n\s\[\]\'=\,]*)>>", grammer)
-    cfg = m.group(1).strip()
-    children = m.group(2).strip()
+    children_lengths = []
+    cfg = grammer
+    for line in cfg.split('\n'):
+        tokens = line.split()
+        children_lengths.append(len(tokens))
+    children_lengths[0] -= 1
+
     output += 'def p_' + camelToSnake(clause_name) + '(p):\n'
     output += '\t'
-    output += "'''\n\t" + cfg + "\n\t'''\n"
+    output += "'''\n"
+    for line in cfg.split('\n'):
+        output += "\t" + line + "\n"
+    output = output[:-1]
+    output += "\n\t'''\n"
     output += '\tglobal counter\n'
     output += '\tp[0] = {"label": "' + clause_name + '", "id": str(counter)}\n'
-    output += '\t' + children + '\n'
     output += '\tcounter += 1\n'
-    output += '\n'
     counter += 1
-    # if (counter > 89):
+    # if (counter > 5):
     #     break
+    if (len(children_lengths) == 1):
+        output += "\t" + children_helper(children_lengths[0]) + "\n"
+        output += '\n'
+        continue
+    output += "\tif (len(p) == " + str(children_lengths[0]) + "):\n"
+    output += "\t\t" + children_helper(children_lengths[0]) + "\n"
+
+    for i in range(1, len(children_lengths)-1):
+        output += "\telif (len(p) == " + str(children_lengths[i]) + "):\n"
+        output += "\t\t" + children_helper(children_lengths[i]) + "\n"
+
+    output += "\telse:\n"
+    output += "\t\t" + children_helper(children_lengths[-1]) + "\n"
+    output += "\n"
+
+output += '''
+def p_error(p):
+\tprint(p)
+\tprint("Syntax error in input!")
+
+parser = yacc.yacc()
+'''
 
 print(output)
