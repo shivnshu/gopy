@@ -45,5 +45,5 @@ def p_error(p):
 	print(p)
 	print("Syntax error in input!")
 
-go_parser = yacc.yacc()
+parser = yacc.yacc()
 

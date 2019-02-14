@@ -32,11 +32,15 @@ for grammer in grammers:
     words = grammer.split()
     clause_name = words[0]
     children_lengths = []
+    is_terminal_production = False
     cfg = grammer
     for line in cfg.split('\n'):
         tokens = line.split()
+        is_terminal_production = tokens[-1].isupper()
         children_lengths.append(len(tokens))
     children_lengths[0] -= 1
+
+    is_terminal_production &= (len(children_lengths) == 1)
 
     output += 'def p_' + camelToSnake(clause_name) + '(p):\n'
     output += '\t'
@@ -46,13 +50,19 @@ for grammer in grammers:
     output = output[:-1]
     output += "\n\t'''\n"
     output += '\tglobal counter\n'
-    output += '\tp[0] = {"label": "' + clause_name + '", "id": str(counter)}\n'
+    if (is_terminal_production):
+        output += '\tp[0] = {"label" : p[1], "id": str(counter)}\n'
+    else:
+        output += '\tp[0] = {"label": "' + clause_name + '", "id": str(counter)}\n'
     output += '\tcounter += 1\n'
     counter += 1
     # if (counter > 5):
     #     break
     if (len(children_lengths) == 1):
-        output += "\t" + children_helper(children_lengths[0]) + "\n"
+        if (is_terminal_production):
+            output += "\tp[0]['children'] = []" + "\n"
+        else:
+            output += "\t" + children_helper(children_lengths[0]) + "\n"
         output += '\n'
         continue
     output += "\tif (len(p) == " + str(children_lengths[0]) + "):\n"
@@ -71,7 +81,7 @@ def p_error(p):
 \tprint(p)
 \tprint("Syntax error in input!")
 
-parser = yacc.yacc()
+go_parser = yacc.yacc()
 '''
 
 print(output)
