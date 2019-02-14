@@ -49,10 +49,11 @@ for grammer in grammers:
     is_terminal_production &= (len(children_lengths) == 1)
 
     output += 'def p_' + camelToSnake(clause_name) + '(p):\n'
+    output += "\t'''\n"
     for line in cfg.split('\n'):
-        output += "\t'" + line + "'\n"
+        output += "\t" + line + "\n"
     output = output[:-1]
-    output += "\n"
+    output += "\n\t'''\n"
     output += '\tglobal counter\n'
     if (is_terminal_production):
         output += '\tp[0] = {"label" : p[1], "id": str(counter)}\n'
@@ -85,7 +86,7 @@ def p_error(p):
 \tprint(p)
 \tprint("Syntax error in input!")
 
-go_parser = yacc.yacc()
+go_parser = yacc.yacc(start="SourceFile")
 '''
 
 print(output)

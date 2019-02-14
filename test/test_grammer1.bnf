@@ -1,12 +1,37 @@
-Start : Aa token_plus Bb
-      | Aa token_minus Bb
-      | Aa
-      | empty
+keyword_package : PACKAGE
 
-Aa : INTEGERLIT
+keyword_identifier : IDENTIFIER
 
-token_plus : ADD
+keyword_import : IMPORT
 
-token_minus : MINUS
+keyword_lparen : LPAREN
 
-Bb : INTEGERLIT
+keyword_rparen : RPAREN
+
+keyword_dot : DOT
+
+SourceFile    : PackageClause ImportDeclList
+
+PackageClause  : keyword_package keyword_identifier
+
+ImportDeclList : ImportDecl ImportDeclList
+               | empty
+
+TopLevelDeclList : STRINGLIT TopLevelDeclList
+                 | empty
+
+ImportDecl    : keyword_import ImportSpecTopList
+
+ImportSpecTopList : ImportSpec
+                  | keyword_lparen ImportSpecList keyword_rparen 
+
+ImportSpecList : ImportSpec ImportSpecList
+               | empty
+
+ImportSpec       :  ImportSpecInit ImportPath
+
+ImportSpecInit : keyword_dot
+               | keyword_identifier
+               | empty
+
+ImportPath     : STRINGLIT
