@@ -1,6 +1,7 @@
 Start : Aa token_plus Bb
       | Aa token_minus Bb
       | Aa
+      | empty
 
 Aa : INTEGERLIT
 

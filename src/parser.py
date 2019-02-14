@@ -4,46 +4,46 @@ from tokrules import tokens
 
 counter = 0
 
+def p_empty(p):
+        'empty :'
+        pass
+
 def p_start(p):
-	'''
-	Start : PackageClause
-	'''
-	global counter
-	p[0] = {"label": "Start", "id": str(counter)}
-	counter += 1
-	p[0]['children'] = [p[1]]
+        'SourceFile  : RepeatTopLevelDecl'
+        pass
 
-def p_package_clause(p):
-	'''
-	PackageClause  : keyword_package PackageName
-	'''
-	global counter
-	p[0] = {"label": "PackageClause", "id": str(counter)}
-	counter += 1
-	p[0]['children'] = [p[1], p[2]]
+def p_re_top_level(p):
+        '''
+        RepeatTopLevelDecl : TopLevelDecl RepeatTopLevelDecl
+                           | empty
+        '''
 
-def p_package_name(p):
-	'''
-	PackageName    : IDENTIFIER
-	'''
-	global counter
-	p[0] = {"label" : p[1], "id": str(counter)}
-	counter += 1
-	p[0]['children'] = []
+def p_top_l(p):
+        '''
+        TopLevelDecl : IMPORT ImportSpec
+        '''
 
-def p_keyword_package(p):
-	'''
-	keyword_package : PACKAGE
-	'''
-	global counter
-	p[0] = {"label" : p[1], "id": str(counter)}
-	counter += 1
-	p[0]['children'] = []
+def p_import_spec(p):
+        '''
+        ImportSpec  :  ImportSpecInit ImportPath
+        '''
+        pass
 
+def p_import_spec_init(p):
+        'ImportSpecInit : empty'
+        '               | DOT'
+        '               | IDENTIFIER'
+        pass
+
+def p_import_path(p):
+        '''
+        ImportPath : STRINGLIT
+        '''
+        pass
 
 def p_error(p):
-	print(p)
-	print("Syntax error in input!")
+        print(p)
+        print("Syntax error in input!")
 
-go_parser = yacc.yacc()
+go_parser = yacc.yacc(start="SourceFile")
 
