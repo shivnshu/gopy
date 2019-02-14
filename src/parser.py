@@ -6,34 +6,34 @@ counter = 0
 
 def p_start(p):
 	'''
-	Start : Aa token_plus Bb
+	Start : PackageClause
 	'''
 	global counter
 	p[0] = {"label": "Start", "id": str(counter)}
 	counter += 1
-	p[0]['children'] = [p[1], p[2], p[3]]
+	p[0]['children'] = [p[1]]
 
-def p_aa(p):
+def p_package_clause(p):
 	'''
-	Aa : INTEGERLIT
+	PackageClause  : keyword_package PackageName
+	'''
+	global counter
+	p[0] = {"label": "PackageClause", "id": str(counter)}
+	counter += 1
+	p[0]['children'] = [p[1], p[2]]
+
+def p_package_name(p):
+	'''
+	PackageName    : IDENTIFIER
 	'''
 	global counter
 	p[0] = {"label" : p[1], "id": str(counter)}
 	counter += 1
 	p[0]['children'] = []
 
-def p_token_plus(p):
+def p_keyword_package(p):
 	'''
-	token_plus : ADD
-	'''
-	global counter
-	p[0] = {"label" : p[1], "id": str(counter)}
-	counter += 1
-	p[0]['children'] = []
-
-def p_bb(p):
-	'''
-	Bb : INTEGERLIT
+	keyword_package : PACKAGE
 	'''
 	global counter
 	p[0] = {"label" : p[1], "id": str(counter)}

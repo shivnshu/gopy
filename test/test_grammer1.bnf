@@ -1,7 +1,11 @@
 Start : Aa token_plus Bb
+      | Aa token_minus Bb
+      | Aa
 
 Aa : INTEGERLIT
 
 token_plus : ADD
+
+token_minus : MINUS
 
 Bb : INTEGERLIT

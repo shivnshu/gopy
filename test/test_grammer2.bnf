@@ -1,0 +1,7 @@
+Start : PackageClause
+
+PackageClause  : keyword_package PackageName
+
+PackageName    : IDENTIFIER
+
+keyword_package : PACKAGE
