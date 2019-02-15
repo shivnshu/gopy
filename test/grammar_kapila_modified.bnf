@@ -104,6 +104,8 @@ int_lit : INTEGERLIT
 
 float_lit : FLOATINGLIT
 
+keyword_interface : INTERFACE
+
 SourceFile  : PackageClause ImportDeclList TopLevelDeclList
 
 PackageClause  : keyword_package keyword_identifier
@@ -117,8 +119,27 @@ TopLevelDeclList : TopLevelDecl TopLevelDeclList
 TopLevelDecl  : Declaration
               | FunctionDecl
               | MethodDecl
+              | InterfaceDecl
+              | IFuncDef
 
+
+InterfaceDecl : keyword_type identifier keyword_interface interfaceBlock
+
+
+interfaceBlock  : keyword_lcurly IFuncDecList keyword_rcurly
+
+
+IFuncDecList   : IFuncDec IFuncDecList
+               | empty
+
+
+IFuncDec      : identifier keyword_lparen keyword_rparen Type
+
+IFuncDef      : keyword_func keyword_lparen identifier identifier keyword_rparen IFuncDec Block
+
+ 
 ImportDecl    : keyword_import ImportSpecTopList
+
 
 ImportSpecTopList : ImportSpec
                   | keyword_lparen ImportSpecList keyword_rparen 
@@ -208,7 +229,10 @@ TypeLit  : ArrayType
 
 ArrayType  : keyword_lsquare ArrayLength keyword_rsquare ElementType
 
+
 ArrayLength : Expression
+	    | empty
+
 
 ElementType : Type
 
@@ -301,10 +325,13 @@ SimpleStmt : ExpressionStmt
 		   | ShortVarDecl
 
 ExpressionStmt : Expression
+
  
 ShortVarDecl : IdentifierList op_short_assign ExpressionList 
 
-Assignment : Expression assign_op Expression
+
+
+Assignment : ExpressionList assign_op ExpressionList
 
 assign_op : addmul_op op_eq
 
@@ -314,7 +341,7 @@ addmul_op : add_op
 
 IfStmt : keyword_if SimpleStmtBot Expression Block elseBot
 
-SimpleStmtBot : SimpleStmt keyword_semicolon 
+SimpleStmtBot : SimpleStmt 
               | empty
 
 elseBot : keyword_else elseTail 
@@ -347,6 +374,7 @@ ExpressionListBot : ExpressionList
 
 Expression : UnaryExpr 
            | Expression binary_op Expression
+           | identifier keyword_dot identifier
 
 UnaryExpr  : PrimaryExpr 
            | unary_op UnaryExpr
