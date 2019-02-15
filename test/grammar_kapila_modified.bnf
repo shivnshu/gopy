@@ -352,12 +352,12 @@ elseTail : IfStmt
 
 SwitchStmt : ExprSwitchStmt
 
-ExprSwitchStmt : keyword_switch SimpleStmtBot ExpressionBot keyword_lparen ExprCaseClauseList keyword_rparen
+ExprSwitchStmt : keyword_switch ExpressionBot keyword_lcurly ExprCaseClauseList keyword_rcurly
 
 ExprCaseClauseList : ExprCaseClause ExprCaseClauseList 
                    | empty
 
-ExprCaseClause : ExprSwitchCase colon keyword_lparen Expression keyword_rparen
+ExprCaseClause : ExprSwitchCase colon keyword_lcurly StatementList keyword_rcurly
 
 ExprSwitchCase : keyword_case ExpressionList 
                | keyword_default
