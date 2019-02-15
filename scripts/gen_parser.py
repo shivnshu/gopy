@@ -36,6 +36,8 @@ grammers = data.split('\n\n')
 
 for grammer in grammers:
     words = grammer.split()
+    if (len(words) == 0):
+        continue
     clause_name = words[0]
     children_lengths = []
     is_terminal_production = False

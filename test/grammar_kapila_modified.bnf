@@ -348,9 +348,11 @@ addmul_op : add_op
           | mul_op 
 		  | empty
 
-IfStmt : keyword_if SimpleStmtBot Expression Block elseBot
+IfStmt : keyword_if SimpleStmtBot ExpressionBot Block elseBot
 
 SimpleStmtBot : SimpleStmt 
+              | TRUE
+              | FALSE
               | empty
 
 elseBot : keyword_else elseTail 
