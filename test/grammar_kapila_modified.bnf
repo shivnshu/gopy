@@ -125,7 +125,12 @@ TopLevelDecl  : Declaration
               | IFuncDef
               | StructDef
 
-StructDef : keyword_type identifier keyword_struct keyword_lcurly Parameters keyword_rcurly
+StructDef : keyword_type identifier keyword_struct keyword_lcurly ParameterDeclList2 keyword_rcurly
+
+ParameterDeclList2  : ParameterDecl2 ParameterDeclList2
+                    | empty
+
+ParameterDecl2  : IdentifierList Type
 
 
 InterfaceDecl : keyword_type identifier keyword_interface interfaceBlock
@@ -180,6 +185,9 @@ GoFunc    : keyword_go keyword_func Parameters FunctionBody keyword_lparen Expre
 
 FuncCallStmt : identifier keyword_dot FuncCallStmt 
              | identifier keyword_dot FunctionName keyword_lparen ExpressionList keyword_rparen
+             | identifier keyword_dot FunctionName keyword_lparen ObjectMethod keyword_rparen
+
+ObjectMethod : identifier keyword_dot identifier keyword_lparen ParameterDeclList2 keyword_rparen
 
 Declaration : ConstDecl 
             | TypeDecl 
@@ -444,6 +452,8 @@ Operand : Literal
         | OperandName 
 	| MethodExpr 
 	| keyword_lparen Expression keyword_rparen
+        | TRUE
+        | FALSE
 
 Literal : BasicLit 
         | FunctionLit
