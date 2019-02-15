@@ -149,7 +149,7 @@ Statement : Declaration
 
 Declaration : ConstDecl 
             | TypeDecl 
-			| VarDecl
+	    | VarDecl
 
 ConstDecl  : keyword_const ConstSpecTopList
 
@@ -169,7 +169,7 @@ TypeTop : Type
 
 IdentifierList : identifier IdentifierBotList
 
-IdentifierBotList : IdentifierBotList keyword_comma identifier 
+IdentifierBotList :  IdentifierBotList keyword_comma identifier   
                   | empty
 
 ExpressionList : ExpressionBotList Expression
@@ -384,21 +384,21 @@ unary_op : op_add
 		| op_receive
 
 PrimaryExpr : Operand
-            |	PrimaryExpr Selector
-            |	PrimaryExpr Index
-            |	PrimaryExpr Arguments
+            | PrimaryExpr Selector
+            | PrimaryExpr Index
+            | PrimaryExpr Arguments
 
 Operand : Literal 
         | OperandName 
-		| MethodExpr 
-		| keyword_lparen Expression keyword_rparen
+	| MethodExpr 
+	| keyword_lparen Expression keyword_rparen
 
 Literal : BasicLit 
         | FunctionLit
 
 BasicLit : int_lit 
         | float_lit 
-		| string_lit
+	| string_lit
 
 OperandName : identifier
 
@@ -408,7 +408,7 @@ MethodExpr  : ReceiverType keyword_dot MethodName
 
 ReceiverType : TypeName 
             | keyword_lparen op_mult TypeName keyword_rparen 
-			| keyword_lparen ReceiverType keyword_rparen
+	    | keyword_lparen ReceiverType keyword_rparen
 
 Selector : keyword_dot identifier
 
@@ -421,4 +421,4 @@ ArgumentsHead : ArgumentsHeadMid tripledotTop commaTop
 
 ArgumentsHeadMid : ExpressionList 
                  | Type keyword_comma ExpressionList 
-				 | Type
+		 | Type
