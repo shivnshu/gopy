@@ -106,6 +106,8 @@ float_lit : FLOATINGLIT
 
 keyword_interface : INTERFACE
 
+keyword_go : GO
+
 SourceFile  : PackageClause ImportDeclList TopLevelDeclList
 
 PackageClause  : keyword_package keyword_identifier
@@ -167,7 +169,14 @@ Statement : Declaration
           | IfStmt 
           | SwitchStmt 
           | ForStmt
-	  | identifier keyword_dot FunctionName keyword_lparen ExpressionList keyword_rparen
+	  | FuncCallStmt
+          | GoFunc
+
+GoFunc    : keyword_go keyword_func Parameters FunctionBody keyword_lparen ExpressionList keyword_rparen 
+          | keyword_go identifier keyword_lparen ExpressionList keyword_rparen
+
+FuncCallStmt : identifier keyword_dot FuncCallStmt 
+             | identifier keyword_dot FunctionName keyword_lparen ExpressionList keyword_rparen
 
 Declaration : ConstDecl 
             | TypeDecl 
