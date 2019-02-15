@@ -125,7 +125,12 @@ TopLevelDecl  : Declaration
               | IFuncDef
               | StructDef
 
-StructDef : keyword_type identifier keyword_struct keyword_lcurly ParameterDecList2 keyword_rcurly
+StructDef : keyword_type identifier keyword_struct keyword_lcurly ParameterDeclList2 keyword_rcurly
+
+ParameterDeclList2  : ParameterDecl2 ParameterDeclList2
+                    | empty
+
+ParameterDecl2  : IdentifierList Type
 
 ParameterDecList2 : ParameterDecl2 ParameterDecList2
                   | empty
@@ -183,7 +188,10 @@ GoFunc    : keyword_go keyword_func Parameters FunctionBody keyword_lparen Expre
           | keyword_go identifier keyword_lparen ExpressionListBot keyword_rparen
 
 FuncCallStmt : identifier keyword_dot FuncCallStmt 
-             | identifier keyword_dot FunctionName keyword_lparen ExpressionListBot keyword_rparen
+             | identifier keyword_dot FunctionName keyword_lparen ExpressionList keyword_rparen
+             | identifier keyword_dot FunctionName keyword_lparen ObjectMethod keyword_rparen
+
+ObjectMethod : identifier keyword_dot identifier keyword_lparen ParameterDeclList2 keyword_rparen
 
 Declaration : ConstDecl 
             | TypeDecl 
