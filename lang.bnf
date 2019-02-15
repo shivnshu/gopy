@@ -1,371 +1,491 @@
-Start : PackageClause stmt_end ImportDeclList TopLevelDeclList
+keyword_package : PACKAGE
 
-PackageClause  : keyword_package PackageName
+keyword_identifier : IDENTIFIER
 
-PackageName    : identifier
+keyword_import : IMPORT
 
-ImportPath     : string_literal
+keyword_lparen : LPAREN
 
-ImportSpec     : ImportPath
-               | dot ImportPath
-               | PackageName ImportPath
+keyword_rparen : RPAREN
 
-ImportList     : empty
-               | ImportList ImportSpec stmt_end
+keyword_dot : DOT
 
-ImportDecl     : keyword_import ImportSpec
-               | keyword_import left_paren ImportList right_paren
+keyword_lcurly : LCURLY
 
-ImportDeclList : empty
-               | ImportDeclList ImportDecl stmt_end
+keyword_rcurly : RCURLY
 
-TopLevelDeclList : empty
-                 | TopLevelDeclList TopLevelDecl stmt_end
+keyword_const : CONST
 
-TopLevelDecl : Declaration
-             | FunctionDecl
-             | MethodDecl
+op_eq : EQ
 
-FunctionDecl : keyword_func FunctionName Function
-             | keyword_func FunctionName Signature
+identifier : IDENTIFIER
 
-FunctionName : identifier
+keyword_comma : COMMA
 
-MethodDecl : keyword_func Receiver MethodName Function
-           | keyword_func Receiver MethodName Signature
+keyword_type : TYPE
 
-Receiver : Parameters
+keyword_semicolon : SEMICOLON
 
-Declaration : ConstDecl
-            | TypeDecl
-            | VarDecl
+keyword_lsquare : LSQUARE
 
-ConstDecl : keyword_const ConstGroup
+keyword_rsquare : RSQUARE
 
-ConstGroup : ConstSpec
-           | left_paren ConstSpecList right_paren
+keyword_struct : STRUCT
 
-ConstSpecList : empty
-              | ConstSpecList ConstSpec stmt_end
+op_mult : MULT
 
-ConstSpec : IdentifierList Type '=' IdentifierList
+string_lit : STRINGLIT
 
-IdentifierList : identifier
-               | IdentifierList comma identifier
+keyword_func : FUNC
 
-TypeDecl  : keyword_type TypeSpecGroup
+dot_dot_dot : DOT_DOT_DOT
 
-TypeSpecGroup : TypeSpec
-              | left_paren TypeSpecList right_paren
+keyword_var : VAR
 
-TypeSpecList : empty
-             | TypeSpecList TypeSpec stmt_end
+op_short_assign : SHORT_ASSIGN
 
-TypeSpec     : AliasDecl
-             | TypeDef
+op_add : ADD
 
-AliasDecl    : identifier '=' Type
+op_minus : MINUS
 
-TypeDef      : identifier Type
+op_or : OR
 
-Type      : TypeName
-          | TypeLit
-          | left_paren Type right_paren
+op_pow : POW
 
-TypeName  : identifier
+op_div : DIV
+
+op_mod : MOD
+
+op_lshift : LSHIFT
+
+op_rshift : RSHIFT
+
+op_and : AND
+
+op_and_pow : AND_POW
+
+op_or_or : OR_OR
+
+op_and_and : AND_AND
+
+keyword_if : IF
+
+keyword_else : ELSE
+
+keyword_switch : SWITCH
+
+colon : COLON
+
+keyword_case : CASE
+
+keyword_default : DEFAULT
+
+keyword_for : FOR
+
+keyword_return : RETURN
+
+op_eq_eq : EQ_EQ
+
+op_not_eq : NOT_EQ
+
+op_less : LESS
+
+op_less_eq : LESS_EQ
+
+op_greater : GREATER
+
+op_greater_eq : GREATER_EQ
+
+op_not : NOT
+
+op_receive : RECEIVE
+
+int_lit : INTEGERLIT
+
+float_lit : FLOATINGLIT
+
+keyword_interface : INTERFACE
+
+keyword_go : GO
+
+SourceFile  : PackageClause ImportDeclList TopLevelDeclList
+
+PackageClause  : keyword_package keyword_identifier
+
+ImportDeclList : ImportDecl ImportDeclList
+               | empty
+
+TopLevelDeclList : TopLevelDecl TopLevelDeclList
+                 | empty
+
+TopLevelDecl  : Declaration
+              | FunctionDecl
+              | MethodDecl
+              | InterfaceDecl
+              | IFuncDef
+              | StructDef
+
+StructDef : keyword_type identifier keyword_struct keyword_lcurly ParameterDeclList2 keyword_rcurly
+
+ParameterDeclList2  : ParameterDecl2 ParameterDeclList2
+                    | empty
+
+ParameterDecl2  : IdentifierList Type
+
+ParameterDecList2 : ParameterDecl2 ParameterDecList2
+                  | empty
+
+ParameterDecl2 : IdentifierList Type
+
+InterfaceDecl : keyword_type identifier keyword_interface interfaceBlock
+
+
+interfaceBlock  : keyword_lcurly IFuncDecList keyword_rcurly
+
+
+IFuncDecList   : IFuncDec IFuncDecList
+               | empty
+
+
+IFuncDec      : identifier keyword_lparen keyword_rparen Type
+
+IFuncDef      : keyword_func keyword_lparen identifier identifier keyword_rparen IFuncDec Block
+
+ 
+ImportDecl    : keyword_import ImportSpecTopList
+
+
+ImportSpecTopList : ImportSpec
+                  | keyword_lparen ImportSpecList keyword_rparen 
+
+ImportSpecList : ImportSpec ImportSpecList
+               | empty
+
+ImportSpec       :  ImportSpecInit ImportPath
+
+ImportSpecInit : keyword_dot
+               | keyword_identifier
+               | empty
+
+ImportPath     : STRINGLIT
+
+Block : keyword_lcurly StatementList keyword_rcurly
+
+StatementList : Statement StatementList 
+              | empty
+
+Statement : Declaration 
+          | SimpleStmt 
+	  | ReturnStmt 
+          | Block 
+          | IfStmt 
+          | SwitchStmt 
+          | ForStmt
+	  | FuncCallStmt
+          | GoFunc
+
+GoFunc    : keyword_go keyword_func Parameters FunctionBody keyword_lparen ExpressionList keyword_rparen 
+          | keyword_go identifier keyword_lparen ExpressionListBot keyword_rparen
+
+FuncCallStmt : identifier keyword_dot FuncCallStmt 
+             | identifier keyword_dot FunctionName keyword_lparen keyword_rparen
+             | identifier keyword_dot FunctionName keyword_lparen ExpressionList keyword_rparen
+             | identifier keyword_dot FunctionName keyword_lparen ObjectMethod keyword_rparen
+
+ObjectMethod : identifier keyword_dot identifier keyword_lparen ParameterDeclList2 keyword_rparen
+
+Declaration : ConstDecl 
+            | TypeDecl 
+	    | VarDecl
+
+ConstDecl  : keyword_const ConstSpecTopList
+
+ConstSpecTopList : ConstSpec 
+                 | keyword_lparen ConstSpecList keyword_rparen
+
+ConstSpecList : ConstSpec ConstSpecList 
+              | empty
+
+ConstSpec : IdentifierList ConstSpecTail
+
+ConstSpecTail : TypeTop op_eq ExpressionList 
+              | empty
+
+TypeTop : Type 
+        | empty
+
+IdentifierList : identifier IdentifierBotList
+
+IdentifierBotList :  IdentifierBotList keyword_comma identifier   
+                  | empty
+
+ExpressionList :  Expression ExpressionBotList
+
+ExpressionBotList : ExpressionBotList keyword_comma Expression
+                  | empty
+
+TypeDecl : keyword_type TypeSpecTopList
+
+TypeSpecTopList : TypeSpec 
+                | keyword_lparen TypeSpecList  keyword_rparen
+
+TypeSpecList : TypeSpec TypeSpecList keyword_semicolon 
+             | empty
+
+TypeSpec : AliasDecl 
+         | TypeDef
+
+AliasDecl : identifier op_eq Type
+
+TypeDef : identifier Type
+
+Type : TypeName 
+     | TypeLit 
+	 | keyword_lparen Type keyword_rparen
+
+TypeName  : identifier 
           | QualifiedIdent
 
-TypeLit   : ArrayType
-          | StructType
-          | PointerType
-          | FunctionType
-          | InterfaceType
-          | SliceType
-          | MapType
+QualifiedIdent : identifier keyword_dot identifier
 
-ArrayType   : left_sq_paren ArrayLength right_sq_paren ElementType
+TypeLit  : ArrayType 
+         | StructType 
+		 | FunctionType
+
+ArrayType  : keyword_lsquare ArrayLength keyword_rsquare ElementType
+
 
 ArrayLength : Expression
+	    | empty
+
 
 ElementType : Type
 
-SliceType : left_sq_paren right_sq_paren ElementType
+StructType    : keyword_struct keyword_lcurly FieldDeclList keyword_rcurly
 
-StructType    : keyword_struct left_block_bracket FieldDeclList right_block_bracket
+FieldDeclList : FieldDecl FieldDeclList keyword_semicolon 
+              | empty
 
-FieldDeclList : empty
-              | FieldDeclList FieldDecl stmt_end
+FieldDecl  : FieldDeclHead TagTop
 
-FieldDecl     : IdentifierList Type
+TagTop : Tag 
+       | empty
+
+FieldDeclHead : IdentifierList Type 
               | EmbeddedField
 
-EmbeddedField : '*' TypeName
-              | TypeName
+EmbeddedField : starTop TypeName
 
-PointerType : '*' BaseType
+starTop : op_mult 
+        | empty
 
-BaseType    : Type
+Tag : string_lit
 
-FunctionType   : keyword_func Signature
+FunctionType  : keyword_func Signature
 
-Signature      : Parameters ParametersList Result
-               | Parameters ParametersList
+Signature  : Parameters ResultTop
 
-ParametersList : empty
-               | ParametersList Parameters
+ResultTop : Result 
+          | empty
 
-Result         : Type
+Result   : Parameters 
+         | Type
 
-Parameters     : left_paren ParameterList comma right_paren
-               | left_paren ParameterList right_paren
-               | left_paren right_paren
+Parameters  : keyword_lparen ParameterListTop keyword_rparen
 
-ParameterList  : ParameterDecl
-               | ParameterList comma ParameterDecl
+ParameterListTop : ParameterList commaTop 
+                 | empty
 
-ParameterDecl  : Type
-               | spread_op Type
-               | IdentifierList Type
-               | IdentifierList spread_op Type
+commaTop : keyword_comma 
+         | empty
 
-InterfaceType      : keyword_interface left_block_bracket MethodSpecList right_block_bracket
+ParameterList  : ParameterDecl ParameterDeclList
 
-MethodSpecList : empty
-               | MethodSpecList MethodSpec stmt_end
+ParameterDeclList : keyword_comma ParameterDecl ParameterDeclList 
+                  | empty
 
-MethodSpec         : MethodName Signature
-                   | InterfaceTypeName
+ParameterDecl  : ParameterDeclHead tripledotTop Type
 
-MethodName         : identifier
+tripledotTop : dot_dot_dot 
+             | empty
 
-InterfaceTypeName  : TypeName
+ParameterDeclHead : IdentifierList 
+                  | empty
 
-MapType     : keyword_map left_sq_paren KeyType right_sq_paren ElementType
+VarDecl : keyword_var VarSpecTopList
 
-KeyType     : Type
+VarSpecTopList : VarSpec 
+               | keyword_lparen VarSpecList keyword_rparen
 
-QualifiedIdent : PackageName dot identifier
+VarSpecList : VarSpec VarSpecList keyword_semicolon 
+            | empty
 
-VarDecl     : keyword_var VarSpec
-            | keyword_var left_paren VarSpecList right_paren
+VarSpec  : IdentifierList VarSpecTail
 
-VarSpecList : empty
-            | VarSpecList VarSpec stmt_end
+VarSpecTail : Type VarSpecMid 
+            | op_eq ExpressionList
 
-VarSpec     : IdentifierList ExpressionListGroup
+VarSpecMid : op_eq ExpressionList 
+           | empty
 
-ExpressionListGroup : Type
-                    | Type '=' ExpressionList
-                    | '=' ExpressionList
+FunctionDecl : keyword_func FunctionName FunctionDeclTail
 
-Operand     : Literal
-            | OperandName
-            | MethodExpr
-            | left_paren Expression right_paren
+FunctionDeclTail : Function 
+                 | Signature
 
-OperandName : identifier
-            | QualifiedIdent
+FunctionName : identifier
 
-Literal     : BasicLit
-            | CompositeLit
-            | FunctionLit
+Function  : Signature FunctionBody
 
-BasicLit    : int_lit
-            | float_lit
-            | rune_lit
-            | string_literal
+FunctionBody : Block 
 
-CompositeLit : LiteralType LiteralValue
+MethodDecl : keyword_func Receiver MethodName FunctionDeclTail
 
-LiteralType : StructType
-            | ArrayType
-            | left_sq_paren spread_op right_sq_paren ElementType
-            | SliceType
-            | MapType
-            | TypeName
+MethodName : IDENTIFIER
 
-LiteralValue : left_block_bracket right_block_bracket
-             | left_block_bracket ElementList right_block_bracket
-             | left_block_bracket ElementList comma right_block_bracket
+Receiver  : Parameters
 
-ElementList : KeyedElement
-            | ElementList comma KeyedElement
-
-KeyedElement : Element
-             | Key label_op Element
-
-Key          : FieldName
-             | Expression
-             | LiteralValue
-
-FieldName    : identifier
-
-Element      : Expression
-             | LiteralValue
-
-FunctionLit  : keyword_func Function
-
-Function     : Signature FunctionBody
-
-FunctionBody : Block
-
-Block        : left_block_bracket StatementList right_block_bracket
-
-StatementList : empty
-              | StatementList Statement stmt_end
-
-Statement    : Declaration
-             | LabeledStmt
-             | SimpleStmt
-             | ReturnStmt
-             | BreakStmt
-             | ContinueStmt
-             | GotoStmt
-             | FallthroughStmt
-             | Block
-             | IfStmt
-             | SwitchStmt
-             | ForStmt
-             | DeferStmt
-
-LabeledStmt : Label label_op Statement
-
-Label       : identifier
-
-SimpleStmt : EmptyStmt
-           | ExpressionStmt
-           | IncDecStmt
-           | Assignment
-           | ShortVarDecl
-
-EmptyStmt : empty
+SimpleStmt : ExpressionStmt 
+           | Assignment 
+		   | ShortVarDecl
 
 ExpressionStmt : Expression
 
-IncDecStmt : Expression inc_dec_op
+ 
+ShortVarDecl : IdentifierList op_short_assign ExpressionList 
+
+
 
 Assignment : ExpressionList assign_op ExpressionList
 
-ShortVarDecl : IdentifierList ':=' ExpressionList
+assign_op : addmul_op op_eq
 
-ReturnStmt : keyword_return
-           | keyword_return ExpressionList
+addmul_op : add_op 
+          | mul_op 
+		  | empty
 
-BreakStmt  : keyword_break
-           | keyword_break Label
+IfStmt : keyword_if SimpleStmtBot ExpressionBot Block elseBot
 
-ContinueStmt : keyword_continue
-             | keyword_continue Label
+SimpleStmtBot : SimpleStmt 
+              | TRUE
+              | FALSE
+              | empty
 
-GotoStmt : keyword_goto Label
+elseBot : keyword_else elseTail 
+        | empty
 
-FallthroughStmt : keyword_fallthrough
-
-IfStmt : keyword_if Expression Block
-       | keyword_if SimpleStmt stmt_end Expression Block
-       | keyword_if Expression Block keyword_else IfStmtGrp
-       | keyword_if SimpleStmt stmt_end Expression Block keyword_else IfStmtGrp
-
-IfStmtGrp : IfStmt
-          | Block
+elseTail : IfStmt 
+         | Block
 
 SwitchStmt : ExprSwitchStmt
 
-ExprSwitchStmt : keyword_switch left_block_bracket ExprCaseClauseList right_block_bracket
-               | keyword_switch SimpleStmt stmt_end left_block_bracket ExprCaseClauseList right_block_bracket
-               | keyword_switch Expression left_block_bracket ExprCaseClauseList right_block_bracket
-               | keyword_switch SimpleStmt stmt_end Expression left_block_bracket ExprCaseClauseList right_block_bracket
+ExprSwitchStmt : keyword_switch identifier keyword_lcurly ExprCaseClauseList keyword_rcurly
 
-ExprCaseClauseList : empty
-                   | ExprCaseClauseList ExprCaseClause
+ExprCaseClauseList : ExprCaseClause ExprCaseClauseList 
+                   | empty
 
-ExprCaseClause : ExprSwitchCase label_op StatementList
+ExprCaseClause : ExprSwitchCase colon keyword_lcurly StatementList keyword_rcurly
 
-ExprSwitchCase : keyword_case ExpressionList
+ExprSwitchCase : keyword_case ExpressionList 
                | keyword_default
 
-ForStmt : keyword_for Block
-        | keyword_for ConditionGrp Block
+ForStmt : keyword_for ExpressionBot Block
 
-ConditionGrp : Condition
-             | ForClause
-             | RangeClause
+ExpressionBot : Expression 
+              | empty
 
-Condition : Expression
+ReturnStmt : keyword_return ExpressionListBot
 
-ForClause : stmt_end stmt_end
-          | InitStmt stmt_end stmt_end
-          | stmt_end Condition stmt_end
-          | stmt_end stmt_end PostStmt
-          | InitStmt stmt_end Condition stmt_end
-          | stmt_end Condition stmt_end PostStmt
-          | InitStmt stmt_end stmt_end PostStmt
-          | InitStmt stmt_end Condition stmt_end PostStmt
+ExpressionListBot : ExpressionList 
+                  | empty
 
-InitStmt : SimpleStmt
-
-PostStmt : SimpleStmt
-
-RangeClause : keyword_range Expression
-            | ExpressionList '=' keyword_range Expression
-            | IdentifierList ':=' keyword_range Expression
-
-DeferStmt : keyword_defer Expression
-
-ExpressionList : Expression
-               | ExpressionList comma Expression
-
-Expression : UnaryExpr
+Expression : UnaryExpr 
            | Expression binary_op Expression
+           | identifier keyword_dot identifier
+           | identifier keyword_lcurly ObjectParamList keyword_rcurly
 
-UnaryExpr : PrimaryExpr
-          | unary_op UnaryExpr
+ObjectParamList : ObjectParam ObjectParamTop
+
+ObjectParamTop : keyword_comma ObjectParamTop
+               | keyword_comma ObjectParam
+               | empty
+
+ObjectParam   : identifier colon Expression
+
+UnaryExpr  : PrimaryExpr 
+           | unary_op UnaryExpr
+
+binary_op  : op_or_or 
+           | op_and_and 
+		   | rel_op 
+		   | add_op 
+		   | mul_op
+
+rel_op  : op_eq_eq 
+        | op_not_eq 
+		| op_less 
+		| op_less_eq 
+		| op_greater 
+		| op_greater_eq
+
+add_op  : op_add 
+        | op_minus 
+		| op_or 
+		| op_pow
+
+mul_op  : op_mult 
+        | op_div 
+        | op_lshift 
+        | op_rshift 
+        | op_and 
+        | op_and_pow
+
+unary_op : op_add 
+        | op_minus 
+		| op_not 
+		| op_pow 
+		| op_mult 
+		| op_and 
+		| op_receive
 
 PrimaryExpr : Operand
-            | Conversion
-            | ForCompExpr
             | PrimaryExpr Selector
             | PrimaryExpr Index
-            | PrimaryExpr Slice
-            | PrimaryExpr TypeAssertion
             | PrimaryExpr Arguments
 
-Conversion : Type left_paren Expression right_paren
-           | Type left_paren Expression comma right_paren
+Operand : Literal 
+        | OperandName 
+        | MethodExpr 
+        | keyword_lparen Expression keyword_rparen
+        | TRUE
+        | FALSE
 
-MethodExpr : ReceiverType dot MethodName
+Literal : BasicLit 
+        | FunctionLit
 
-ReceiverType : TypeName
-             | left_paren '*' TypeName right_paren
-             | left_paren ReceiverType right_paren
+BasicLit : int_lit 
+        | float_lit 
+	| string_lit
 
-ForCompExpr : left_sq_paren Expression '|' RangeClause right_sq_paren
+OperandName : identifier
 
-Selector : dot identifier
+FunctionLit : keyword_func Function
 
-Index : left_sq_paren Expression right_sq_paren
+MethodExpr  : ReceiverType keyword_dot MethodName
 
-Slice : left_sq_paren label_op right_sq_paren
-      | left_sq_paren Expression label_op right_sq_paren
-      | left_sq_paren label_op Expression right_sq_paren
-      | left_sq_paren Expression label_op Expression right_sq_paren
-      | left_sq_paren label_op Expression label_op Expression right_sq_paren
-      | left_sq_paren Expression label_op Expression label_op Expression right_sq_paren
+ReceiverType : TypeName 
+            | keyword_lparen op_mult TypeName keyword_rparen 
+	    | keyword_lparen ReceiverType keyword_rparen
 
-TypeAssertion : dot left_paren Type right_paren
+Selector : keyword_dot identifier
 
-Arguments : left_paren right_paren
-          | left_paren ArgIerGroup right_paren
+Index    : keyword_lsquare Expression keyword_rsquare
 
-ArgIerGroup : ExpressionList
-              | ExpressionList spread_op
-              | ExpressionList comma
-              | ExpressionList spread_op comma
-              | Type
-              | Type spread_op
-              | Type comma
-              | Type spread_op comma
-              | Type comma ExpressionList
-              | Type comma ExpressionList spread_op
-              | Type comma ExpressionList comma
-              | Type comma ExpressionList spread_op comma
+Arguments  : keyword_lparen ArgumentsHead keyword_rparen
+
+ArgumentsHead : ArgumentsHeadMid tripledotTop commaTop 
+              | empty
+
+ArgumentsHeadMid : ExpressionList 
+                 | Type keyword_comma ExpressionList 
+		 | Type

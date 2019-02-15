@@ -19,5 +19,5 @@ func main() {
 	}("going")
 
 	fmt.Scanln()
-	fmt.Println("done")
+	fmt.Println("ww")
 }
