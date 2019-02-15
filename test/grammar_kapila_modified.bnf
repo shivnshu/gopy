@@ -104,7 +104,7 @@ int_lit : INTEGERLIT
 
 float_lit : FLOATINGLIT
 
-SourceFile  : Expression PackageClause ImportDeclList TopLevelDeclList
+SourceFile  : PackageClause ImportDeclList TopLevelDeclList
 
 PackageClause  : keyword_package keyword_identifier
 
@@ -141,11 +141,12 @@ StatementList : Statement StatementList
 
 Statement : Declaration 
           | SimpleStmt 
-		  | ReturnStmt 
-		  | Block 
-		  | IfStmt 
-		  | SwitchStmt 
-		  | ForStmt
+	  | ReturnStmt 
+          | Block 
+          | IfStmt 
+          | SwitchStmt 
+          | ForStmt
+	  | identifier keyword_dot FunctionName keyword_lparen ExpressionList keyword_rparen
 
 Declaration : ConstDecl 
             | TypeDecl 
@@ -172,9 +173,9 @@ IdentifierList : identifier IdentifierBotList
 IdentifierBotList :  IdentifierBotList keyword_comma identifier   
                   | empty
 
-ExpressionList : ExpressionBotList Expression
+ExpressionList :  Expression ExpressionBotList
 
-ExpressionBotList : Expression keyword_comma ExpressionBotList 
+ExpressionBotList : ExpressionBotList keyword_comma Expression
                   | empty
 
 TypeDecl : keyword_type TypeSpecTopList
@@ -273,7 +274,7 @@ VarSpecList : VarSpec VarSpecList keyword_semicolon
 VarSpec  : IdentifierList VarSpecTail
 
 VarSpecTail : Type VarSpecMid 
-            | op_eq Expression
+            | op_eq ExpressionList
 
 VarSpecMid : op_eq ExpressionList 
            | empty
@@ -303,7 +304,7 @@ ExpressionStmt : Expression
  
 ShortVarDecl : IdentifierList op_short_assign ExpressionList 
 
-Assignment : ExpressionList assign_op ExpressionList
+Assignment : Expression assign_op Expression
 
 assign_op : addmul_op op_eq
 
@@ -329,7 +330,7 @@ ExprSwitchStmt : keyword_switch SimpleStmtBot ExpressionBot keyword_lparen ExprC
 ExprCaseClauseList : ExprCaseClause ExprCaseClauseList 
                    | empty
 
-ExprCaseClause : ExprSwitchCase colon StatementList
+ExprCaseClause : ExprSwitchCase colon keyword_lparen Expression keyword_rparen
 
 ExprSwitchCase : keyword_case ExpressionList 
                | keyword_default
@@ -399,7 +400,6 @@ Literal : BasicLit
 BasicLit : int_lit 
         | float_lit 
 	| string_lit
-	| empty
 
 OperandName : identifier
 
