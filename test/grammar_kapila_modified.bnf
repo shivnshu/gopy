@@ -104,7 +104,7 @@ int_lit : INTEGERLIT
 
 float_lit : FLOATINGLIT
 
-SourceFile  : PackageClause ImportDeclList TopLevelDeclList
+SourceFile  : Expression PackageClause ImportDeclList TopLevelDeclList
 
 PackageClause  : keyword_package keyword_identifier
 
@@ -273,7 +273,7 @@ VarSpecList : VarSpec VarSpecList keyword_semicolon
 VarSpec  : IdentifierList VarSpecTail
 
 VarSpecTail : Type VarSpecMid 
-            | op_eq ExpressionList
+            | op_eq Expression
 
 VarSpecMid : op_eq ExpressionList 
            | empty
@@ -399,6 +399,7 @@ Literal : BasicLit
 BasicLit : int_lit 
         | float_lit 
 	| string_lit
+	| empty
 
 OperandName : identifier
 
