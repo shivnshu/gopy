@@ -384,6 +384,15 @@ ExpressionListBot : ExpressionList
 Expression : UnaryExpr 
            | Expression binary_op Expression
            | identifier keyword_dot identifier
+           | identifier keyword_lcurly ObjectParamList keyword_rcurly
+
+ObjectParamList : ObjectParam ObjectParamTop
+
+ObjectParamTop : keyword_comma ObjectParamTop
+               | keyword_comma ObjectParam
+               | empty
+
+ObjectParam   : identifier colon Expression
 
 UnaryExpr  : PrimaryExpr 
            | unary_op UnaryExpr
