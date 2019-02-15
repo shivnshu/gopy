@@ -123,6 +123,9 @@ TopLevelDecl  : Declaration
               | MethodDecl
               | InterfaceDecl
               | IFuncDef
+              | StructDef
+
+StructDef : keyword_type identifier keyword_struct keyword_lcurly Parameters keyword_rcurly
 
 
 InterfaceDecl : keyword_type identifier keyword_interface interfaceBlock
