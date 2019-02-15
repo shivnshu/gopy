@@ -25,7 +25,7 @@ tokens = ['STRINGLIT', 'COMMENT', 'IDENTIFIER', 'RUNELIT', 'FLOATINGLIT',
             + [k for k in punctuations] \
             + [k for k in operators]
 
-t_ignore = ' |\t|\n'
+t_ignore = ' |\t'
 
 t_STRINGLIT = r'`[^\`]+`|\"(.*|\\u[0-9a-fA-F]{4}|\\U[0-9a-fA-F]{8}|\\(a|b|f|n|r|t|v|\\|\'|\")|\\[0-7]{3}|\\x[0-7]{2})\"'
 t_COMMENT =  r'\/\/[^\n]*|\/\*((.|\n)*)\*\/'
@@ -89,6 +89,10 @@ def t_IDENTIFIER(t):
     if t.value in constants:
         t.type = t.value.upper()
     return t
+
+def t_newline(t):
+     r'\n+'
+     t.lexer.lineno += len(t.value)
 
 def t_error(t):
      print("Illegal character '%s'" % t.value[0])

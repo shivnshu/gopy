@@ -87,8 +87,7 @@ for grammer in grammers:
 
 output += '''
 def p_error(p):
-\tprint(p)
-\tprint("Syntax error in input!")
+\tprint("Error encountered at line number", p.lineno)
 
 go_parser = yacc.yacc(start="SourceFile")
 '''

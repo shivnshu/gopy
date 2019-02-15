@@ -1,0 +1,7 @@
+Idea: We are first producing the dictionary encoding of the parse tree.
+
+Usage:
+1. `scripts/gen_parser.py lang.bnf > src/parser.py` to generate parser from BNF expressions from lang.bnf.
+2. `src/ASTGenerator.py ../test/parser/basic.go --out=basic.dot` to generate DOT script from parsing of basic.go
+
+Note: Ensure that parser.py, tokrules.py and ASTGenerator.py are in the same directory.
