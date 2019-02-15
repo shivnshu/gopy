@@ -1,0 +1,424 @@
+keyword_package : PACKAGE
+
+keyword_identifier : IDENTIFIER
+
+keyword_import : IMPORT
+
+keyword_lparen : LPAREN
+
+keyword_rparen : RPAREN
+
+keyword_dot : DOT
+
+keyword_lcurly : LCURLY
+
+keyword_rcurly : RCURLY
+
+keyword_const : CONST
+
+op_eq : EQ
+
+identifier : IDENTIFIER
+
+keyword_comma : COMMA
+
+keyword_type : TYPE
+
+keyword_semicolon : SEMICOLON
+
+keyword_lsquare : LSQUARE
+
+keyword_rsquare : RSQUARE
+
+keyword_struct : STRUCT
+
+op_mult : MULT
+
+string_lit : STRINGLIT
+
+keyword_func : FUNC
+
+dot_dot_dot : DOT_DOT_DOT
+
+keyword_var : VAR
+
+op_short_assign : SHORT_ASSIGN
+
+op_add : ADD
+
+op_minus : MINUS
+
+op_or : OR
+
+op_pow : POW
+
+op_div : DIV
+
+op_mod : MOD
+
+op_lshift : LSHIFT
+
+op_rshift : RSHIFT
+
+op_and : AND
+
+op_and_pow : AND_POW
+
+op_or_or : OR_OR
+
+op_and_and : AND_AND
+
+keyword_if : IF
+
+keyword_else : ELSE
+
+keyword_switch : SWITCH
+
+colon : COLON
+
+keyword_case : CASE
+
+keyword_default : DEFAULT
+
+keyword_for : FOR
+
+keyword_return : RETURN
+
+op_eq_eq : EQ_EQ
+
+op_not_eq : NOT_EQ
+
+op_less : LESS
+
+op_less_eq : LESS_EQ
+
+op_greater : GREATER
+
+op_greater_eq : GREATER_EQ
+
+op_not : NOT
+
+op_receive : RECEIVE
+
+int_lit : INTEGERLIT
+
+float_lit : FLOATINGLIT
+
+SourceFile  : PackageClause ImportDeclList TopLevelDeclList
+
+PackageClause  : keyword_package keyword_identifier
+
+ImportDeclList : ImportDecl ImportDeclList
+               | empty
+
+TopLevelDeclList : TopLevelDecl TopLevelDeclList
+                 | empty
+
+TopLevelDecl  : Declaration
+              | FunctionDecl
+              | MethodDecl
+
+ImportDecl    : keyword_import ImportSpecTopList
+
+ImportSpecTopList : ImportSpec
+                  | keyword_lparen ImportSpecList keyword_rparen 
+
+ImportSpecList : ImportSpec ImportSpecList
+               | empty
+
+ImportSpec       :  ImportSpecInit ImportPath
+
+ImportSpecInit : keyword_dot
+               | keyword_identifier
+               | empty
+
+ImportPath     : STRINGLIT
+
+Block : keyword_lcurly StatementList keyword_rcurly
+
+StatementList : Statement StatementList 
+              | empty
+
+Statement : Declaration 
+          | SimpleStmt 
+		  | ReturnStmt 
+		  | Block 
+		  | IfStmt 
+		  | SwitchStmt 
+		  | ForStmt
+
+Declaration : ConstDecl 
+            | TypeDecl 
+			| VarDecl
+
+ConstDecl  : keyword_const ConstSpecTopList
+
+ConstSpecTopList : ConstSpec 
+                 | keyword_lparen ConstSpecList keyword_rparen
+
+ConstSpecList : ConstSpec ConstSpecList 
+              | empty
+
+ConstSpec : IdentifierList ConstSpecTail
+
+ConstSpecTail : TypeTop op_eq ExpressionList 
+              | empty
+
+TypeTop : Type 
+        | empty
+
+IdentifierList : identifier IdentifierBotList
+
+IdentifierBotList : IdentifierBotList keyword_comma identifier 
+                  | empty
+
+ExpressionList : ExpressionBotList Expression
+
+ExpressionBotList : Expression keyword_comma ExpressionBotList 
+                  | empty
+
+TypeDecl : keyword_type TypeSpecTopList
+
+TypeSpecTopList : TypeSpec 
+                | keyword_lparen TypeSpecList  keyword_rparen
+
+TypeSpecList : TypeSpec TypeSpecList keyword_semicolon 
+             | empty
+
+TypeSpec : AliasDecl 
+         | TypeDef
+
+AliasDecl : identifier op_eq Type
+
+TypeDef : identifier Type
+
+Type : TypeName 
+     | TypeLit 
+	 | keyword_lparen Type keyword_rparen
+
+TypeName  : identifier 
+          | QualifiedIdent
+
+QualifiedIdent : identifier keyword_dot identifier
+
+TypeLit  : ArrayType 
+         | StructType 
+		 | FunctionType
+
+ArrayType  : keyword_lsquare ArrayLength keyword_rsquare ElementType
+
+ArrayLength : Expression
+
+ElementType : Type
+
+StructType    : keyword_struct keyword_lcurly FieldDeclList keyword_rcurly
+
+FieldDeclList : FieldDecl FieldDeclList keyword_semicolon 
+              | empty
+
+FieldDecl  : FieldDeclHead TagTop
+
+TagTop : Tag 
+       | empty
+
+FieldDeclHead : IdentifierList Type 
+              | EmbeddedField
+
+EmbeddedField : starTop TypeName
+
+starTop : op_mult 
+        | empty
+
+Tag : string_lit
+
+FunctionType  : keyword_func Signature
+
+Signature  : Parameters ResultTop
+
+ResultTop : Result 
+          | empty
+
+Result   : Parameters 
+         | Type
+
+Parameters  : keyword_lparen ParameterListTop keyword_rparen
+
+ParameterListTop : ParameterList commaTop 
+                 | empty
+
+commaTop : keyword_comma 
+         | empty
+
+ParameterList  : ParameterDecl ParameterDeclList
+
+ParameterDeclList : keyword_comma ParameterDecl ParameterDeclList 
+                  | empty
+
+ParameterDecl  : ParameterDeclHead tripledotTop Type
+
+tripledotTop : dot_dot_dot 
+             | empty
+
+ParameterDeclHead : IdentifierList 
+                  | empty
+
+VarDecl : keyword_var VarSpecTopList
+
+VarSpecTopList : VarSpec 
+               | keyword_lparen VarSpecList keyword_rparen
+
+VarSpecList : VarSpec VarSpecList keyword_semicolon 
+            | empty
+
+VarSpec  : IdentifierList VarSpecTail
+
+VarSpecTail : Type VarSpecMid 
+            | op_eq ExpressionList
+
+VarSpecMid : op_eq ExpressionList 
+           | empty
+
+FunctionDecl : keyword_func FunctionName FunctionDeclTail
+
+FunctionDeclTail : Function 
+                 | Signature
+
+FunctionName : identifier
+
+Function  : Signature FunctionBody
+
+FunctionBody : Block 
+
+MethodDecl : keyword_func Receiver MethodName FunctionDeclTail
+
+MethodName : IDENTIFIER
+
+Receiver  : Parameters
+
+SimpleStmt : ExpressionStmt 
+           | Assignment 
+		   | ShortVarDecl
+
+ExpressionStmt : Expression
+ 
+ShortVarDecl : IdentifierList op_short_assign ExpressionList 
+
+Assignment : ExpressionList assign_op ExpressionList
+
+assign_op : addmul_op op_eq
+
+addmul_op : add_op 
+          | mul_op 
+		  | empty
+
+IfStmt : keyword_if SimpleStmtBot Expression Block elseBot
+
+SimpleStmtBot : SimpleStmt keyword_semicolon 
+              | empty
+
+elseBot : keyword_else elseTail 
+        | empty
+
+elseTail : IfStmt 
+         | Block
+
+SwitchStmt : ExprSwitchStmt
+
+ExprSwitchStmt : keyword_switch SimpleStmtBot ExpressionBot keyword_lparen ExprCaseClauseList keyword_rparen
+
+ExprCaseClauseList : ExprCaseClause ExprCaseClauseList 
+                   | empty
+
+ExprCaseClause : ExprSwitchCase colon StatementList
+
+ExprSwitchCase : keyword_case ExpressionList 
+               | keyword_default
+
+ForStmt : keyword_for ExpressionBot Block
+
+ExpressionBot : Expression 
+              | empty
+
+ReturnStmt : keyword_return ExpressionListBot
+
+ExpressionListBot : ExpressionList 
+                  | empty
+
+Expression : UnaryExpr 
+           | Expression binary_op Expression
+
+UnaryExpr  : PrimaryExpr 
+           | unary_op UnaryExpr
+
+binary_op  : op_or_or 
+           | op_and_and 
+		   | rel_op 
+		   | add_op 
+		   | mul_op
+
+rel_op  : op_eq_eq 
+        | op_not_eq 
+		| op_less 
+		| op_less_eq 
+		| op_greater 
+		| op_greater_eq
+
+add_op  : op_add 
+        | op_minus 
+		| op_or 
+		| op_pow
+
+mul_op  : op_mult 
+        | op_div 
+        | op_lshift 
+        | op_rshift 
+        | op_and 
+        | op_and_pow
+
+unary_op : op_add 
+        | op_minus 
+		| op_not 
+		| op_pow 
+		| op_mult 
+		| op_and 
+		| op_receive
+
+PrimaryExpr : Operand
+            |	PrimaryExpr Selector
+            |	PrimaryExpr Index
+            |	PrimaryExpr Arguments
+
+Operand : Literal 
+        | OperandName 
+		| MethodExpr 
+		| keyword_lparen Expression keyword_rparen
+
+Literal : BasicLit 
+        | FunctionLit
+
+BasicLit : int_lit 
+        | float_lit 
+		| string_lit
+
+OperandName : identifier
+
+FunctionLit : keyword_func Function
+
+MethodExpr  : ReceiverType keyword_dot MethodName
+
+ReceiverType : TypeName 
+            | keyword_lparen op_mult TypeName keyword_rparen 
+			| keyword_lparen ReceiverType keyword_rparen
+
+Selector : keyword_dot identifier
+
+Index    : keyword_lsquare Expression keyword_rsquare
+
+Arguments  : keyword_lparen ArgumentsHead keyword_rparen
+
+ArgumentsHead : ArgumentsHeadMid tripledotTop commaTop 
+              | empty
+
+ArgumentsHeadMid : ExpressionList 
+                 | Type keyword_comma ExpressionList 
+				 | Type

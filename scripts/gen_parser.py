@@ -42,6 +42,8 @@ for grammer in grammers:
     cfg = grammer
     for line in cfg.split('\n'):
         tokens = line.split()
+        if (len(tokens) == 0):
+            continue
         is_terminal_production = tokens[-1].isupper()
         children_lengths.append(len(tokens))
     children_lengths[0] -= 1
