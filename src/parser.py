@@ -485,6 +485,24 @@ def p_float_lit(p):
 	counter += 1
 	p[0]['children'] = []
 
+def p_keyword_interface(p):
+	'''
+	keyword_interface : INTERFACE
+	'''
+	global counter
+	p[0] = {"label" : p[1], "id": str(counter)}
+	counter += 1
+	p[0]['children'] = []
+
+def p_keyword_go(p):
+	'''
+	keyword_go : GO
+	'''
+	global counter
+	p[0] = {"label" : p[1], "id": str(counter)}
+	counter += 1
+	p[0]['children'] = []
+
 def p_source_file(p):
 	'''
 	SourceFile  : PackageClause ImportDeclList TopLevelDeclList
@@ -534,6 +552,9 @@ def p_top_level_decl(p):
 	TopLevelDecl  : Declaration
 	              | FunctionDecl
 	              | MethodDecl
+	              | InterfaceDecl
+	              | IFuncDef
+	              | StructDef
 	'''
 	global counter
 	p[0] = {"label": "TopLevelDecl", "id": str(counter)}
@@ -542,11 +563,123 @@ def p_top_level_decl(p):
 		p[0]['children'] = [p[1]]
 	elif (len(p) == 2):
 		p[0]['children'] = [p[1]]
+	elif (len(p) == 2):
+		p[0]['children'] = [p[1]]
+	elif (len(p) == 2):
+		p[0]['children'] = [p[1]]
+	elif (len(p) == 2):
+		p[0]['children'] = [p[1]]
 	else:
 		p[0]['children'] = [p[1]]
 
+def p_struct_def(p):
+	'''
+	StructDef : keyword_type identifier keyword_struct keyword_lcurly ParameterDeclList2 keyword_rcurly
+	'''
+	global counter
+	p[0] = {"label": "StructDef", "id": str(counter)}
+	counter += 1
+	p[0]['children'] = [p[1], p[2], p[3], p[4], p[5], p[6]]
+
+def p_parameter_decl_list2(p):
+	'''
+	ParameterDeclList2  : ParameterDecl2 ParameterDeclList2
+	                    | empty
+	'''
+	global counter
+	p[0] = {"label": "ParameterDeclList2", "id": str(counter)}
+	counter += 1
+	if (len(p) == 3):
+		p[0]['children'] = [p[1], p[2]]
+	else:
+		p[0]['children'] = [p[1]]
+
+def p_parameter_decl2(p):
+	'''
+	ParameterDecl2  : IdentifierList Type
+	'''
+	global counter
+	p[0] = {"label": "ParameterDecl2", "id": str(counter)}
+	counter += 1
+	p[0]['children'] = [p[1], p[2]]
+
+def p_parameter_dec_list2(p):
+	'''
+	ParameterDecList2 : ParameterDecl2 ParameterDecList2
+	                  | empty
+	'''
+	global counter
+	p[0] = {"label": "ParameterDecList2", "id": str(counter)}
+	counter += 1
+	if (len(p) == 3):
+		p[0]['children'] = [p[1], p[2]]
+	else:
+		p[0]['children'] = [p[1]]
+
+def p_parameter_decl2(p):
+	'''
+	ParameterDecl2 : IdentifierList Type
+	'''
+	global counter
+	p[0] = {"label": "ParameterDecl2", "id": str(counter)}
+	counter += 1
+	p[0]['children'] = [p[1], p[2]]
+
+def p_interface_decl(p):
+	'''
+	InterfaceDecl : keyword_type identifier keyword_interface interfaceBlock
+	'''
+	global counter
+	p[0] = {"label": "InterfaceDecl", "id": str(counter)}
+	counter += 1
+	p[0]['children'] = [p[1], p[2], p[3], p[4]]
+
+def p_interface_block(p):
+	'''
+	
+	interfaceBlock  : keyword_lcurly IFuncDecList keyword_rcurly
+	'''
+	global counter
+	p[0] = {"label": "interfaceBlock", "id": str(counter)}
+	counter += 1
+	p[0]['children'] = [p[1], p[2], p[3]]
+
+def p_i_func_dec_list(p):
+	'''
+	
+	IFuncDecList   : IFuncDec IFuncDecList
+	               | empty
+	'''
+	global counter
+	p[0] = {"label": "IFuncDecList", "id": str(counter)}
+	counter += 1
+	if (len(p) == 3):
+		p[0]['children'] = [p[1], p[2]]
+	else:
+		p[0]['children'] = [p[1]]
+
+def p_i_func_dec(p):
+	'''
+	
+	IFuncDec      : identifier keyword_lparen keyword_rparen Type
+	'''
+	global counter
+	p[0] = {"label": "IFuncDec", "id": str(counter)}
+	counter += 1
+	p[0]['children'] = [p[1], p[2], p[3], p[4]]
+
+def p_i_func_def(p):
+	'''
+	IFuncDef      : keyword_func keyword_lparen identifier identifier keyword_rparen IFuncDec Block
+	'''
+	global counter
+	p[0] = {"label": "IFuncDef", "id": str(counter)}
+	counter += 1
+	p[0]['children'] = [p[1], p[2], p[3], p[4], p[5], p[6], p[7]]
+
 def p_import_decl(p):
 	'''
+	 
 	ImportDecl    : keyword_import ImportSpecTopList
 	'''
 	global counter
@@ -556,6 +689,7 @@ def p_import_decl(p):
 
 def p_import_spec_top_list(p):
 	'''
+	
 	ImportSpecTopList : ImportSpec
 	                  | keyword_lparen ImportSpecList keyword_rparen 
 	'''
@@ -640,11 +774,13 @@ def p_statement(p):
 	'''
 	Statement : Declaration 
 	          | SimpleStmt 
-			  | ReturnStmt 
-			  | Block 
-			  | IfStmt 
-			  | SwitchStmt 
-			  | ForStmt
+		  | ReturnStmt 
+	          | Block 
+	          | IfStmt 
+	          | SwitchStmt 
+	          | ForStmt
+		  | FuncCallStmt
+	          | GoFunc
 	'''
 	global counter
 	p[0] = {"label": "Statement", "id": str(counter)}
@@ -661,14 +797,59 @@ def p_statement(p):
 		p[0]['children'] = [p[1]]
 	elif (len(p) == 2):
 		p[0]['children'] = [p[1]]
+	elif (len(p) == 2):
+		p[0]['children'] = [p[1]]
+	elif (len(p) == 2):
+		p[0]['children'] = [p[1]]
 	else:
 		p[0]['children'] = [p[1]]
+
+def p_go_func(p):
+	'''
+	GoFunc    : keyword_go keyword_func Parameters FunctionBody keyword_lparen ExpressionList keyword_rparen 
+	          | keyword_go identifier keyword_lparen ExpressionListBot keyword_rparen
+	'''
+	global counter
+	p[0] = {"label": "GoFunc", "id": str(counter)}
+	counter += 1
+	if (len(p) == 8):
+		p[0]['children'] = [p[1], p[2], p[3], p[4], p[5], p[6], p[7]]
+	else:
+		p[0]['children'] = [p[1], p[2], p[3], p[4], p[5]]
+
+def p_func_call_stmt(p):
+	'''
+	FuncCallStmt : identifier keyword_dot FuncCallStmt 
+	             | identifier keyword_dot FunctionName keyword_lparen keyword_rparen
+	             | identifier keyword_dot FunctionName keyword_lparen ExpressionList keyword_rparen
+	             | identifier keyword_dot FunctionName keyword_lparen ObjectMethod keyword_rparen
+	'''
+	global counter
+	p[0] = {"label": "FuncCallStmt", "id": str(counter)}
+	counter += 1
+	if (len(p) == 4):
+		p[0]['children'] = [p[1], p[2], p[3]]
+	elif (len(p) == 6):
+		p[0]['children'] = [p[1], p[2], p[3], p[4], p[5]]
+	elif (len(p) == 7):
+		p[0]['children'] = [p[1], p[2], p[3], p[4], p[5], p[6]]
+	else:
+		p[0]['children'] = [p[1], p[2], p[3], p[4], p[5], p[6]]
+
+def p_object_method(p):
+	'''
+	ObjectMethod : identifier keyword_dot identifier keyword_lparen ParameterDeclList2 keyword_rparen
+	'''
+	global counter
+	p[0] = {"label": "ObjectMethod", "id": str(counter)}
+	counter += 1
+	p[0]['children'] = [p[1], p[2], p[3], p[4], p[5], p[6]]
 
 def p_declaration(p):
 	'''
 	Declaration : ConstDecl 
 	            | TypeDecl 
-				| VarDecl
+		    | VarDecl
 	'''
 	global counter
 	p[0] = {"label": "Declaration", "id": str(counter)}
@@ -761,7 +942,7 @@ def p_identifier_list(p):
 
 def p_identifier_bot_list(p):
 	'''
-	IdentifierBotList : IdentifierBotList keyword_comma identifier 
+	IdentifierBotList :  IdentifierBotList keyword_comma identifier   
 	                  | empty
 	'''
 	global counter
@@ -774,7 +955,7 @@ def p_identifier_bot_list(p):
 
 def p_expression_list(p):
 	'''
-	ExpressionList : ExpressionBotList Expression
+	ExpressionList :  Expression ExpressionBotList
 	'''
 	global counter
 	p[0] = {"label": "ExpressionList", "id": str(counter)}
@@ -783,7 +964,7 @@ def p_expression_list(p):
 
 def p_expression_bot_list(p):
 	'''
-	ExpressionBotList : Expression keyword_comma ExpressionBotList 
+	ExpressionBotList : ExpressionBotList keyword_comma Expression
 	                  | empty
 	'''
 	global counter
@@ -925,15 +1106,21 @@ def p_array_type(p):
 
 def p_array_length(p):
 	'''
+	
 	ArrayLength : Expression
+		    | empty
 	'''
 	global counter
 	p[0] = {"label": "ArrayLength", "id": str(counter)}
 	counter += 1
-	p[0]['children'] = [p[1]]
+	if (len(p) == 2):
+		p[0]['children'] = [p[1]]
+	else:
+		p[0]['children'] = [p[1]]
 
 def p_element_type(p):
 	'''
+	
 	ElementType : Type
 	'''
 	global counter
@@ -1330,16 +1517,21 @@ def p_simple_stmt(p):
 def p_expression_stmt(p):
 	'''
 	ExpressionStmt : Expression
-	 
-	ShortVarDecl : IdentifierList op_short_assign ExpressionList 
 	'''
 	global counter
 	p[0] = {"label": "ExpressionStmt", "id": str(counter)}
 	counter += 1
-	if (len(p) == 2):
-		p[0]['children'] = [p[1]]
-	else:
-		p[0]['children'] = [p[1], p[2], p[3], p[4]]
+	p[0]['children'] = [p[1]]
+
+def p_short_var_decl(p):
+	'''
+	 
+	ShortVarDecl : IdentifierList op_short_assign ExpressionList 
+	'''
+	global counter
+	p[0] = {"label": "ShortVarDecl", "id": str(counter)}
+	counter += 1
+	p[0]['children'] = [p[1], p[2], p[3]]
 
 def p_assignment(p):
 	'''
@@ -1377,7 +1569,7 @@ def p_addmul_op(p):
 
 def p_if_stmt(p):
 	'''
-	IfStmt : keyword_if SimpleStmtBot Expression Block elseBot
+	IfStmt : keyword_if SimpleStmtBot ExpressionBot Block elseBot
 	'''
 	global counter
 	p[0] = {"label": "IfStmt", "id": str(counter)}
@@ -1386,14 +1578,20 @@ def p_if_stmt(p):
 
 def p_simple_stmt_bot(p):
 	'''
-	SimpleStmtBot : SimpleStmt keyword_semicolon 
+	SimpleStmtBot : SimpleStmt 
+	              | TRUE
+	              | FALSE
 	              | empty
 	'''
 	global counter
 	p[0] = {"label": "SimpleStmtBot", "id": str(counter)}
 	counter += 1
-	if (len(p) == 3):
-		p[0]['children'] = [p[1], p[2]]
+	if (len(p) == 2):
+		p[0]['children'] = [p[1]]
+	elif (len(p) == 2):
+		p[0]['children'] = [p[1]]
+	elif (len(p) == 2):
+		p[0]['children'] = [p[1]]
 	else:
 		p[0]['children'] = [p[1]]
 
@@ -1434,12 +1632,12 @@ def p_switch_stmt(p):
 
 def p_expr_switch_stmt(p):
 	'''
-	ExprSwitchStmt : keyword_switch SimpleStmtBot ExpressionBot keyword_lparen ExprCaseClauseList keyword_rparen
+	ExprSwitchStmt : keyword_switch identifier keyword_lcurly ExprCaseClauseList keyword_rcurly
 	'''
 	global counter
 	p[0] = {"label": "ExprSwitchStmt", "id": str(counter)}
 	counter += 1
-	p[0]['children'] = [p[1], p[2], p[3], p[4], p[5], p[6]]
+	p[0]['children'] = [p[1], p[2], p[3], p[4], p[5]]
 
 def p_expr_case_clause_list(p):
 	'''
@@ -1456,12 +1654,12 @@ def p_expr_case_clause_list(p):
 
 def p_expr_case_clause(p):
 	'''
-	ExprCaseClause : ExprSwitchCase colon StatementList
+	ExprCaseClause : ExprSwitchCase colon keyword_lcurly StatementList keyword_rcurly
 	'''
 	global counter
 	p[0] = {"label": "ExprCaseClause", "id": str(counter)}
 	counter += 1
-	p[0]['children'] = [p[1], p[2], p[3]]
+	p[0]['children'] = [p[1], p[2], p[3], p[4], p[5]]
 
 def p_expr_switch_case(p):
 	'''
@@ -1524,14 +1722,54 @@ def p_expression(p):
 	'''
 	Expression : UnaryExpr 
 	           | Expression binary_op Expression
+	           | identifier keyword_dot identifier
+	           | identifier keyword_lcurly ObjectParamList keyword_rcurly
 	'''
 	global counter
 	p[0] = {"label": "Expression", "id": str(counter)}
 	counter += 1
 	if (len(p) == 2):
 		p[0]['children'] = [p[1]]
-	else:
+	elif (len(p) == 4):
 		p[0]['children'] = [p[1], p[2], p[3]]
+	elif (len(p) == 4):
+		p[0]['children'] = [p[1], p[2], p[3]]
+	else:
+		p[0]['children'] = [p[1], p[2], p[3], p[4]]
+
+def p_object_param_list(p):
+	'''
+	ObjectParamList : ObjectParam ObjectParamTop
+	'''
+	global counter
+	p[0] = {"label": "ObjectParamList", "id": str(counter)}
+	counter += 1
+	p[0]['children'] = [p[1], p[2]]
+
+def p_object_param_top(p):
+	'''
+	ObjectParamTop : keyword_comma ObjectParamTop
+	               | keyword_comma ObjectParam
+	               | empty
+	'''
+	global counter
+	p[0] = {"label": "ObjectParamTop", "id": str(counter)}
+	counter += 1
+	if (len(p) == 3):
+		p[0]['children'] = [p[1], p[2]]
+	elif (len(p) == 3):
+		p[0]['children'] = [p[1], p[2]]
+	else:
+		p[0]['children'] = [p[1]]
+
+def p_object_param(p):
+	'''
+	ObjectParam   : identifier colon Expression
+	'''
+	global counter
+	p[0] = {"label": "ObjectParam", "id": str(counter)}
+	counter += 1
+	p[0]['children'] = [p[1], p[2], p[3]]
 
 def p_unary_expr(p):
 	'''
@@ -1668,9 +1906,9 @@ def p_unary_op(p):
 def p_primary_expr(p):
 	'''
 	PrimaryExpr : Operand
-	            |	PrimaryExpr Selector
-	            |	PrimaryExpr Index
-	            |	PrimaryExpr Arguments
+	            | PrimaryExpr Selector
+	            | PrimaryExpr Index
+	            | PrimaryExpr Arguments
 	'''
 	global counter
 	p[0] = {"label": "PrimaryExpr", "id": str(counter)}
@@ -1688,8 +1926,10 @@ def p_operand(p):
 	'''
 	Operand : Literal 
 	        | OperandName 
-			| MethodExpr 
-			| keyword_lparen Expression keyword_rparen
+	        | MethodExpr 
+	        | keyword_lparen Expression keyword_rparen
+	        | TRUE
+	        | FALSE
 	'''
 	global counter
 	p[0] = {"label": "Operand", "id": str(counter)}
@@ -1700,8 +1940,12 @@ def p_operand(p):
 		p[0]['children'] = [p[1]]
 	elif (len(p) == 2):
 		p[0]['children'] = [p[1]]
-	else:
+	elif (len(p) == 4):
 		p[0]['children'] = [p[1], p[2], p[3]]
+	elif (len(p) == 2):
+		p[0]['children'] = [p[1]]
+	else:
+		p[0]['children'] = [p[1]]
 
 def p_literal(p):
 	'''
@@ -1720,7 +1964,7 @@ def p_basic_lit(p):
 	'''
 	BasicLit : int_lit 
 	        | float_lit 
-			| string_lit
+		| string_lit
 	'''
 	global counter
 	p[0] = {"label": "BasicLit", "id": str(counter)}
@@ -1763,7 +2007,7 @@ def p_receiver_type(p):
 	'''
 	ReceiverType : TypeName 
 	            | keyword_lparen op_mult TypeName keyword_rparen 
-				| keyword_lparen ReceiverType keyword_rparen
+		    | keyword_lparen ReceiverType keyword_rparen
 	'''
 	global counter
 	p[0] = {"label": "ReceiverType", "id": str(counter)}
@@ -1819,7 +2063,7 @@ def p_arguments_head_mid(p):
 	'''
 	ArgumentsHeadMid : ExpressionList 
 	                 | Type keyword_comma ExpressionList 
-					 | Type
+			 | Type
 	
 	'''
 	global counter
@@ -1834,8 +2078,7 @@ def p_arguments_head_mid(p):
 
 
 def p_error(p):
-	print(p)
-	print("Syntax error in input!")
+	print("Error encountered at line number", p.lineno)
 
 go_parser = yacc.yacc(start="SourceFile")
 

@@ -1,4 +1,4 @@
-Idea: We are first producing the dictionary encoding of the parse tree.
+Idea: We are first producing the dictionary encoding of the parse tree. Then converting this encoding into DOT script uby recursively traversing dict encoding. Then DOT script can be converted into pdf or ps.
 
 Usage:
 1. `scripts/gen_parser.py lang.bnf > src/parser.py` to generate parser from BNF expressions from lang.bnf.
