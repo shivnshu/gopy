@@ -25,11 +25,6 @@ tokens = ['STRINGLIT', 'COMMENT', 'IDENTIFIER', 'RUNELIT', 'FLOATINGLIT',
             + [k for k in punctuations] \
             + [k for k in operators]
 
-precedence = (
-    ('left', 'ADD', 'MINUS'),
-    ('left', 'MULT', 'DIV'),
-)
-
 t_ignore = ' |\t'
 
 t_STRINGLIT = r'`[^\`]+`|\"(.*|\\u[0-9a-fA-F]{4}|\\U[0-9a-fA-F]{8}|\\(a|b|f|n|r|t|v|\\|\'|\")|\\[0-7]{3}|\\x[0-7]{2})\"'

@@ -89,7 +89,7 @@ output += '''
 def p_error(p):
 \tprint("Error encountered at line number", p.lineno)
 
-go_parser = yacc.yacc(start="SourceFile")
+go_parser = yacc.yacc(start="SourceFile", write_tables=False)
 '''
 
 print(output)

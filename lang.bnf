@@ -1,116 +1,6 @@
-keyword_package : PACKAGE
-
-keyword_identifier : IDENTIFIER
-
-keyword_import : IMPORT
-
-keyword_lparen : LPAREN
-
-keyword_rparen : RPAREN
-
-keyword_dot : DOT
-
-keyword_lcurly : LCURLY
-
-keyword_rcurly : RCURLY
-
-keyword_const : CONST
-
-op_eq : EQ
-
-identifier : IDENTIFIER
-
-keyword_comma : COMMA
-
-keyword_type : TYPE
-
-keyword_semicolon : SEMICOLON
-
-keyword_lsquare : LSQUARE
-
-keyword_rsquare : RSQUARE
-
-keyword_struct : STRUCT
-
-op_mult : MULT
-
-string_lit : STRINGLIT
-
-keyword_func : FUNC
-
-dot_dot_dot : DOT_DOT_DOT
-
-keyword_var : VAR
-
-op_short_assign : SHORT_ASSIGN
-
-op_add : ADD
-
-op_minus : MINUS
-
-op_or : OR
-
-op_pow : POW
-
-op_div : DIV
-
-op_mod : MOD
-
-op_lshift : LSHIFT
-
-op_rshift : RSHIFT
-
-op_and : AND
-
-op_and_pow : AND_POW
-
-op_or_or : OR_OR
-
-op_and_and : AND_AND
-
-keyword_if : IF
-
-keyword_else : ELSE
-
-keyword_switch : SWITCH
-
-colon : COLON
-
-keyword_case : CASE
-
-keyword_default : DEFAULT
-
-keyword_for : FOR
-
-keyword_return : RETURN
-
-op_eq_eq : EQ_EQ
-
-op_not_eq : NOT_EQ
-
-op_less : LESS
-
-op_less_eq : LESS_EQ
-
-op_greater : GREATER
-
-op_greater_eq : GREATER_EQ
-
-op_not : NOT
-
-op_receive : RECEIVE
-
-int_lit : INTEGERLIT
-
-float_lit : FLOATINGLIT
-
-keyword_interface : INTERFACE
-
-keyword_go : GO
-
 SourceFile  : PackageClause ImportDeclList TopLevelDeclList
 
-PackageClause  : keyword_package keyword_identifier
+PackageClause  : PACKAGE IDENTIFIER
 
 ImportDeclList : ImportDecl ImportDeclList
                | empty
@@ -125,7 +15,7 @@ TopLevelDecl  : Declaration
               | IFuncDef
               | StructDef
 
-StructDef : keyword_type identifier keyword_struct keyword_lcurly ParameterDeclList2 keyword_rcurly
+StructDef : TYPE IDENTIFIER STRUCT LCURLY ParameterDeclList2 RCURLY
 
 ParameterDeclList2  : ParameterDecl2 ParameterDeclList2
                     | empty
@@ -137,355 +27,345 @@ ParameterDecList2 : ParameterDecl2 ParameterDecList2
 
 ParameterDecl2 : IdentifierList Type
 
-InterfaceDecl : keyword_type identifier keyword_interface interfaceBlock
+InterfaceDecl : TYPE IDENTIFIER INTERFACE interfaceBlock
 
-
-interfaceBlock  : keyword_lcurly IFuncDecList keyword_rcurly
-
+interfaceBlock  : LCURLY IFuncDecList RCURLY
 
 IFuncDecList   : IFuncDec IFuncDecList
                | empty
 
+IFuncDec      : IDENTIFIER LPAREN RPAREN Type
 
-IFuncDec      : identifier keyword_lparen keyword_rparen Type
+IFuncDef      : FUNC LPAREN IDENTIFIER IDENTIFIER RPAREN IFuncDec Block
 
-IFuncDef      : keyword_func keyword_lparen identifier identifier keyword_rparen IFuncDec Block
-
- 
-ImportDecl    : keyword_import ImportSpecTopList
-
+ImportDecl    : IMPORT ImportSpecTopList
 
 ImportSpecTopList : ImportSpec
-                  | keyword_lparen ImportSpecList keyword_rparen 
+                  | LPAREN ImportSpecList RPAREN
 
 ImportSpecList : ImportSpec ImportSpecList
                | empty
 
 ImportSpec       :  ImportSpecInit ImportPath
 
-ImportSpecInit : keyword_dot
-               | keyword_identifier
+ImportSpecInit : DOT
+               | IDENTIFIER
                | empty
 
 ImportPath     : STRINGLIT
 
-Block : keyword_lcurly StatementList keyword_rcurly
+Block : LCURLY StatementList RCURLY
 
-StatementList : Statement StatementList 
+StatementList : Statement StatementList
               | empty
 
-Statement : Declaration 
-          | SimpleStmt 
-	  | ReturnStmt 
-          | Block 
-          | IfStmt 
-          | SwitchStmt 
+Statement : Declaration
+          | SimpleStmt
+          | ReturnStmt
+          | Block
+          | IfStmt
+          | SwitchStmt
           | ForStmt
-	  | FuncCallStmt
+          | FuncCallStmt
           | GoFunc
 
-GoFunc    : keyword_go keyword_func Parameters FunctionBody keyword_lparen ExpressionList keyword_rparen 
-          | keyword_go identifier keyword_lparen ExpressionListBot keyword_rparen
+GoFunc    : GO FUNC Parameters FunctionBody LPAREN ExpressionList RPAREN
+          | GO IDENTIFIER LPAREN ExpressionListBot RPAREN
 
-FuncCallStmt : identifier keyword_dot FuncCallStmt 
-             | identifier keyword_dot FunctionName keyword_lparen keyword_rparen
-             | identifier keyword_dot FunctionName keyword_lparen ExpressionList keyword_rparen
-             | identifier keyword_dot FunctionName keyword_lparen ObjectMethod keyword_rparen
+FuncCallStmt : IDENTIFIER DOT FuncCallStmt
+             | IDENTIFIER DOT FunctionName LPAREN RPAREN
+             | IDENTIFIER DOT FunctionName LPAREN ExpressionList RPAREN
+             | IDENTIFIER DOT FunctionName LPAREN ObjectMethod RPAREN
 
-ObjectMethod : identifier keyword_dot identifier keyword_lparen ParameterDeclList2 keyword_rparen
+ObjectMethod : IDENTIFIER DOT IDENTIFIER LPAREN ParameterDeclList2 RPAREN
 
-Declaration : ConstDecl 
-            | TypeDecl 
-	    | VarDecl
+Declaration : ConstDecl
+            | TypeDecl
+            | VarDecl
 
-ConstDecl  : keyword_const ConstSpecTopList
+ConstDecl  : CONST ConstSpecTopList
 
-ConstSpecTopList : ConstSpec 
-                 | keyword_lparen ConstSpecList keyword_rparen
+ConstSpecTopList : ConstSpec
+                 | LPAREN ConstSpecList RPAREN
 
-ConstSpecList : ConstSpec ConstSpecList 
+ConstSpecList : ConstSpec ConstSpecList
               | empty
 
 ConstSpec : IdentifierList ConstSpecTail
 
-ConstSpecTail : TypeTop op_eq ExpressionList 
+ConstSpecTail : TypeTop EQ ExpressionList
               | empty
 
-TypeTop : Type 
+TypeTop : Type
         | empty
 
-IdentifierList : identifier IdentifierBotList
+IdentifierList : IDENTIFIER IdentifierBotList
 
-IdentifierBotList :  IdentifierBotList keyword_comma identifier   
+IdentifierBotList :  IdentifierBotList COMMA IDENTIFIER
                   | empty
 
 ExpressionList :  Expression ExpressionBotList
 
-ExpressionBotList : ExpressionBotList keyword_comma Expression
+ExpressionBotList : ExpressionBotList COMMA Expression
                   | empty
 
-TypeDecl : keyword_type TypeSpecTopList
+TypeDecl : TYPE TypeSpecTopList
 
-TypeSpecTopList : TypeSpec 
-                | keyword_lparen TypeSpecList  keyword_rparen
+TypeSpecTopList : TypeSpec
+                | LPAREN TypeSpecList  RPAREN
 
-TypeSpecList : TypeSpec TypeSpecList keyword_semicolon 
+TypeSpecList : TypeSpec TypeSpecList SEMICOLON
              | empty
 
-TypeSpec : AliasDecl 
+TypeSpec : AliasDecl
          | TypeDef
 
-AliasDecl : identifier op_eq Type
+AliasDecl : IDENTIFIER EQ Type
 
-TypeDef : identifier Type
+TypeDef : IDENTIFIER Type
 
-Type : TypeName 
-     | TypeLit 
-	 | keyword_lparen Type keyword_rparen
+Type : TypeName
+     | TypeLit
+     | LPAREN Type RPAREN
 
-TypeName  : identifier 
+TypeName  : IDENTIFIER
           | QualifiedIdent
 
-QualifiedIdent : identifier keyword_dot identifier
+QualifiedIdent : IDENTIFIER DOT IDENTIFIER
 
-TypeLit  : ArrayType 
-         | StructType 
-		 | FunctionType
+TypeLit  : ArrayType
+         | StructType
+         | FunctionType
 
-ArrayType  : keyword_lsquare ArrayLength keyword_rsquare ElementType
-
+ArrayType  : LSQUARE ArrayLength RSQUARE ElementType
 
 ArrayLength : Expression
-	    | empty
-
+            | empty
 
 ElementType : Type
 
-StructType    : keyword_struct keyword_lcurly FieldDeclList keyword_rcurly
+StructType    : STRUCT LCURLY FieldDeclList RCURLY
 
-FieldDeclList : FieldDecl FieldDeclList keyword_semicolon 
+FieldDeclList : FieldDecl FieldDeclList SEMICOLON
               | empty
 
 FieldDecl  : FieldDeclHead TagTop
 
-TagTop : Tag 
+TagTop : Tag
        | empty
 
-FieldDeclHead : IdentifierList Type 
+FieldDeclHead : IdentifierList Type
               | EmbeddedField
 
 EmbeddedField : starTop TypeName
 
-starTop : op_mult 
+starTop : MULT
         | empty
 
-Tag : string_lit
+Tag : STRINGLIT
 
-FunctionType  : keyword_func Signature
+FunctionType  : FUNC Signature
 
 Signature  : Parameters ResultTop
 
-ResultTop : Result 
+ResultTop : Result
           | empty
 
-Result   : Parameters 
+Result   : Parameters
          | Type
 
-Parameters  : keyword_lparen ParameterListTop keyword_rparen
+Parameters  : LPAREN ParameterListTop RPAREN
 
-ParameterListTop : ParameterList commaTop 
+ParameterListTop : ParameterList commaTop
                  | empty
 
-commaTop : keyword_comma 
+commaTop : COMMA
          | empty
 
 ParameterList  : ParameterDecl ParameterDeclList
 
-ParameterDeclList : keyword_comma ParameterDecl ParameterDeclList 
+ParameterDeclList : COMMA ParameterDecl ParameterDeclList
                   | empty
 
 ParameterDecl  : ParameterDeclHead tripledotTop Type
 
-tripledotTop : dot_dot_dot 
+tripledotTop : DOT_DOT_DOT
              | empty
 
-ParameterDeclHead : IdentifierList 
+ParameterDeclHead : IdentifierList
                   | empty
 
-VarDecl : keyword_var VarSpecTopList
+VarDecl : VAR VarSpecTopList
 
-VarSpecTopList : VarSpec 
-               | keyword_lparen VarSpecList keyword_rparen
+VarSpecTopList : VarSpec
+               | LPAREN VarSpecList RPAREN
 
-VarSpecList : VarSpec VarSpecList keyword_semicolon 
+VarSpecList : VarSpec VarSpecList SEMICOLON
             | empty
 
 VarSpec  : IdentifierList VarSpecTail
 
-VarSpecTail : Type VarSpecMid 
-            | op_eq ExpressionList
+VarSpecTail : Type VarSpecMid
+            | EQ ExpressionList
 
-VarSpecMid : op_eq ExpressionList 
+VarSpecMid : EQ ExpressionList
            | empty
 
-FunctionDecl : keyword_func FunctionName FunctionDeclTail
+FunctionDecl : FUNC FunctionName FunctionDeclTail
 
-FunctionDeclTail : Function 
+FunctionDeclTail : Function
                  | Signature
 
-FunctionName : identifier
+FunctionName : IDENTIFIER
 
 Function  : Signature FunctionBody
 
-FunctionBody : Block 
+FunctionBody : Block
 
-MethodDecl : keyword_func Receiver MethodName FunctionDeclTail
+MethodDecl : FUNC Receiver MethodName FunctionDeclTail
 
 MethodName : IDENTIFIER
 
 Receiver  : Parameters
 
-SimpleStmt : ExpressionStmt 
-           | Assignment 
-		   | ShortVarDecl
+SimpleStmt : ExpressionStmt
+           | Assignment
+           | ShortVarDecl
 
 ExpressionStmt : Expression
 
- 
-ShortVarDecl : IdentifierList op_short_assign ExpressionList 
-
-
+ShortVarDecl : IdentifierList SHORT_ASSIGN ExpressionList
 
 Assignment : ExpressionList assign_op ExpressionList
 
-assign_op : addmul_op op_eq
+assign_op : addmul_op EQ
 
-addmul_op : add_op 
-          | mul_op 
-		  | empty
+addmul_op : add_op
+          | mul_op
+          | empty
 
-IfStmt : keyword_if SimpleStmtBot ExpressionBot Block elseBot
+IfStmt : IF SimpleStmtBot ExpressionBot Block elseBot
 
-SimpleStmtBot : SimpleStmt 
+SimpleStmtBot : SimpleStmt
               | TRUE
               | FALSE
               | empty
 
-elseBot : keyword_else elseTail 
+elseBot : ELSE elseTail
         | empty
 
-elseTail : IfStmt 
+elseTail : IfStmt
          | Block
 
 SwitchStmt : ExprSwitchStmt
 
-ExprSwitchStmt : keyword_switch identifier keyword_lcurly ExprCaseClauseList keyword_rcurly
+ExprSwitchStmt : SWITCH IDENTIFIER LCURLY ExprCaseClauseList RCURLY
 
-ExprCaseClauseList : ExprCaseClause ExprCaseClauseList 
+ExprCaseClauseList : ExprCaseClause ExprCaseClauseList
                    | empty
 
-ExprCaseClause : ExprSwitchCase colon keyword_lcurly StatementList keyword_rcurly
+ExprCaseClause : ExprSwitchCase COLON LCURLY StatementList RCURLY
 
-ExprSwitchCase : keyword_case ExpressionList 
-               | keyword_default
+ExprSwitchCase : CASE ExpressionList
+               | DEFAULT
 
-ForStmt : keyword_for ExpressionBot Block
+ForStmt : FOR ExpressionBot Block
 
-ExpressionBot : Expression 
+ExpressionBot : Expression
               | empty
 
-ReturnStmt : keyword_return ExpressionListBot
+ReturnStmt : RETURN ExpressionListBot
 
-ExpressionListBot : ExpressionList 
+ExpressionListBot : ExpressionList
                   | empty
 
-Expression : UnaryExpr 
+Expression : UnaryExpr
            | Expression binary_op Expression
-           | identifier keyword_dot identifier
-           | identifier keyword_lcurly ObjectParamList keyword_rcurly
+           | IDENTIFIER DOT IDENTIFIER
+           | IDENTIFIER LCURLY ObjectParamList RCURLY
 
 ObjectParamList : ObjectParam ObjectParamTop
 
-ObjectParamTop : keyword_comma ObjectParamTop
-               | keyword_comma ObjectParam
+ObjectParamTop : COMMA ObjectParamTop
+               | COMMA ObjectParam
                | empty
 
-ObjectParam   : identifier colon Expression
+ObjectParam   : IDENTIFIER COLON Expression
 
-UnaryExpr  : PrimaryExpr 
+UnaryExpr  : PrimaryExpr
            | unary_op UnaryExpr
 
-binary_op  : op_or_or 
-           | op_and_and 
-		   | rel_op 
-		   | add_op 
-		   | mul_op
+binary_op  : OR_OR
+           | AND_AND
+           | rel_op
+           | add_op
+           | mul_op
 
-rel_op  : op_eq_eq 
-        | op_not_eq 
-		| op_less 
-		| op_less_eq 
-		| op_greater 
-		| op_greater_eq
+rel_op  : EQ_EQ
+        | NOT_EQ
+        | LESS
+        | LESS_EQ
+        | GREATER
+        | GREATER_EQ
 
-add_op  : op_add 
-        | op_minus 
-		| op_or 
-		| op_pow
+add_op  : ADD
+        | MINUS
+        | OR
+        | POW
 
-mul_op  : op_mult 
-        | op_div 
-        | op_lshift 
-        | op_rshift 
-        | op_and 
-        | op_and_pow
+mul_op  : MULT
+        | DIV
+        | LSHIFT
+        | RSHIFT
+        | AND
+        | AND_POW
 
-unary_op : op_add 
-        | op_minus 
-		| op_not 
-		| op_pow 
-		| op_mult 
-		| op_and 
-		| op_receive
+unary_op  : ADD
+          | MINUS
+          | NOT
+          | POW
+          | MULT
+          | AND
+          | RECEIVE
 
 PrimaryExpr : Operand
             | PrimaryExpr Selector
             | PrimaryExpr Index
             | PrimaryExpr Arguments
 
-Operand : Literal 
-        | OperandName 
-        | MethodExpr 
-        | keyword_lparen Expression keyword_rparen
+Operand : Literal
+        | OperandName
+        | MethodExpr
+        | LPAREN Expression RPAREN
         | TRUE
         | FALSE
 
-Literal : BasicLit 
+Literal : BasicLit
         | FunctionLit
 
-BasicLit : int_lit 
-        | float_lit 
-	| string_lit
+BasicLit  : INTEGERLIT
+          | FLOATINGLIT
+          | STRINGLIT
 
-OperandName : identifier
+OperandName : IDENTIFIER
 
-FunctionLit : keyword_func Function
+FunctionLit : FUNC Function
 
-MethodExpr  : ReceiverType keyword_dot MethodName
+MethodExpr  : ReceiverType DOT MethodName
 
-ReceiverType : TypeName 
-            | keyword_lparen op_mult TypeName keyword_rparen 
-	    | keyword_lparen ReceiverType keyword_rparen
+ReceiverType  : TypeName
+              | LPAREN MULT TypeName RPAREN
+              | LPAREN ReceiverType RPAREN
 
-Selector : keyword_dot identifier
+Selector : DOT IDENTIFIER
 
-Index    : keyword_lsquare Expression keyword_rsquare
+Index    : LSQUARE Expression RSQUARE
 
-Arguments  : keyword_lparen ArgumentsHead keyword_rparen
+Arguments  : LPAREN ArgumentsHead RPAREN
 
-ArgumentsHead : ArgumentsHeadMid tripledotTop commaTop 
+ArgumentsHead : ArgumentsHeadMid tripledotTop commaTop
               | empty
 
-ArgumentsHeadMid : ExpressionList 
-                 | Type keyword_comma ExpressionList 
-		 | Type
+ArgumentsHeadMid  : ExpressionList
+                  | Type COMMA ExpressionList
+                  | Type
