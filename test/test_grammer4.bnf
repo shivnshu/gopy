@@ -1,0 +1,20 @@
+SourceFile  : PackageClause ImportDeclList
+
+PackageClause  : PACKAGE IDENTIFIER
+
+ImportDeclList : ImportDecl ImportDeclList
+               | empty
+
+ImportDecl    : IMPORT ImportSpecTopList
+
+ImportSpecTopList : ImportSpec
+                  | LPAREN ImportSpecList RPAREN
+
+ImportSpecList : ImportSpec ImportSpecList
+               | empty
+
+ImportSpec       :  ImportSpecInit STRINGLIT
+
+ImportSpecInit : DOT
+               | IDENTIFIER
+               | empty

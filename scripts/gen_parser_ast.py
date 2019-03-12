@@ -22,13 +22,7 @@ counter = 0
 
 output += "import ply.yacc as yacc\n\n"
 output += "from tokrules import tokens\n\n"
-output += "from SymbolTable import SymbolTable\n"
-output += "from SymbolTable import SymbolTableLiteralEntry as LiteralEntry\n"
-output += "from SymbolTable import SymbolTableVariableEntry as VariableEntry\n"
-output += "from SymbolTable import SymbolTableFunctionEntry as FunctionEntry\n\n"
-output += "symTableDict = {'rootSymTable': SymbolTable(None, 'rootSymTable')}\n"
-output += "symTableSt = ['rootSymTable']\n\n"
-
+output += "counter = 0\n"
 
 output += '''
 def p_empty(p):
@@ -63,7 +57,33 @@ for grammer in grammers:
     for line in cfg.split('\n'):
         output += "\t" + line + "\n"
     output = output[:-1]
-    output += "\n\t'''\n\n"
+    output += "\n\t'''\n"
+    output += '\tglobal counter\n'
+    if (is_terminal_production):
+        output += '\tp[0] = {"label" : p[1], "id": str(counter)}\n'
+    else:
+        output += '\tp[0] = {"label": "' + clause_name + '", "id": str(counter)}\n'
+    output += '\tcounter += 1\n'
+    counter += 1
+    # if (counter > 5):
+    #     break
+    if (len(children_lengths) == 1):
+        if (is_terminal_production):
+            output += "\tp[0]['children'] = []" + "\n"
+        else:
+            output += "\t" + children_helper(children_lengths[0]) + "\n"
+        output += '\n'
+        continue
+    output += "\tif (len(p) == " + str(children_lengths[0]) + "):\n"
+    output += "\t\t" + children_helper(children_lengths[0]) + "\n"
+
+    for i in range(1, len(children_lengths)-1):
+        output += "\telif (len(p) == " + str(children_lengths[i]) + "):\n"
+        output += "\t\t" + children_helper(children_lengths[i]) + "\n"
+
+    output += "\telse:\n"
+    output += "\t\t" + children_helper(children_lengths[-1]) + "\n"
+    output += "\n"
 
 output += '''
 def p_error(p):

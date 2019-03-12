@@ -1,3 +1,7 @@
+keyword_lcurly : LCURLY
+
+keyword_rcurly : RCURLY
+
 SourceFile  : PackageClause ImportDeclList TopLevelDeclList
 
 PackageClause  : PACKAGE IDENTIFIER
@@ -15,7 +19,7 @@ TopLevelDecl  : Declaration
               | IFuncDef
               | StructDef
 
-StructDef : TYPE IDENTIFIER STRUCT LCURLY ParameterDeclList2 RCURLY
+StructDef : TYPE IDENTIFIER STRUCT keyword_lcurly ParameterDeclList2 keyword_rcurly
 
 ParameterDeclList2  : ParameterDecl2 ParameterDeclList2
                     | empty
@@ -29,7 +33,7 @@ ParameterDecl2 : IdentifierList Type
 
 InterfaceDecl : TYPE IDENTIFIER INTERFACE interfaceBlock
 
-interfaceBlock  : LCURLY IFuncDecList RCURLY
+interfaceBlock  : keyword_lcurly IFuncDecList keyword_rcurly
 
 IFuncDecList   : IFuncDec IFuncDecList
                | empty
@@ -54,7 +58,7 @@ ImportSpecInit : DOT
 
 ImportPath     : STRINGLIT
 
-Block : LCURLY StatementList RCURLY
+Block : keyword_lcurly StatementList keyword_rcurly
 
 StatementList : Statement StatementList
               | empty
@@ -144,7 +148,7 @@ ArrayLength : Expression
 
 ElementType : Type
 
-StructType    : STRUCT LCURLY FieldDeclList RCURLY
+StructType    : STRUCT keyword_lcurly FieldDeclList keyword_rcurly
 
 FieldDeclList : FieldDecl FieldDeclList SEMICOLON
               | empty
@@ -259,12 +263,12 @@ elseTail : IfStmt
 
 SwitchStmt : ExprSwitchStmt
 
-ExprSwitchStmt : SWITCH IDENTIFIER LCURLY ExprCaseClauseList RCURLY
+ExprSwitchStmt : SWITCH IDENTIFIER keyword_lcurly ExprCaseClauseList keyword_rcurly
 
 ExprCaseClauseList : ExprCaseClause ExprCaseClauseList
                    | empty
 
-ExprCaseClause : ExprSwitchCase COLON LCURLY StatementList RCURLY
+ExprCaseClause : ExprSwitchCase COLON keyword_lcurly StatementList keyword_rcurly
 
 ExprSwitchCase : CASE ExpressionList
                | DEFAULT
@@ -282,7 +286,7 @@ ExpressionListBot : ExpressionList
 Expression : UnaryExpr
            | Expression binary_op Expression
            | IDENTIFIER DOT IDENTIFIER
-           | IDENTIFIER LCURLY ObjectParamList RCURLY
+           | IDENTIFIER keyword_lcurly ObjectParamList keyword_rcurly
 
 ObjectParamList : ObjectParam ObjectParamTop
 
