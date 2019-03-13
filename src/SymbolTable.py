@@ -9,11 +9,23 @@ class SymbolTableLiteralEntry(SymbolTableEntry):
         self.value = value
 
 class SymbolTableVariableEntry(SymbolTableEntry):
-    def __init__(self, name, type):
+    def __init__(self, name):
         SymbolTableEntry.__init__(self, name, "VariableType")
 
+class SymbolTablePackageEntry(SymbolTableEntry):
+    def __init__(self, name):
+        SymbolTableEntry.__init__(self, name, "PackageType")
+
+class SymbolTableInterfaceEntry(SymbolTableEntry):
+    def __init__(self, name):
+        SymbolTableEntry.__init__(self, name, "InterfaceType")
+
+class SymbolTableStructEntry(SymbolTableEntry):
+    def __init__(self, name):
+        SymbolTableEntry.__init__(self, name, "StructType")
+
 class SymbolTableFunctionEntry(SymbolTableEntry):
-    def __init__(self, name, type):
+    def __init__(self, name):
         SymbolTableEntry.__init__(self, name, "FuncType")
 
 class SymbolTable(object):
