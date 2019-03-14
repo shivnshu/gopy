@@ -43,10 +43,15 @@ class SymbolTable(object):
     def get(self, name):
         if symbol.name in self.symbols:
             return self.symbols[name]
-        if self.parent != None:
-            return self.parent.get(name)
         else:
             return None
 
     def getParent(self):
         return self.parent
+
+    def prettyPrint(self):
+        print("Name:", self.name)
+        print("Parent:", self.parent)
+        for sym in self.symbols:
+            print(sym + ":", self.symbols[sym].type)
+        print("\n")

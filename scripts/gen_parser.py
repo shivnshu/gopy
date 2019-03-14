@@ -34,8 +34,11 @@ counter = 0
 output += "import ply.yacc as yacc\n\n"
 output += "from tokrules import tokens\n\n"
 output += "from SymbolTable import SymbolTable\n"
-output += "from SymbolTable import SymbolTableLiteralEntry as LiteralEntry\n"
+output += "from SymbolTable import SymbolTableLiteralEntry as LitEntry\n"
 output += "from SymbolTable import SymbolTableVariableEntry as VariableEntry\n"
+output += "from SymbolTable import SymbolTablePackageEntry as PackageEntry\n"
+output += "from SymbolTable import SymbolTableInterfaceEntry as InterfaceEntry\n"
+output += "from SymbolTable import SymbolTableStructEntry as StructEntry\n"
 output += "from SymbolTable import SymbolTableFunctionEntry as FunctionEntry\n\n"
 output += "symTableDict = {'rootSymTable': SymbolTable(None, 'rootSymTable')}\n"
 output += "symTableSt = ['rootSymTable']\n"
@@ -70,6 +73,7 @@ for grammer in grammers:
     output = output[:-1]
     output += "\n\t'''\n"
     (tmp_out, i) = insertActionsHelper(0, grammer_list, i, 1)
+    output += "\tglobal symTableSt\n\tglobal symTableDict\n"
     output += tmp_out
 
     for prod_i in range(num_productions):

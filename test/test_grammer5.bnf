@@ -1,0 +1,502 @@
+keyword_lcurly : LCURLY
+<<0
+symtab=SymbolTable()
+key = "sym#" + str(p.lexer.lineno) + "#" + str(p.lexer.lexpos)
+symTableDict[key] = symtab
+symTableSt += [key]
+>>
+
+keyword_rcurly : RCURLY
+<<0
+symTableSt = symTableSt[:-1]
+>>
+
+SourceFile  : PackageClause ImportDeclList TopLevelDeclList
+
+PackageClause  : PACKAGE IDENTIFIER
+<<0
+scope = symTableSt[-1]
+symTable = symTableDict[scope]
+pkg = PackageEntry(p[2])
+symTable.put(pkg)
+>>
+
+ImportDeclList : ImportDecl ImportDeclList
+               | empty
+
+TopLevelDeclList : TopLevelDecl TopLevelDeclList
+                 | empty
+
+TopLevelDecl  : Declaration
+              | FunctionDecl
+              | MethodDecl
+              | InterfaceDecl
+              | IFuncDef
+              | StructDef
+
+StructDef : TYPE IDENTIFIER STRUCT keyword_lcurly ParameterDeclList2 keyword_rcurly
+<<0
+scope = symTableSt[-1]
+symTable = symTableDict[scope]
+struc = StructEntry(p[2])
+symTable.put(struc)
+>>
+
+ParameterDeclList2  : ParameterDecl2 ParameterDeclList2
+                    | empty
+
+ParameterDecl2  : IdentifierList1 Type
+
+ParameterDecList2 : ParameterDecl2 ParameterDecList2
+                  | empty
+
+ParameterDecl2 : IdentifierList1 Type
+
+InterfaceDecl : TYPE IDENTIFIER INTERFACE interfaceBlock
+<<0
+scope = symTableSt[-1]
+symTable = symTableDict[scope]
+interfc = InterfaceEntry(p[2])
+symTable.put(interfc)
+>>
+
+interfaceBlock  : keyword_lcurly IFuncDecList keyword_rcurly
+
+IFuncDecList   : IFuncDec IFuncDecList
+               | empty
+
+IFuncDec      : IDENTIFIER LPAREN RPAREN Type
+<<0
+scope = symTableSt[-1]
+symTable = symTableDict[scope]
+fn = FuncEntry(p[1])
+symTable.put(fn)
+>>
+
+IFuncDef      : FUNC LPAREN IDENTIFIER IDENTIFIER RPAREN IFuncDec Block
+
+ImportDecl    : IMPORT ImportSpecTopList
+
+ImportSpecTopList : ImportSpec
+                  | LPAREN ImportSpecList RPAREN
+
+ImportSpecList : ImportSpec ImportSpecList
+               | empty
+
+ImportSpec       :  ImportSpecInit ImportPath
+
+ImportSpecInit : DOT
+               | IDENTIFIER
+               | empty
+
+ImportPath     : STRINGLIT
+<<0
+scope = symTableSt[-1]
+symTable = symTableDict[scope]
+lit = LitEntry(p[1], p[1])
+symTable.put(lit)
+>>
+
+Block : keyword_lcurly StatementList keyword_rcurly
+
+StatementList : Statement StatementList
+              | empty
+
+Statement : Declaration
+          | SimpleStmt
+          | ReturnStmt
+          | Block
+          | IfStmt
+          | SwitchStmt
+          | ForStmt
+          | FuncCallStmt
+          | GoFunc
+
+GoFunc    : GO FUNC Parameters FunctionBody LPAREN ExpressionList RPAREN
+          | GO IDENTIFIER LPAREN ExpressionListBot RPAREN
+<<0
+>>
+<<1
+scope = symTableSt[-1]
+symTable = symTableDict[scope]
+fn = FuncEntry(p[2])
+symTable.put(fn)
+>>
+
+FuncCallStmt : IDENTIFIER DOT FuncCallStmt
+             | IDENTIFIER DOT FunctionName LPAREN RPAREN
+             | IDENTIFIER DOT FunctionName LPAREN ExpressionList RPAREN
+             | IDENTIFIER DOT FunctionName LPAREN ObjectMethod RPAREN
+<<0
+b = False
+for scope in symTableSt:
+	if p[1] in scope:
+		b = True
+		break
+if not b:
+	print("Error")
+>>
+
+ObjectMethod : IDENTIFIER DOT IDENTIFIER LPAREN ParameterDeclList2 RPAREN
+
+Declaration : ConstDecl
+            | TypeDecl
+            | VarDecl
+
+ConstDecl  : CONST ConstSpecTopList
+
+ConstSpecTopList : ConstSpec
+                 | LPAREN ConstSpecList RPAREN
+
+ConstSpecList : ConstSpec ConstSpecList
+              | empty
+
+ConstSpec : IdentifierList1 ConstSpecTail
+
+ConstSpecTail : TypeTop EQ ExpressionList
+              | empty
+
+TypeTop : Type
+        | empty
+
+IdentifierList1 : IDENTIFIER IdentifierBotList1
+<<0
+scope = symTableSt[-1]
+symTable = symTableDict[scope]
+var = VarEntry(p[1])
+symTable.put(var)
+>>
+
+IdentifierBotList1 :  IdentifierBotList1 COMMA IDENTIFIER
+                  | empty
+<<0
+scope = symTableSt[-1]
+symTable = symTableDict[scope]
+var = VarEntry(p[3])
+symTable.put(var)
+>>
+
+IdentifierList2 : IDENTIFIER IdentifierBotList2
+<<0
+b = False
+for scope in symTableSt:
+	if p[1] in scope:
+		b = True
+		break
+if not b:
+	print("Error")
+>>
+
+IdentifierBotList2 :  IdentifierBotList2 COMMA IDENTIFIER
+                  | empty
+<<0
+b = False
+for scope in symTableSt:
+	if p[3] in scope:
+		b = True
+		break
+if not b:
+	print("Error")
+>>
+
+ExpressionList :  Expression ExpressionBotList
+
+ExpressionBotList : ExpressionBotList COMMA Expression
+                  | empty
+
+TypeDecl : TYPE TypeSpecTopList
+
+TypeSpecTopList : TypeSpec
+                | LPAREN TypeSpecList  RPAREN
+
+TypeSpecList : TypeSpec TypeSpecList SEMICOLON
+             | empty
+
+TypeSpec : AliasDecl
+         | TypeDef
+
+AliasDecl : IDENTIFIER EQ Type
+
+TypeDef : IDENTIFIER Type
+<<0
+scope = symTableSt[-1]
+symTable = symTableDict[scope]
+var = VarEntry(p[1])
+symTable.put(var)
+>>
+
+Type : TypeName
+     | TypeLit
+     | LPAREN Type RPAREN
+
+TypeName  : IDENTIFIER
+          | QualifiedIdent
+
+QualifiedIdent : IDENTIFIER DOT IDENTIFIER
+
+TypeLit  : ArrayType
+         | StructType
+         | FunctionType
+
+ArrayType  : LSQUARE ArrayLength RSQUARE ElementType
+
+ArrayLength : Expression
+            | empty
+
+ElementType : Type
+
+StructType    : STRUCT keyword_lcurly FieldDeclList keyword_rcurly
+
+FieldDeclList : FieldDecl FieldDeclList SEMICOLON
+              | empty
+
+FieldDecl  : FieldDeclHead TagTop
+
+TagTop : Tag
+       | empty
+
+FieldDeclHead : IdentifierList1 Type
+              | EmbeddedField
+
+EmbeddedField : starTop TypeName
+
+starTop : MULT
+        | empty
+
+Tag : STRINGLIT
+
+FunctionType  : FUNC Signature
+
+Signature  : Parameters ResultTop
+
+ResultTop : Result
+          | empty
+
+Result   : Parameters
+         | Type
+
+Parameters  : LPAREN ParameterListTop RPAREN
+
+ParameterListTop : ParameterList commaTop
+                 | empty
+
+commaTop : COMMA
+         | empty
+
+ParameterList  : ParameterDecl ParameterDeclList
+
+ParameterDeclList : COMMA ParameterDecl ParameterDeclList
+                  | empty
+
+ParameterDecl  : ParameterDeclHead tripledotTop Type
+
+tripledotTop : DOT_DOT_DOT
+             | empty
+
+ParameterDeclHead : IdentifierList1
+                  | empty
+
+VarDecl : VAR VarSpecTopList
+
+VarSpecTopList : VarSpec
+               | LPAREN VarSpecList RPAREN
+
+VarSpecList : VarSpec VarSpecList SEMICOLON
+            | empty
+
+VarSpec  : IdentifierList1 VarSpecTail
+
+VarSpecTail : Type VarSpecMid
+            | EQ ExpressionList
+
+VarSpecMid : EQ ExpressionList
+           | empty
+
+FunctionDecl : FUNC FunctionName FunctionDeclTail
+
+FunctionDeclTail : Function
+                 | Signature
+
+FunctionName : IDENTIFIER
+<<0
+scope = symTableSt[-1]
+symTable = symTableDict[scope]
+fn = FuncEntry(p[1])
+symTable.put(fn)
+>>
+
+Function  : Signature FunctionBody
+
+FunctionBody : Block
+
+MethodDecl : FUNC Receiver MethodName FunctionDeclTail
+
+MethodName : IDENTIFIER
+<<0
+scope = symTableSt[-1]
+symTable = symTableDict[scope]
+fn = FuncEntry(p[1])
+symTable.put(fn)
+>>
+
+Receiver  : Parameters
+
+SimpleStmt : ExpressionStmt
+           | Assignment
+           | ShortVarDecl
+
+ExpressionStmt : Expression
+
+ShortVarDecl : IdentifierList2 SHORT_ASSIGN ExpressionList
+
+Assignment : IdentifierList2 assign_op ExpressionList
+
+assign_op : addmul_op EQ
+
+addmul_op : add_op
+          | mul_op
+          | empty
+
+IfStmt : IF SimpleStmtBot ExpressionBot Block elseBot
+
+SimpleStmtBot : SimpleStmt
+              | TRUE
+              | FALSE
+              | empty
+
+elseBot : ELSE elseTail
+        | empty
+
+elseTail : IfStmt
+         | Block
+
+SwitchStmt : ExprSwitchStmt
+
+ExprSwitchStmt : SWITCH IDENTIFIER keyword_lcurly ExprCaseClauseList keyword_rcurly
+<<0
+b = False
+for scope in symTableSt:
+	if p[2] in scope:
+		b = True
+		break
+if not b:
+	print("Error")
+>>
+
+ExprCaseClauseList : ExprCaseClause ExprCaseClauseList
+                   | empty
+
+ExprCaseClause : ExprSwitchCase COLON keyword_lcurly StatementList keyword_rcurly
+
+ExprSwitchCase : CASE ExpressionList
+               | DEFAULT
+
+ForStmt : FOR ExpressionBot Block
+
+ExpressionBot : Expression
+              | empty
+
+ReturnStmt : RETURN ExpressionListBot
+
+ExpressionListBot : ExpressionList
+                  | empty
+
+Expression : UnaryExpr
+           | Expression binary_op Expression
+           | IDENTIFIER DOT IDENTIFIER
+           | IDENTIFIER keyword_lcurly ObjectParamList keyword_rcurly
+
+ObjectParamList : ObjectParam ObjectParamTop
+
+ObjectParamTop : COMMA ObjectParamTop
+               | COMMA ObjectParam
+               | empty
+
+ObjectParam   : IDENTIFIER COLON Expression
+
+UnaryExpr  : PrimaryExpr
+           | unary_op UnaryExpr
+
+binary_op  : OR_OR
+           | AND_AND
+           | rel_op
+           | add_op
+           | mul_op
+
+rel_op  : EQ_EQ
+        | NOT_EQ
+        | LESS
+        | LESS_EQ
+        | GREATER
+        | GREATER_EQ
+
+add_op  : ADD
+        | MINUS
+        | OR
+        | POW
+
+mul_op  : MULT
+        | DIV
+        | LSHIFT
+        | RSHIFT
+        | AND
+        | AND_POW
+
+unary_op  : ADD
+          | MINUS
+          | NOT
+          | POW
+          | MULT
+          | AND
+          | RECEIVE
+
+PrimaryExpr : Operand
+            | PrimaryExpr Selector
+            | PrimaryExpr Index
+            | PrimaryExpr Arguments
+
+Operand : Literal
+        | OperandName
+        | MethodExpr
+        | LPAREN Expression RPAREN
+        | TRUE
+        | FALSE
+
+Literal : BasicLit
+        | FunctionLit
+
+BasicLit  : INTEGERLIT
+          | FLOATINGLIT
+          | STRINGLIT
+
+OperandName : IDENTIFIER
+<<0
+b = False
+for scope in symTableSt:
+	if p[1] in scope:
+		b = True
+		break
+if not b:
+	print("Error")
+>>
+
+FunctionLit : FUNC Function
+
+MethodExpr  : ReceiverType DOT MethodName
+
+ReceiverType  : TypeName
+              | LPAREN MULT TypeName RPAREN
+              | LPAREN ReceiverType RPAREN
+
+Selector : DOT IDENTIFIER
+
+Index    : LSQUARE Expression RSQUARE
+
+Arguments  : LPAREN ArgumentsHead RPAREN
+
+ArgumentsHead : ArgumentsHeadMid tripledotTop commaTop
+              | empty
+
+ArgumentsHeadMid  : ExpressionList
+                  | Type COMMA ExpressionList
+                  | Type
