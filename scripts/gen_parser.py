@@ -25,6 +25,7 @@ def insertActionsHelper(prod_num, grammer_list, i, tabs_num):
         out += line
         out += "\n"
         i += 1
+        # print(grammer_list)
         line = grammer_list[i]
     return (out, i)
 
@@ -35,13 +36,21 @@ output += "import ply.yacc as yacc\n\n"
 output += "from tokrules import tokens\n\n"
 output += "from SymbolTable import SymbolTable\n"
 output += "from SymbolTable import SymbolTableLiteralEntry as LitEntry\n"
-output += "from SymbolTable import SymbolTableVariableEntry as VariableEntry\n"
+output += "from SymbolTable import SymbolTableVariableEntry as VarEntry\n"
 output += "from SymbolTable import SymbolTablePackageEntry as PackageEntry\n"
 output += "from SymbolTable import SymbolTableInterfaceEntry as InterfaceEntry\n"
 output += "from SymbolTable import SymbolTableStructEntry as StructEntry\n"
-output += "from SymbolTable import SymbolTableFunctionEntry as FunctionEntry\n\n"
+output += "from SymbolTable import SymbolTableFunctionEntry as FuncEntry\n\n"
 output += "symTableDict = {'rootSymTable': SymbolTable(None, 'rootSymTable')}\n"
 output += "symTableSt = ['rootSymTable']\n"
+
+output += "counter = 0\n\n"
+
+output += "def newVar():\n"
+output += "\tglobal counter\n"
+output += "\tres = 't' + str(counter)\n"
+output += "\tcounter += 1\n"
+output += "\treturn res\n\n"
 
 output += '''
 def p_empty(p):
@@ -74,6 +83,7 @@ for grammer in grammers:
     output += "\n\t'''\n"
     (tmp_out, i) = insertActionsHelper(0, grammer_list, i, 1)
     output += "\tglobal symTableSt\n\tglobal symTableDict\n"
+    output += "\tp[0] = {}\n"
     output += tmp_out
 
     for prod_i in range(num_productions):

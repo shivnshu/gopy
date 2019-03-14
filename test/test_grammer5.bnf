@@ -1,7 +1,7 @@
 keyword_lcurly : LCURLY
 <<0
-symtab=SymbolTable()
 key = "sym#" + str(p.lexer.lineno) + "#" + str(p.lexer.lexpos)
+symtab = SymbolTable(symTableSt[-1], key)
 symTableDict[key] = symtab
 symTableSt += [key]
 >>
@@ -12,6 +12,11 @@ symTableSt = symTableSt[:-1]
 >>
 
 SourceFile  : PackageClause ImportDeclList TopLevelDeclList
+<<0
+print(symTableDict)
+for key in symTableDict:
+    symTableDict[key].prettyPrint()
+>>
 
 PackageClause  : PACKAGE IDENTIFIER
 <<0
@@ -117,6 +122,8 @@ GoFunc    : GO FUNC Parameters FunctionBody LPAREN ExpressionList RPAREN
 <<0
 >>
 <<1
+>>
+<<2
 scope = symTableSt[-1]
 symTable = symTableDict[scope]
 fn = FuncEntry(p[2])
@@ -130,11 +137,11 @@ FuncCallStmt : IDENTIFIER DOT FuncCallStmt
 <<0
 b = False
 for scope in symTableSt:
-	if p[1] in scope:
-		b = True
-		break
-if not b:
-	print("Error")
+  if p[1] in scope:
+    b = True
+    break
+  if not b:
+    print("Error")
 >>
 
 ObjectMethod : IDENTIFIER DOT IDENTIFIER LPAREN ParameterDeclList2 RPAREN
@@ -169,7 +176,7 @@ symTable.put(var)
 
 IdentifierBotList1 :  IdentifierBotList1 COMMA IDENTIFIER
                   | empty
-<<0
+<<2
 scope = symTableSt[-1]
 symTable = symTableDict[scope]
 var = VarEntry(p[3])
@@ -185,11 +192,12 @@ for scope in symTableSt:
 		break
 if not b:
 	print("Error")
+p[0]['idlist'] = [p[1]] + p[2]['idlist']
 >>
 
 IdentifierBotList2 :  IdentifierBotList2 COMMA IDENTIFIER
                   | empty
-<<0
+<<1
 b = False
 for scope in symTableSt:
 	if p[3] in scope:
@@ -197,12 +205,22 @@ for scope in symTableSt:
 		break
 if not b:
 	print("Error")
+p[0]['idlist'] = [p[3]] + p[1]['idlist']
 >>
 
 ExpressionList :  Expression ExpressionBotList
+<<0
+p[0]['namelist'] = [p[1]['name']] + p[2]['namelist']
+>>
 
 ExpressionBotList : ExpressionBotList COMMA Expression
                   | empty
+<<1
+p[0]['namelist'] = [p[3]['name']] + p[1]['namelist']
+>>
+<<2
+p[0]['namelist'] = []
+>>
 
 TypeDecl : TYPE TypeSpecTopList
 
@@ -348,14 +366,42 @@ SimpleStmt : ExpressionStmt
 ExpressionStmt : Expression
 
 ShortVarDecl : IdentifierList2 SHORT_ASSIGN ExpressionList
+<<0
+for i, j in p[1]['idlist'], p[3]['namelist']:
+  p[0]['code'].append(i + ':=' + j)
+>>
 
 Assignment : IdentifierList2 assign_op ExpressionList
+<<0
+if (p[2]['len'] == 1):
+  for i, j in p[1]['idlist'], p[3]['namelist']:
+    p[0]['code'].append(i + ':=' + j)
+else:
+  for i, j in p[1]['idlist'], p[3]['namelist']:
+    p[0]['code'].append(i + ':= i '+p2['code'] + j)
+>>
 
 assign_op : addmul_op EQ
+<<0
+p[0]['len'] = 1 + p[1]['len']
+p[0]['code'] = p[1]['code']
+>>
 
 addmul_op : add_op
           | mul_op
           | empty
+<<1
+p[0]['len'] = 1
+p[0]['code'] = p[1]['code']
+>>
+<<2
+p[0]['len'] = 1
+p[0]['code'] = p[1]['code']
+>>
+<<1
+p[0]['len'] = 0
+p[0]['code'] = ''
+>>
 
 IfStmt : IF SimpleStmtBot ExpressionBot Block elseBot
 

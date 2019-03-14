@@ -2,31 +2,51 @@ class SymbolTableEntry:
     def __init__(self, name, type):
         self.name = name
         self.type = type
+    def prettyPrint(self):
+        print("Name:", self.name, "Type:", self.type, end=' ')
 
 class SymbolTableLiteralEntry(SymbolTableEntry):
     def __init__(self, name, value):
         SymbolTableEntry.__init__(self, name, "LiteralType")
         self.value = value
+    def prettyPrint(self):
+        SymbolTableEntry.prettyPrint(self)
+        print("Value:", self.value)
 
 class SymbolTableVariableEntry(SymbolTableEntry):
     def __init__(self, name):
         SymbolTableEntry.__init__(self, name, "VariableType")
+    def prettyPrint(self):
+        SymbolTableEntry.prettyPrint(self)
+        print()
 
 class SymbolTablePackageEntry(SymbolTableEntry):
     def __init__(self, name):
         SymbolTableEntry.__init__(self, name, "PackageType")
+    def prettyPrint(self):
+        SymbolTableEntry.prettyPrint(self)
+        print()
 
 class SymbolTableInterfaceEntry(SymbolTableEntry):
     def __init__(self, name):
         SymbolTableEntry.__init__(self, name, "InterfaceType")
+    def prettyPrint(self):
+        SymbolTableEntry.prettyPrint(self)
+        print()
 
 class SymbolTableStructEntry(SymbolTableEntry):
     def __init__(self, name):
         SymbolTableEntry.__init__(self, name, "StructType")
+    def prettyPrint(self):
+        SymbolTableEntry.prettyPrint(self)
+        print()
 
 class SymbolTableFunctionEntry(SymbolTableEntry):
     def __init__(self, name):
         SymbolTableEntry.__init__(self, name, "FuncType")
+    def prettyPrint(self):
+        SymbolTableEntry.prettyPrint(self)
+        print()
 
 class SymbolTable(object):
     def __init__(self, parent, name):
@@ -50,8 +70,9 @@ class SymbolTable(object):
         return self.parent
 
     def prettyPrint(self):
-        print("Name:", self.name)
+        print("\nName:", self.name)
         print("Parent:", self.parent)
         for sym in self.symbols:
-            print(sym + ":", self.symbols[sym].type)
-        print("\n")
+            self.symbols[sym].prettyPrint()
+            #print(sym + ":", self.symbols[sym].type)
+        print()
