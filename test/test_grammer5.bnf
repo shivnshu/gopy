@@ -16,6 +16,7 @@ SourceFile  : PackageClause ImportDeclList TopLevelDeclList
 print(symTableDict)
 for key in symTableDict:
     symTableDict[key].prettyPrint()
+p[0]['code'] = p[1]['code'] + p[2]['code'] + p[3]['code']
 >>
 
 PackageClause  : PACKAGE IDENTIFIER
@@ -29,8 +30,33 @@ symTable.put(pkg)
 ImportDeclList : ImportDecl ImportDeclList
                | empty
 
+ImportDecl    : IMPORT ImportSpecTopList
+
+ImportSpecTopList : ImportSpec
+                  | LPAREN ImportSpecList RPAREN
+
+ImportSpecList : ImportSpec ImportSpecList
+               | empty
+
+ImportSpec       :  ImportSpecInit ImportPath
+
+ImportSpecInit : DOT
+               | IDENTIFIER
+               | empty
+
+ImportPath     : STRINGLIT
+<<0
+scope = symTableSt[-1]
+symTable = symTableDict[scope]
+lit = LitEntry(p[1], p[1])
+symTable.put(lit)
+>>
+
 TopLevelDeclList : TopLevelDecl TopLevelDeclList
                  | empty
+<<1
+p[0]['code'] = p[1]['code'] + p[2]['code']
+>>
 
 TopLevelDecl  : Declaration
               | FunctionDecl
@@ -38,6 +64,9 @@ TopLevelDecl  : Declaration
               | InterfaceDecl
               | IFuncDef
               | StructDef
+<<0
+p[0]['code'] = p[1]['code']
+>>
 
 StructDef : TYPE IDENTIFIER STRUCT keyword_lcurly ParameterDeclList2 keyword_rcurly
 <<0
@@ -80,32 +109,16 @@ symTable.put(fn)
 
 IFuncDef      : FUNC LPAREN IDENTIFIER IDENTIFIER RPAREN IFuncDec Block
 
-ImportDecl    : IMPORT ImportSpecTopList
-
-ImportSpecTopList : ImportSpec
-                  | LPAREN ImportSpecList RPAREN
-
-ImportSpecList : ImportSpec ImportSpecList
-               | empty
-
-ImportSpec       :  ImportSpecInit ImportPath
-
-ImportSpecInit : DOT
-               | IDENTIFIER
-               | empty
-
-ImportPath     : STRINGLIT
-<<0
-scope = symTableSt[-1]
-symTable = symTableDict[scope]
-lit = LitEntry(p[1], p[1])
-symTable.put(lit)
->>
-
 Block : keyword_lcurly StatementList keyword_rcurly
+<<0
+p[0]['code'] = p[2]['code']
+>>
 
 StatementList : Statement StatementList
               | empty
+<<1
+p[0]['code'] = p[1]['code'] + p[2]['code']
+>>
 
 Statement : Declaration
           | SimpleStmt
@@ -116,13 +129,12 @@ Statement : Declaration
           | ForStmt
           | FuncCallStmt
           | GoFunc
+<<0
+p[0]['code'] = p[1]['code']
+>>
 
 GoFunc    : GO FUNC Parameters FunctionBody LPAREN ExpressionList RPAREN
           | GO IDENTIFIER LPAREN ExpressionListBot RPAREN
-<<0
->>
-<<1
->>
 <<2
 scope = symTableSt[-1]
 symTable = symTableDict[scope]
@@ -137,11 +149,11 @@ FuncCallStmt : IDENTIFIER DOT FuncCallStmt
 <<0
 b = False
 for scope in symTableSt:
-  if p[1] in scope:
-    b = True
-    break
-  if not b:
-    print("Error")
+	if p[1] in scope:
+		b = True
+		break
+if not b:
+	print("Error")
 >>
 
 ObjectMethod : IDENTIFIER DOT IDENTIFIER LPAREN ParameterDeclList2 RPAREN
@@ -149,6 +161,9 @@ ObjectMethod : IDENTIFIER DOT IDENTIFIER LPAREN ParameterDeclList2 RPAREN
 Declaration : ConstDecl
             | TypeDecl
             | VarDecl
+<<0
+p[0]['code'] = p[1]['code']
+>>
 
 ConstDecl  : CONST ConstSpecTopList
 
@@ -210,16 +225,19 @@ p[0]['idlist'] = [p[3]] + p[1]['idlist']
 
 ExpressionList :  Expression ExpressionBotList
 <<0
-p[0]['namelist'] = [p[1]['name']] + p[2]['namelist']
+p[0]['namelist'] = [p[1]['place']] + p[2]['namelist']
+p[0]['code'] = p[1]['code'] + p[2]['code']
 >>
 
 ExpressionBotList : ExpressionBotList COMMA Expression
                   | empty
 <<1
-p[0]['namelist'] = [p[3]['name']] + p[1]['namelist']
+p[0]['namelist'] = [p[3]['place']] + p[1]['namelist']
+p[0]['code'] = p[1]['code'] + p[3]['code']
 >>
 <<2
 p[0]['namelist'] = []
+p[0]['code'] = []
 >>
 
 TypeDecl : TYPE TypeSpecTopList
@@ -310,6 +328,12 @@ ParameterDecl  : ParameterDeclHead tripledotTop Type
 
 tripledotTop : DOT_DOT_DOT
              | empty
+<<1
+p[0]['symbol'] = '...'
+>>
+<<2
+p[0]['symbol'] = ''
+>>
 
 ParameterDeclHead : IdentifierList1
                   | empty
@@ -368,23 +392,23 @@ ExpressionStmt : Expression
 ShortVarDecl : IdentifierList2 SHORT_ASSIGN ExpressionList
 <<0
 for i, j in p[1]['idlist'], p[3]['namelist']:
-  p[0]['code'].append(i + ':=' + j)
+  p[0]['code'] = p[1]['code'] + p[3]['code'] + [i + ' := ' + j]
 >>
 
 Assignment : IdentifierList2 assign_op ExpressionList
 <<0
 if (p[2]['len'] == 1):
   for i, j in p[1]['idlist'], p[3]['namelist']:
-    p[0]['code'].append(i + ':=' + j)
+    p[0]['code'] = p[1]['code'] + p[3]['code'] + [i + ' := ' + j]
 else:
   for i, j in p[1]['idlist'], p[3]['namelist']:
-    p[0]['code'].append(i + ':= i '+p2['code'] + j)
+    p[0]['code'] = p[1]['code'] + p[3]['code'] + [i + ':= i '+p2['symbol'] + j]
 >>
 
 assign_op : addmul_op EQ
 <<0
 p[0]['len'] = 1 + p[1]['len']
-p[0]['code'] = p[1]['code']
+p[0]['symbol'] = p[1]['symbol']
 >>
 
 addmul_op : add_op
@@ -392,26 +416,48 @@ addmul_op : add_op
           | empty
 <<1
 p[0]['len'] = 1
-p[0]['code'] = p[1]['code']
+p[0][symbol] = p[1][symbol]
 >>
 <<2
 p[0]['len'] = 1
-p[0]['code'] = p[1]['code']
+p[0]['symbol'] = p[1]['symbol']
 >>
 <<1
 p[0]['len'] = 0
-p[0]['code'] = ''
+p[0]['symbol''] = ''
 >>
 
 IfStmt : IF SimpleStmtBot ExpressionBot Block elseBot
+<<0
+p[4]['label'] = newLabel()
+p[0]['code'] = ['if '+ p[2]['symbol'] + p[3]['symbol'] + ' goto ' + p[4]['label'] +p[5]['symbol']]
+p[0]['code'] += [p[4]['label'] + ':'] + p[4]['code']
+>>
 
 SimpleStmtBot : SimpleStmt
               | TRUE
               | FALSE
               | empty
+<<1
+p[0]['symbol'] = p[1]['code']
+>>
+<<2
+p[0]['symbol'] = 'true'
+>>
+<<3
+p[0]['symbol'] = 'false'
+>>
+<<4
+p[0]['symbol'] = ''
+>>
 
 elseBot : ELSE elseTail
         | empty
+<<1
+p[2]['label'] = newLabel()
+p[0]['symbol'] = 'else goto ' + p[2]['label']
+p[0]['code'] = p[2]['label'] + ' : ' + p[2]['code']
+>>
 
 elseTail : IfStmt
          | Block
@@ -451,6 +497,18 @@ Expression : UnaryExpr
            | Expression binary_op Expression
            | IDENTIFIER DOT IDENTIFIER
            | IDENTIFIER keyword_lcurly ObjectParamList keyword_rcurly
+<<1
+p[0]['code'] =p[1]['code']
+p[0]['place'] = p[1]['place']
+>>
+<<2
+p[0]['place'] = newVar()
+p[0]['code'] = p[1]['code'] + p[3]['code'] + [p[0]['place'] + ':=' + p[1]['place'] + p[2]['symbol'] + p[3]['place']]
+>>
+<<3
+p[0]['place'] = newVar()
+p[0]['code'] = [p[0]['place'] + ':=' + p[1]['place'] + '.' + p[2]['place']]
+>>
 
 ObjectParamList : ObjectParam ObjectParamTop
 
@@ -462,12 +520,35 @@ ObjectParam   : IDENTIFIER COLON Expression
 
 UnaryExpr  : PrimaryExpr
            | unary_op UnaryExpr
+<<1
+p[0]['place'] = p[1]['place']
+p[0]['code'] = p[1]['code']
+>>
+<<2
+p[0]['place'] = newVar()
+p[0]['code'] = [p[0]['place'] + ':=' + p[1]['symbol'] + p[2]['place']]
+>>
 
 binary_op  : OR_OR
            | AND_AND
            | rel_op
            | add_op
            | mul_op
+<<1
+p[0]['symbol'] = p[1]
+>>
+<<2
+p[0]['symbol'] = p[1]
+>>
+<<3
+p[0]['symbol'] = p[1]['symbol']
+>>
+<<4
+p[0]['symbol'] = p[1]['symbol']
+>>
+<<5
+p[0]['symbol'] = p[1]['symbol']
+>>
 
 rel_op  : EQ_EQ
         | NOT_EQ
@@ -475,18 +556,27 @@ rel_op  : EQ_EQ
         | LESS_EQ
         | GREATER
         | GREATER_EQ
+<<0
+p[0]['symbol'] = p[1]
+>>
 
 add_op  : ADD
         | MINUS
         | OR
         | POW
+<<0
+p[0]['symbol'] = p[1]
+>>
 
 mul_op  : MULT
         | DIV
         | LSHIFT
         | RSHIFT
-        | AND
+        		        | AND
         | AND_POW
+<<0
+p[0]['symbol'] = p[1]
+>>
 
 unary_op  : ADD
           | MINUS
@@ -495,11 +585,33 @@ unary_op  : ADD
           | MULT
           | AND
           | RECEIVE
+<<0
+p[0]['symbol'] = p[1]
+>>
 
 PrimaryExpr : Operand
             | PrimaryExpr Selector
             | PrimaryExpr Index
             | PrimaryExpr Arguments
+<<0
+p[0]['place'] = newVar()
+>>
+<<1
+p[0]['code'] = p[1]['code']
+p[0]['code'] += [p[0]['place'] + ': =' + p[1]['place']]
+>>
+<<2
+p[0]['code'] = p[1]['code'] + p[2]['code']
+p[0]['code'] += [p[0]['place'] + ': =' + p[1]['place'] + p[2]['symbol']]
+>>
+<<3
+p[0]['code'] = p[1]['code'] + p[2]['code']
+p[0]['code'] += [p[0]['place'] + ': =' + p[1]['place'] + p[2]['symbol']]
+>>
+<<4
+p[0]['code'] = p[1]['code'] + p[2]['code']
+p[0]['code'] += [p[0]['place'] + ': =' + p[1]['place'] + p[2]['symbol']]
+>>
 
 Operand : Literal
         | OperandName
@@ -507,6 +619,9 @@ Operand : Literal
         | LPAREN Expression RPAREN
         | TRUE
         | FALSE
+<<0
+p[0]['place'] = newVar()
+>>
 
 Literal : BasicLit
         | FunctionLit
@@ -535,14 +650,46 @@ ReceiverType  : TypeName
               | LPAREN ReceiverType RPAREN
 
 Selector : DOT IDENTIFIER
+<<0
+p[0]['symbol'] = '.' + p.slice[2].value
+>>
 
 Index    : LSQUARE Expression RSQUARE
+<<0
+p[0]['symbol'] = '[' + p[2]['place'] + ']'
+p[0]['code'] = p[2]['code']
+>>
 
 Arguments  : LPAREN ArgumentsHead RPAREN
+<<0
+p[0]['symbol'] = '(' + p[2]['symbol'] + ')'
+p[0]['code'] = p[2]['code']
+>>
 
 ArgumentsHead : ArgumentsHeadMid tripledotTop commaTop
               | empty
+<<1
+p[0]['symbol'] = p[1]['symbol'] + p[2]['symbol'] +p[3]['symbol']
+p[0]['code'] = p[1]['code']
+>>
 
 ArgumentsHeadMid  : ExpressionList
                   | Type COMMA ExpressionList
                   | Type
+<<1
+str = ''
+str += [elt + "," for elt in p[1]['namelist'][:-1]]
+str += p[1]['namelist'][-1]
+p[0]['symbol'] = str
+p[0]['code'] = p[1]['code']
+>>
+<<2
+str = p[1]['place'] + ','
+str += [elt + "," for elt in p[3]['namelist'][:-1]]
+str += p[3]['namelist'][-1]
+p[0]['symbol'] = str
+p[0]['code'] = p[3]['code']
+>>
+<<3
+p[0]['symbol'] = p[1]['place']
+>>

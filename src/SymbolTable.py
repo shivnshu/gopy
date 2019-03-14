@@ -3,7 +3,7 @@ class SymbolTableEntry:
         self.name = name
         self.type = type
     def prettyPrint(self):
-        print("Name:", self.name, "Type:", self.type, end=' ')
+        print("Name:", self.name, "Type:", self.type)
 
 class SymbolTableLiteralEntry(SymbolTableEntry):
     def __init__(self, name, value):
@@ -15,9 +15,12 @@ class SymbolTableLiteralEntry(SymbolTableEntry):
 
 class SymbolTableVariableEntry(SymbolTableEntry):
     def __init__(self, name):
-        SymbolTableEntry.__init__(self, name, "VariableType")
+        SymbolTableEntry.__init__(self, name, "VarType")
+        self.varType = "Unknown"
+        self.width = "Unknown"
     def prettyPrint(self):
         SymbolTableEntry.prettyPrint(self)
+        print("varType:", self.varType, "width:", self.width)
         print()
 
 class SymbolTablePackageEntry(SymbolTableEntry):

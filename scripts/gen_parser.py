@@ -84,7 +84,10 @@ for grammer in grammers:
     (tmp_out, i) = insertActionsHelper(0, grammer_list, i, 1)
     output += "\tglobal symTableSt\n\tglobal symTableDict\n"
     output += "\tp[0] = {}\n"
+    output += "\tp[0]['code'] = []\n"
     output += tmp_out
+    if (len(tmp_out) == 0):
+        i -= 1
 
     for prod_i in range(num_productions):
         line = grammer_list[prod_i]
@@ -94,6 +97,7 @@ for grammer in grammers:
             prod_len -= 1
         (tmp_out, i) = insertActionsHelper(prod_i+1, grammer_list, i+1, 2)
         if (tmp_out == ""):
+            i -= 1
             continue
         output += "\t" + "if len(p)==" + str(prod_len)
         for j in range(-1, -1*prod_len, -1):
@@ -102,6 +106,7 @@ for grammer in grammers:
             output += '"' + prod_elems[j] + '"'
         output += ":\n"
         output += tmp_out
+
 
     output += "\n"
 

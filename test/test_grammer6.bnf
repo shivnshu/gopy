@@ -1,52 +1,12 @@
-keyword_lcurly : LCURLY
-<<0
-symtab=SymbolTable()
-key = "sym#" + str(p.lexer.lineno) + "#" + str(p.lexer.lexpos)
-symTableDict[key] = symtab
-symTableSt += [key]
+Expression : UnaryExpr
+           | Expression binary_op Expression
+           | IDENTIFIER DOT IDENTIFIER
+           | IDENTIFIER keyword_lcurly ObjectParamList keyword_rcurly
+<<1
+p[0]['code'] =p[1]['code']
+p[0]['place'] = p[1]['place']
 >>
-
-keyword_rcurly : RCURLY
-<<0
-symTableSt = symTableSt[:-1]
->>
-
-SourceFile  : PackageClause ImportDeclList
-<<0
-rootSym = symTableDict['rootSymTable']
-for s in rootSym.symbols:
-        print(vars(rootSym.symbols[s]))
->>
-
-PackageClause  : PACKAGE IDENTIFIER
-<<0
-scope = symTableSt[-1]
-symTable = symTableDict[scope]
-pkg = PackageEntry(p[2])
-symTable.put(pkg)
->>
-
-ImportDeclList : ImportDecl ImportDeclList
-               | empty
-
-ImportDecl    : IMPORT ImportSpecTopList
-
-ImportSpecTopList : ImportSpec
-                  | LPAREN ImportSpecList RPAREN
-
-ImportSpecList : ImportSpec ImportSpecList
-               | empty
-
-ImportSpec       :  ImportSpecInit ImportPath
-
-ImportSpecInit : DOT
-               | IDENTIFIER
-               | empty
-
-ImportPath     : STRINGLIT
-<<0
-scope = symTableSt[-1]
-symTable = symTableDict[scope]
-lit = LitEntry(p[1], p[1])
-symTable.put(lit)
+<<4
+p[0]['place'] = newVar()
+p[0]['code'] = [p[0]['place'] + ':=' + p[1]['place'] + '.' + p[2]['place']]
 >>
