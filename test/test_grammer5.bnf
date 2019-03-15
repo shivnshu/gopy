@@ -146,7 +146,8 @@ FuncCallStmt : IDENTIFIER DOT FuncCallStmt
              | IDENTIFIER DOT FunctionName LPAREN RPAREN
              | IDENTIFIER DOT FunctionName LPAREN ExpressionList RPAREN
              | IDENTIFIER DOT FunctionName LPAREN ObjectMethod RPAREN
-<<0
+             | FunctionName LPAREN ExpressionListBot RPAREN
+<<1
 b = False
 for scope in symTableSt:
 	if p[1] in symTableDict[scope].symbols[::-1]:
@@ -154,6 +155,46 @@ for scope in symTableSt:
 		break
 if not b:
 	print("Function", p[1], "not defined on line number", p.lexer.lineno)
+>>
+<<2
+b = False
+for scope in symTableSt:
+	if p[1] in symTableDict[scope].symbols[::-1]:
+		b = True
+		break
+if not b:
+	print("Function", p[1], "not defined on line number", p.lexer.lineno)
+>>
+<<3
+b = False
+for scope in symTableSt:
+	if p[1] in symTableDict[scope].symbols[::-1]:
+		b = True
+		break
+if not b:
+	print("Function", p[1], "not defined on line number", p.lexer.lineno)
+>>
+<<4
+b = False
+for scope in symTableSt:
+	if p[1] in symTableDict[scope].symbols[::-1]:
+		b = True
+		break
+if not b:
+	print("Function", p[1], "not defined on line number", p.lexer.lineno)
+>>
+<<5
+b = False
+for scope in symTableSt:
+  if p[1]['func_name'] in symTableDict[scope].symbols:
+    b = True
+    table = symTableDict[scope]
+    break
+if not b:
+	print("Function", p[1]['func_name'], "not defined on line number", p.lexer.lineno)
+entry = table.get(p[1]['func_name'])
+if entry.getInputArgs() != p[3]['typelist']:
+   print("Function", p[1]['func_name'], "arguments mismatch at line num", p.lexer.lineno)
 >>
 
 ObjectMethod : IDENTIFIER DOT IDENTIFIER LPAREN ParameterDeclList2 RPAREN
@@ -224,9 +265,21 @@ if not b:
 p[0]['idlist'] = [p[1]] + p[2]['idlist']
 >>
 
-IdentifierList3 : IDENTIFIER IdentifierBotList2
+IdentifierList3 : IDENTIFIER IdentifierBotList3
 <<0
 p[0]['idlist'] = [p[1]] + p[2]['idlist']
+>>
+
+IdentifierBotList3 :  IdentifierBotList2 COMMA IDENTIFIER
+                  | empty
+<<0
+p[0]['idlist'] = []
+>>
+<<1
+p[0]['idlist'] = [p[3]] + p[1]['idlist']
+>>
+<<2
+p[0]['idlist'] = []
 >>
 
 IdentifierBotList2 :  IdentifierBotList2 COMMA IDENTIFIER
@@ -259,7 +312,7 @@ ExpressionBotList : ExpressionBotList COMMA Expression
                   | empty
 <<1
 p[0]['namelist'] = [p[3]['place']] + p[1]['namelist']
-p[0]['typelist'] = [p[3]['type']] + p[1]['typelist']
+p[0]['typelist'] = p[1]['typelist'] + [p[3]['type']]
 p[0]['code'] = p[1]['code'] + p[3]['code']
 >>
 <<2
@@ -318,11 +371,15 @@ p[0]['type'] = verifyCalType(p[3], p.lexer.lineno)
 TypeLit  : ArrayType
          | StructType
          | FunctionType
+<<0
+p[0]['type'] = p[1]['type']
+>>
 
 ArrayType  : LSQUARE ArrayLength RSQUARE ElementType
 <<0
 if p[2]['type'] != "int" and p[2]['type'] != '':
 	print("Array index error on line number", p.lexer.lineno)
+p[0]['type'] = 'array-of-' + p[4]['type']
 >>
 
 ArrayLength : Expression
@@ -335,6 +392,9 @@ p[0]['type'] = ''
 >>
 
 ElementType : Type
+<<0
+p[0]['type'] = p[1]['type']
+>>
 
 StructType    : STRUCT keyword_lcurly FieldDeclList keyword_rcurly
 
@@ -359,6 +419,9 @@ Tag : STRINGLIT
 FunctionType  : FUNC Signature
 
 Signature  : Parameters ResultTop
+<<0
+p[0]['input_args'] = p[1]['args_types']
+>>
 
 ResultTop : Result
           | empty
@@ -367,19 +430,40 @@ Result   : Parameters
          | Type
 
 Parameters  : LPAREN ParameterListTop RPAREN
+<<0
+p[0]['args_types'] = p[2]['args_types']
+>>
 
 ParameterListTop : ParameterList commaTop
                  | empty
+<<1
+p[0]['args_types'] = p[1]['args_types']
+>>
+<<2
+p[0]['args_types'] = []
+>>
 
 commaTop : COMMA
          | empty
 
 ParameterList  : ParameterDecl ParameterDeclList
+<<0
+p[0]['args_types'] = [p[1]['type']] + p[2]['args_types']
+>>
 
 ParameterDeclList : COMMA ParameterDecl ParameterDeclList
                   | empty
+<<1
+p[0]['args_types'] = [p[2]['type']] + p[3]['args_types']
+>>
+<<2
+p[0]['args_types'] = []
+>>
 
 ParameterDecl  : ParameterDeclHead tripledotTop Type
+<<0
+p[0]['type'] = p[3]['type']
+>>
 
 tripledotTop : DOT_DOT_DOT
              | empty
@@ -449,25 +533,31 @@ p[0]['typelist'] = []
 FunctionDecl : FUNC FunctionName FunctionDeclTail
 <<0
 p[0]['code'] = p[3]['code']
+input_args = p[3]['input_args']
+func_name = p[2]['func_name']
+scope = symTableSt[-1]
+table = symTableDict[scope]
+entry = FuncEntry(func_name)
+entry.setInputArgs(input_args)
+table.put(entry)
 >>
 
 FunctionDeclTail : Function
                  | Signature
 <<0
 p[0]['code'] = p[1]['code']
+p[0]['input_args'] = p[1]['input_args']
 >>
 
 FunctionName : IDENTIFIER
 <<0
-scope = symTableSt[-1]
-symTable = symTableDict[scope]
-fn = FuncEntry(p[1])
-symTable.put(fn)
+p[0]['func_name'] = p[1]
 >>
 
 Function  : Signature FunctionBody
 <<0
 p[0]['code'] = p[2]['code']
+p[0]['input_args'] = p[1]['input_args']
 >>
 
 FunctionBody : Block
@@ -504,19 +594,30 @@ p[0]['code'] = p[1]['code']
 
 ShortVarDecl : IdentifierList3 SHORT_ASSIGN ExpressionList
 <<0
+scope = symTableSt[-1]
+table = symTableDict[scope]
 p[0]['code'] = p[1]['code'] + p[3]['code']
-for i, j in zip(p[1]['idlist'], p[3]['namelist']):
+if (len(p[1]['idlist']) != len(p[3]['namelist'])):
+   print("Left and right side not equal on line number", p.lexer.lineno)
+for i, j, k in zip(p[1]['idlist'], p[3]['namelist'], p[3]['typelist']):
   p[0]['code'] += [i + ' := ' + j]
+  entry = VarEntry(i)
+  table.put(entry)
+  entry.setType(k)
 >>
 
 Assignment : IdentifierList2 assign_op ExpressionList
 <<0
 p[0]['code'] = p[1]['code'] + p[3]['code']
 if (p[2]['len'] == 1):
-  for i, j in zip(p[1]['idlist'], p[3]['namelist']):
-    p[0]['code'] += [i + ' := ' + j]
+  for i, j, k in zip(p[1]['idlist'], p[3]['namelist'], p[3]['typelist']):
+    if verifyCalType(i, p.lexer.lineno) != k:
+      print("Error type mismatch in line " +str(p.lexer.lineno) +". Expected type " +verifyCalType(i, p.lexer.lineno)+", got type "+ k)
+    p[0]['code'] += [i + ' := ' + j] 
 else:
   for i, j in zip(p[1]['idlist'], p[3]['namelist']):
+    if verifyCalType(i, p.lexer.lineno) != k:
+      print("Error type mismatch in line " +str(p.lexer.lineno) +". Expected type " +verifyCalType(i, p.lexer.lineno)+", got type "+ k)
     p[0]['code'] += [i + ' :=  i '+p2['symbol'] + j]
 >>
 
@@ -647,6 +748,12 @@ ReturnStmt : RETURN ExpressionListBot
 
 ExpressionListBot : ExpressionList
                   | empty
+<<1
+p[0]['typelist'] = p[1]['typelist']
+>>
+<<2
+p[0]['typelist'] = []
+>>
 
 Expression : UnaryExpr
            | Expression binary_op Expression
@@ -663,24 +770,24 @@ p[0]['place'] = p[1]['place']
 <<2
 p[0]['place'] = newVar()
 if p[1]['type'] == p[3]['type']:
-  p[0]['code'] = p[1]['code'] + p[3]['code'] + [p[0]['place'] + ':=' + p[1]['place'] + p[2]['symbol'] + p[1]['type'] + p[3]['place']]
+  p[0]['code'] = p[1]['code'] + p[3]['code'] + [p[0]['place'] + ' := ' + p[1]['place'] + p[2]['symbol'] + p[1]['type'] + p[3]['place']]
   p[0]['type'] = p[1]['type']
 elif (p[1]['type']=='float' and p[3]['type']=='int'):
-  p[0]['code'] = p[1]['code'] + p[3]['code'] + [p[0]['place'] + ':= cast-to-float' + p[1]['place'] + p[2]['symbol'] + 'float' + p[3]['place']]
+  p[0]['code'] = p[1]['code'] + p[3]['code'] + [p[0]['place'] + ' := cast-to-float ' + p[1]['place'] + p[2]['symbol'] + 'float' + p[3]['place']]
   p[0]['type'] ='float'
 elif (p[3]['type']=='float' and p[1]['type']=='int'):
-  p[0]['code'] = p[1]['code'] + p[3]['code'] + [p[0]['place'] + ':= cast-to-float' + p[3]['place'] + p[2]['symbol'] + 'float' + p[1]['place']]
+  p[0]['code'] = p[1]['code'] + p[3]['code'] + [p[0]['place'] + ' := cast-to-float ' + p[3]['place'] + p[2]['symbol'] + 'float' + p[1]['place']]
   p[0]['type'] ='float'
 elif (p[1]['type']=='string'):
-  p[0]['code'] = p[1]['code'] + p[3]['code'] + [p[0]['place'] + ':= cast-to-string' + p[3]['place'] + p[2]['symbol'] + 'string' + p[1]['place']]
+  p[0]['code'] = p[1]['code'] + p[3]['code'] + [p[0]['place'] + ' := cast-to-string ' + p[3]['place'] + p[2]['symbol'] + 'string' + p[1]['place']]
   p[0]['type'] ='string'
 elif (p[3]['type']=='string'):
-  p[0]['code'] = p[1]['code'] + p[3]['code'] + [p[0]['place'] + ':= cast-to-string' + p[1]['place'] + p[2]['symbol'] + 'string' + p[3]['place']]
+  p[0]['code'] = p[1]['code'] + p[3]['code'] + [p[0]['place'] + ' := cast-to-string ' + p[1]['place'] + p[2]['symbol'] + 'string' + p[3]['place']]
   p[0]['type'] ='string'
 >>
 <<3
 p[0]['place'] = newVar()
-p[0]['code'] = [p[0]['place'] + ':=' + p[1]['place'] + '.' + p[2]['place']]
+p[0]['code'] = [p[0]['place'] + ' := ' + p[1]['place'] + '.' + p[2]['place']]
 >>
 
 ObjectParamList : ObjectParam ObjectParamTop
@@ -701,7 +808,7 @@ p[0]['code'] = p[1]['code']
 <<2
 p[0]['place'] = newVar()
 p[0]['type'] = p[2]['type']
-p[0]['code'] = [p[0]['place'] + ':=' + p[1]['symbol'] + p[2]['place']]
+p[0]['code'] = [p[0]['place'] + ' := ' + p[1]['symbol'] + p[2]['place']]
 >>
 
 binary_op  : OR_OR
@@ -774,21 +881,21 @@ p[0]['place'] = newVar()
 <<1
 p[0]['code'] = p[1]['code']
 p[0]['type'] = p[1]['type']
-p[0]['code'] += [p[0]['place'] + ': =' + p[1]['place']]
+p[0]['code'] += [p[0]['place'] + ' := ' + p[1]['place']]
 >>
 <<2
 p[0]['code'] = p[1]['code'] + p[2]['code']
-p[0]['code'] += [p[0]['place'] + ': =' + p[1]['place'] + p[2]['symbol']]
+p[0]['code'] += [p[0]['place'] + ' := ' + p[1]['place'] + p[2]['symbol']]
 >>
 <<3
 p[0]['code'] = p[1]['code'] + p[2]['code']
 p[0]['type'] = p[1]['type']
-p[0]['code'] += [p[0]['place'] + ': =' + p[1]['place'] + p[2]['symbol']]
+p[0]['code'] += [p[0]['place'] + ' := ' + p[1]['place'] + p[2]['symbol']]
 >>
 <<4
 p[0]['code'] = p[1]['code'] + p[2]['code']
 p[0]['type'] = p[1]['type']
-p[0]['code'] += [p[0]['place'] + ': =' + p[1]['place'] + p[2]['symbol']]
+p[0]['code'] += [p[0]['place'] + ' := ' + p[1]['place'] + p[2]['symbol']]
 >>
 
 Operand : Literal
@@ -801,22 +908,22 @@ Operand : Literal
 p[0]['place'] = newVar()
 >>
 <<1
-p[0]['code'] = [p[0]['place'] + ':=' + p[1]['symbol']]
+p[0]['code'] = [p[0]['place'] + ' := ' + p[1]['symbol']]
 p[0]['type'] = p[1]['type']
 >>
 <<2
-p[0]['code'] = p[1]['code'] + [p[0]['place'] + ':=' + p[1]['place']]
+p[0]['code'] = p[1]['code'] + [p[0]['place'] + ' := ' + p[1]['place']]
 p[0]['type'] = p[1]['type']
 >>
 <<4
 p[0]['type'] = p[2]['type']
 >>
 <<5
-p[0]['code'] = [p[0]['place'] + ':=true']
+p[0]['code'] = [p[0]['place'] + ' := true']
 p[0]['type'] = 'bool'
 >>
 <<6
-p[0]['code'] = [p[0]['place'] + ':=false']
+p[0]['code'] = [p[0]['place'] + ' := false']
 p[0]['type'] = 'bool'
 >>
 
@@ -846,7 +953,7 @@ p[0]['type'] = 'string'
 OperandName : IDENTIFIER
 <<0
 p[0]['place'] = newVar()
-p[0]['code'] = [p[0]['place'] + ':=' + p[1]]
+p[0]['code'] = [p[0]['place'] + ' := ' + p[1]]
 p[0]['type'] = verifyCalType(p[1], p.lexer.lineno)
 >>
 

@@ -5,14 +5,6 @@ class SymbolTableEntry:
     def prettyPrint(self):
         print("Name:", self.name, "Type:", self.type, end=' ')
 
-# class SymbolTableLiteralEntry(SymbolTableEntry):
-    # def __init__(self, name, value):
-        # SymbolTableEntry.__init__(self, name, "LiteralType")
-        # self.value = value
-    # def prettyPrint(self):
-        # SymbolTableEntry.prettyPrint(self)
-        # print("Value:", self.value)
-
 class SymbolTableVariableEntry(SymbolTableEntry):
     def __init__(self, name):
         SymbolTableEntry.__init__(self, name, "VarType")
@@ -56,8 +48,14 @@ class SymbolTableStructEntry(SymbolTableEntry):
 class SymbolTableFunctionEntry(SymbolTableEntry):
     def __init__(self, name):
         SymbolTableEntry.__init__(self, name, "FuncType")
+        self.input_args = []
+    def setInputArgs(self, l):
+        self.input_args = l
+    def getInputArgs(self):
+        return self.input_args
     def prettyPrint(self):
         SymbolTableEntry.prettyPrint(self)
+        print("Input Args:", self.input_args)
         print()
 
 class SymbolTableImportEntry(SymbolTableEntry):

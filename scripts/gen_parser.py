@@ -46,7 +46,8 @@ output += "from SymbolTable import SymbolTableImportEntry as ImportEntry\n\n"
 output += "symTableDict = {'rootSymTable': SymbolTable(None, 'rootSymTable')}\n"
 output += "symTableSt = ['rootSymTable']\n"
 
-output += "counter = 0\n\n"
+output += "counter = 0\n"
+output += "label_counter = 0\n\n"
 
 output += "def newVar():\n"
 output += "\tglobal counter\n"
@@ -55,7 +56,10 @@ output += "\tcounter += 1\n"
 output += "\treturn res\n\n"
 
 output += "def newLabel():\n"
-output += "\treturn newVar()\n\n"
+output += "\tglobal label_counter\n"
+output += "\tres = 'label' + str(counter)\n"
+output += "\tlabel_counter += 1\n"
+output += "\treturn res\n\n"
 
 output += "def verifyCalType(name, lineno):\n"
 output += "\tflag = False\n"
