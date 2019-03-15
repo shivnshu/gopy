@@ -1,0 +1,30 @@
+Name: rootSymTable 
+Parent: None 
+Symbols: {'mypkg': <SymbolTable.SymbolTablePackageEntry object at 0x7f490f72c710>, '"fmt"': <SymbolTable.SymbolTableImportEntry object at 0x7f490f72c748>, 'test': <SymbolTable.SymbolTableFunctionEntry object at 0x7f490f72c550>, 'main': <SymbolTable.SymbolTableFunctionEntry object at 0x7f490f72c940>}
+
+Name, Type, variableType, Input Args
+mypkg ,  PackageType, ,
+"fmt" ,  ImportType, ,
+test ,  FuncType, , ['int', 'float']
+main ,  FuncType, , []
+
+
+
+Name: sym#6#60 
+Parent: rootSymTable 
+Symbols: {'a': <SymbolTable.SymbolTableVariableEntry object at 0x7f490f72cb38>}
+
+Name, Type, variableType, Input Args
+a ,  VarType, int ,
+
+
+
+Name: sym#10#89 
+Parent: rootSymTable 
+Symbols: {}
+
+Name, Type, variableType, Input Args
+
+
+
+

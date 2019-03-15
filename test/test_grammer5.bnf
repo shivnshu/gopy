@@ -13,11 +13,18 @@ symTableSt = symTableSt[:-1]
 
 SourceFile  : PackageClause ImportDeclList TopLevelDeclList
 <<0
-#print(symTableDict)
-#for key in symTableDict:
-#    symTableDict[key].prettyPrint()
 p[0]['code'] = p[1]['code'] + p[2]['code'] + p[3]['code']
-symTableToCSV(symTableDict)
+print(symTableDict)
+for key in symTableDict:
+    symTableDict[key].prettyPrint()
+#import sys
+#p[0]['code'] = p[1]['code'] + p[2]['code'] + p[3]['code']
+#sys.stdout = open('output.csv', 'w')
+#symTableToCSV(symTableDict)
+#file = open("output.code", "w")
+#for c in p[0]['code']:
+#    file.write(c + '\n')
+#p[0] = ''
 >>
 
 PackageClause  : PACKAGE IDENTIFIER
@@ -49,7 +56,8 @@ ImportPath     : STRINGLIT
 <<0
 scope = symTableSt[-1]
 symTable = symTableDict[scope]
-entry = ImportEntry(p[1])
+name = p[1].replace('"', '')
+entry = ImportEntry(name)
 symTable.put(entry)
 >>
 
@@ -151,7 +159,7 @@ FuncCallStmt : IDENTIFIER DOT FuncCallStmt
 <<1
 b = False
 for scope in symTableSt:
-	if p[1] in symTableDict[scope].symbols[::-1]:
+	if p[1] in symTableDict[scope].symbols:
 		b = True
 		break
 if not b:
@@ -160,7 +168,7 @@ if not b:
 <<2
 b = False
 for scope in symTableSt:
-	if p[1] in symTableDict[scope].symbols[::-1]:
+	if p[1] in symTableDict[scope].symbols:
 		b = True
 		break
 if not b:
@@ -169,7 +177,7 @@ if not b:
 <<3
 b = False
 for scope in symTableSt:
-	if p[1] in symTableDict[scope].symbols[::-1]:
+	if p[1] in symTableDict[scope].symbols:
 		b = True
 		break
 if not b:
@@ -178,7 +186,7 @@ if not b:
 <<4
 b = False
 for scope in symTableSt:
-	if p[1] in symTableDict[scope].symbols[::-1]:
+	if p[1] in symTableDict[scope].symbols:
 		b = True
 		break
 if not b:
@@ -433,15 +441,24 @@ Result   : Parameters
 Parameters  : LPAREN ParameterListTop RPAREN
 <<0
 p[0]['args_types'] = p[2]['args_types']
+params = p[2]['idlist']
+scope = symTableSt[-1]
+for param,t in zip(params, p[0]['args_types']):
+    entry = VarEntry(param)
+    entry.setType(t)
+    table = symTableDict[scope]
+    table.put(entry)
 >>
 
 ParameterListTop : ParameterList commaTop
                  | empty
 <<1
 p[0]['args_types'] = p[1]['args_types']
+p[0]['idlist'] = p[1]['idlist']
 >>
 <<2
 p[0]['args_types'] = []
+p[0]['idlist'] = []
 >>
 
 commaTop : COMMA
@@ -450,20 +467,24 @@ commaTop : COMMA
 ParameterList  : ParameterDecl ParameterDeclList
 <<0
 p[0]['args_types'] = [p[1]['type']] + p[2]['args_types']
+p[0]['idlist'] = p[1]['idlist'] + p[2]['idlist']
 >>
 
 ParameterDeclList : COMMA ParameterDecl ParameterDeclList
                   | empty
 <<1
 p[0]['args_types'] = [p[2]['type']] + p[3]['args_types']
+p[0]['idlist'] = p[2]['idlist'] + p[3]['idlist']
 >>
 <<2
 p[0]['args_types'] = []
+p[0]['idlist'] = []
 >>
 
 ParameterDecl  : ParameterDeclHead tripledotTop Type
 <<0
 p[0]['type'] = p[3]['type']
+p[0]['idlist'] = p[1]['idlist']
 >>
 
 tripledotTop : DOT_DOT_DOT
@@ -477,6 +498,12 @@ p[0]['symbol'] = ''
 
 ParameterDeclHead : IdentifierList1
                   | empty
+<<1
+p[0]['idlist'] = p[1]['idlist']
+>>
+<<2
+p[0]['idlist'] = []
+>>
 
 VarDecl : VAR VarSpecTopList
 
@@ -586,11 +613,16 @@ SimpleStmt : ExpressionStmt
            | ShortVarDecl
 <<0
 p[0]['code'] = p[1]['code']
+p[0]['place'] = ''
+>>
+<<1
+p[0]['place'] = p[1]['place']
 >>
 
 ExpressionStmt : Expression
 <<0
 p[0]['code'] = p[1]['code']
+p[0]['place'] = p[1]['place']
 >>
 
 ShortVarDecl : IdentifierList3 SHORT_ASSIGN ExpressionList
@@ -647,7 +679,9 @@ p[0]['symbol'] = ''
 IfStmt : IF SimpleStmtBot ExpressionBot Block elseBot
 <<0
 p[4]['label'] = newLabel()
-p[0]['code'] = ['if '+ p[2]['symbol'] + p[3]['symbol'] + ' goto ' + p[4]['label'] +p[5]['symbol']]
+if (p[2]['place'] == ''):
+   print("Inadequate condition at line num", p.lexer.lineno)
+p[0]['code'] = p[2]['code'] + ['if '+ p[2]['place'] + p[3]['symbol'] + ' goto ' + p[4]['label'] + " " +p[5]['symbol']]
 p[0]['code'] += [p[4]['label'] + ':'] + p[4]['code']
 p[0]['code'] += p[5]['code']
 >>
@@ -656,17 +690,21 @@ SimpleStmtBot : SimpleStmt
               | TRUE
               | FALSE
               | empty
+<<0
+p[0]['code'] = []
+>>
 <<1
-p[0]['symbol'] = p[1]['code'][-1]
+p[0]['code'] = p[1]['code']
+p[0]['place'] = p[1]['place']
 >>
 <<2
-p[0]['symbol'] = 'true'
+p[1]['place'] = 'true'
 >>
 <<3
-p[0]['symbol'] = 'false'
+p[0]['place'] = 'false'
 >>
 <<4
-p[0]['symbol'] = ''
+p[0]['place'] = ''
 >>
 
 elseBot : ELSE elseTail
@@ -729,7 +767,7 @@ ExprCaseClause : ExprSwitchCase COLON keyword_lcurly StatementList keyword_rcurl
 <<0
 p[0]['exp'] = p[1]['exp']
 p[0]['expcode'] = p[1]['code']
-p[0]['label'] = [newLabel()]
+p[0]['label'] = newLabel()
 p[0]['code'] = [p[0]['label'] + ' : '] + p[4]['code']
 >>
 
@@ -744,6 +782,12 @@ ForStmt : FOR ExpressionBot Block
 
 ExpressionBot : Expression
               | empty
+<<1
+p[0]['symbol'] = p[1]['code'][-1] 
+>>
+<<2
+p[0]['symbol'] = ''
+>>
 
 ReturnStmt : RETURN ExpressionListBot
 
@@ -751,9 +795,11 @@ ExpressionListBot : ExpressionList
                   | empty
 <<1
 p[0]['typelist'] = p[1]['typelist']
+p[0]['namelist'] = p[1]['namelist']
 >>
 <<2
 p[0]['typelist'] = []
+p[0]['namelist'] = []
 >>
 
 Expression : UnaryExpr
@@ -761,29 +807,29 @@ Expression : UnaryExpr
            | IDENTIFIER DOT IDENTIFIER
            | IDENTIFIER keyword_lcurly ObjectParamList keyword_rcurly
 <<0
-p[0]['type'] = 'zzzzz'
+p[0]['type'] = ''
 >>
 <<1
-p[0]['code'] =p[1]['code']
-p[0]['type'] =p[1]['type']
+p[0]['code'] = p[1]['code']
+p[0]['type'] = p[1]['type']
 p[0]['place'] = p[1]['place']
 >>
 <<2
 p[0]['place'] = newVar()
 if p[1]['type'] == p[3]['type']:
-  p[0]['code'] = p[1]['code'] + p[3]['code'] + [p[0]['place'] + ' := ' + p[1]['place'] + p[2]['symbol'] + p[1]['type'] + p[3]['place']]
+  p[0]['code'] = p[1]['code'] + p[3]['code'] + [p[0]['place'] + ' := ' + p[1]['place'] +" "+ p[2]['symbol'] + p[1]['type']+" " + p[3]['place']]
   p[0]['type'] = p[1]['type']
 elif (p[1]['type']=='float' and p[3]['type']=='int'):
-  p[0]['code'] = p[1]['code'] + p[3]['code'] + [p[0]['place'] + ' := cast-to-float ' + p[1]['place'] + p[2]['symbol'] + 'float' + p[3]['place']]
+  p[0]['code'] = p[1]['code'] + p[3]['code'] + [p[0]['place'] + ' := cast-to-float ' + p[1]['place']+" " + p[2]['symbol'] + 'float ' + p[3]['place']]
   p[0]['type'] ='float'
 elif (p[3]['type']=='float' and p[1]['type']=='int'):
-  p[0]['code'] = p[1]['code'] + p[3]['code'] + [p[0]['place'] + ' := cast-to-float ' + p[3]['place'] + p[2]['symbol'] + 'float' + p[1]['place']]
+  p[0]['code'] = p[1]['code'] + p[3]['code'] + [p[0]['place'] + ' := cast-to-float ' + p[3]['place'] +" "+ p[2]['symbol'] + 'float ' + p[1]['place']]
   p[0]['type'] ='float'
 elif (p[1]['type']=='string'):
-  p[0]['code'] = p[1]['code'] + p[3]['code'] + [p[0]['place'] + ' := cast-to-string ' + p[3]['place'] + p[2]['symbol'] + 'string' + p[1]['place']]
+  p[0]['code'] = p[1]['code'] + p[3]['code'] + [p[0]['place'] + ' := cast-to-string ' + p[3]['place'] +" "+ p[2]['symbol'] + 'string ' + p[1]['place']]
   p[0]['type'] ='string'
 elif (p[3]['type']=='string'):
-  p[0]['code'] = p[1]['code'] + p[3]['code'] + [p[0]['place'] + ' := cast-to-string ' + p[1]['place'] + p[2]['symbol'] + 'string' + p[3]['place']]
+  p[0]['code'] = p[1]['code'] + p[3]['code'] + [p[0]['place'] + ' := cast-to-string ' + p[1]['place'] +" "+ p[2]['symbol'] + 'string ' + p[3]['place']]
   p[0]['type'] ='string'
 >>
 <<3
@@ -918,6 +964,8 @@ p[0]['type'] = p[1]['type']
 >>
 <<4
 p[0]['type'] = p[2]['type']
+p[0]['code'] = p[2]['code']
+p[0]['code'] += [p[0]['place'] + ' := ' + p[2]['place']]
 >>
 <<5
 p[0]['code'] = [p[0]['place'] + ' := true']

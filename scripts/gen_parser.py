@@ -59,7 +59,7 @@ output += "\treturn res\n\n"
 
 output += "def newLabel():\n"
 output += "\tglobal label_counter\n"
-output += "\tres = 'label' + str(counter)\n"
+output += "\tres = 'label' + str(label_counter)\n"
 output += "\tlabel_counter += 1\n"
 output += "\treturn res\n\n"
 
