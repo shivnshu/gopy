@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 
 import argparse
-from parser_tmp import go_parser
+from parser import go_parser
 
 arg_parser = argparse.ArgumentParser()
 arg_parser.add_argument("input", nargs="*")

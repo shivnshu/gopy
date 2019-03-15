@@ -14,17 +14,16 @@ symTableSt = symTableSt[:-1]
 SourceFile  : PackageClause ImportDeclList TopLevelDeclList
 <<0
 p[0]['code'] = p[1]['code'] + p[2]['code'] + p[3]['code']
-print(symTableDict)
-for key in symTableDict:
-    symTableDict[key].prettyPrint()
-#import sys
-#p[0]['code'] = p[1]['code'] + p[2]['code'] + p[3]['code']
-#sys.stdout = open('output.csv', 'w')
-#symTableToCSV(symTableDict)
-#file = open("output.code", "w")
-#for c in p[0]['code']:
-#    file.write(c + '\n')
-#p[0] = ''
+#print(symTableDict)
+#for key in symTableDict:
+#    symTableDict[key].prettyPrint()
+import sys
+sys.stdout = open('output.csv', 'w')
+symTableToCSV(symTableDict)
+file = open("output.code", "w")
+for c in p[0]['code']:
+    file.write(c + '\n')
+p[0] = ''
 >>
 
 PackageClause  : PACKAGE IDENTIFIER
@@ -743,18 +742,19 @@ if not b:
 p[0]['code'] = p[4]['expcodelist']
 for exp, label in zip(p[4]['explist'], p[4]['labellist'][:-1]):
 	p[0]['code'] += ['if ' + p[2] + ' == ' + exp + ' goto ' + label]
-for label, codeblock in zip(p[4]['labellist'], p[4]['code'][:-1]):
-	p[0]['code'] += [label + ' : '] + codeblock
+for label, codeblock in zip(p[4]['labellist'][:-1], p[4]['code']):
+	p[0]['code'] += codeblock
 	p[0]['code'] += ['goto ' + p[4]['labellist'][-1]]
+p[0]['code'] += [p[4]['labellist'][-1] + ':']
 >>
 
 ExprCaseClauseList : ExprCaseClause ExprCaseClauseList
                    | empty
 <<1
-p[0]['explist'] = p[1]['exp'] + p[2]['explist']
+p[0]['explist'] = [p[1]['exp']] + p[2]['explist']
 p[0]['expcodelist'] = p[1]['expcode'] + p[2]['expcodelist']
-p[0]['labellist'] = p[1]['label'] + p[2]['labellist']
-p[0]['code'] = [p[1]['code']] + [p[2]['code']]
+p[0]['labellist'] = [p[1]['label']] + p[2]['labellist']
+p[0]['code'] = [p[1]['code']] + p[2]['code']
 >>
 <<2
 p[0]['explist'] = []

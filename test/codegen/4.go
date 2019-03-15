@@ -5,6 +5,6 @@ func main() {
     var a int
   }
   {
-    a = 2
+    a := 2
   }
 }
