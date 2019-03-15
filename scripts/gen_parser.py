@@ -35,12 +35,14 @@ counter = 0
 output += "import ply.yacc as yacc\n\n"
 output += "from tokrules import tokens\n\n"
 output += "from SymbolTable import SymbolTable\n"
-output += "from SymbolTable import SymbolTableLiteralEntry as LitEntry\n"
+# output += "from SymbolTable import SymbolTableLiteralEntry as LitEntry\n"
 output += "from SymbolTable import SymbolTableVariableEntry as VarEntry\n"
 output += "from SymbolTable import SymbolTablePackageEntry as PackageEntry\n"
 output += "from SymbolTable import SymbolTableInterfaceEntry as InterfaceEntry\n"
 output += "from SymbolTable import SymbolTableStructEntry as StructEntry\n"
-output += "from SymbolTable import SymbolTableFunctionEntry as FuncEntry\n\n"
+output += "from SymbolTable import SymbolTableFunctionEntry as FuncEntry\n"
+output += "from SymbolTable import SymbolTableImportEntry as ImportEntry\n\n"
+
 output += "symTableDict = {'rootSymTable': SymbolTable(None, 'rootSymTable')}\n"
 output += "symTableSt = ['rootSymTable']\n"
 
@@ -51,6 +53,22 @@ output += "\tglobal counter\n"
 output += "\tres = 't' + str(counter)\n"
 output += "\tcounter += 1\n"
 output += "\treturn res\n\n"
+
+output += "def newLabel():\n"
+output += "\treturn newVar()\n\n"
+
+output += "def verifyCalType(name, lineno):\n"
+output += "\tflag = False\n"
+output += "\tfor n in symTableSt[::-1]:\n"
+output += "\t\tif name in symTableDict[n].symbols:\n"
+output += "\t\t\tflag = True\n"
+output += "\t\t\ttable = symTableDict[n]\n"
+output += "\t\t\tbreak\n"
+output += "\tif not flag:\n"
+output += "\t\tprint('Type of', name, 'not found on line number', lineno)\n"
+output += "\t\treturn 'Unknown'\n"
+output += "\tentry = table.get(name)\n"
+output += "\treturn entry.getType()\n\n"
 
 output += '''
 def p_empty(p):

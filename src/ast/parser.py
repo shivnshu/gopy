@@ -1096,13 +1096,14 @@ def p_type_lit(p):
 		p[0]['children'] = [p[1]]
 
 def p_array_type(p):
-	'''
-	ArrayType  : keyword_lsquare ArrayLength keyword_rsquare ElementType
-	'''
-	global counter
-	p[0] = {"label": "ArrayType", "id": str(counter)}
-	counter += 1
-	p[0]['children'] = [p[1], p[2], p[3], p[4]]
+    '''
+    ArrayType  : keyword_lsquare ArrayLength keyword_rsquare ElementType
+    '''
+    global counter
+    print("AAAAAAAAAAAAAAAA", p[2])
+    p[0] = {"label": "ArrayType", "id": str(counter)}
+    counter += 1
+    p[0]['children'] = [p[1], p[2], p[3], p[4]]
 
 def p_array_length(p):
 	'''
