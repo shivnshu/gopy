@@ -3,7 +3,7 @@ class SymbolTableEntry:
         self.name = name
         self.type = type
     def prettyPrint(self):
-        print("Name:", self.name, "Type:", self.type, end=' ')
+        print(self.name, ", ", self.type, end=', ')
 
 class SymbolTableVariableEntry(SymbolTableEntry):
     def __init__(self, name):
@@ -21,29 +21,28 @@ class SymbolTableVariableEntry(SymbolTableEntry):
         return self.variableType
     def prettyPrint(self):
         SymbolTableEntry.prettyPrint(self)
-        print("variableType:", self.variableType, "width:", self.width, "value:", self.value)
-        print()
+        print(self.variableType, ",")
 
 class SymbolTablePackageEntry(SymbolTableEntry):
     def __init__(self, name):
         SymbolTableEntry.__init__(self, name, "PackageType")
     def prettyPrint(self):
         SymbolTableEntry.prettyPrint(self)
-        print()
+        print(",")
 
 class SymbolTableInterfaceEntry(SymbolTableEntry):
     def __init__(self, name):
         SymbolTableEntry.__init__(self, name, "InterfaceType")
     def prettyPrint(self):
         SymbolTableEntry.prettyPrint(self)
-        print()
+        print(",")
 
 class SymbolTableStructEntry(SymbolTableEntry):
     def __init__(self, name):
         SymbolTableEntry.__init__(self, name, "StructType")
     def prettyPrint(self):
         SymbolTableEntry.prettyPrint(self)
-        print()
+        print(",")
 
 class SymbolTableFunctionEntry(SymbolTableEntry):
     def __init__(self, name):
@@ -55,15 +54,14 @@ class SymbolTableFunctionEntry(SymbolTableEntry):
         return self.input_args
     def prettyPrint(self):
         SymbolTableEntry.prettyPrint(self)
-        print("Input Args:", self.input_args)
-        print()
+        print(",", self.input_args)
 
 class SymbolTableImportEntry(SymbolTableEntry):
     def __init__(self, name):
         SymbolTableEntry.__init__(self, name, "ImportType")
     def prettyPrint(self):
         SymbolTableEntry.prettyPrint(self)
-        print()
+        print(",")
 
 class SymbolTable(object):
     def __init__(self, parent, name):
@@ -95,3 +93,11 @@ class SymbolTable(object):
             self.symbols[sym].prettyPrint()
             #print(sym + ":", self.symbols[sym].type)
         print()
+
+    def toCSV(self):
+        print("Name:", self.name, "\nParent:", self.parent, "\nSymbols:", self.symbols)
+        print()
+        print("Name, Type, variableType, Input Args")
+        for sym in self.symbols:
+            entry = self.symbols[sym]
+            entry.prettyPrint()

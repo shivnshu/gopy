@@ -13,10 +13,11 @@ symTableSt = symTableSt[:-1]
 
 SourceFile  : PackageClause ImportDeclList TopLevelDeclList
 <<0
-print(symTableDict)
-for key in symTableDict:
-    symTableDict[key].prettyPrint()
+#print(symTableDict)
+#for key in symTableDict:
+#    symTableDict[key].prettyPrint()
 p[0]['code'] = p[1]['code'] + p[2]['code'] + p[3]['code']
+symTableToCSV(symTableDict)
 >>
 
 PackageClause  : PACKAGE IDENTIFIER

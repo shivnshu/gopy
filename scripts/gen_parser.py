@@ -43,6 +43,8 @@ output += "from SymbolTable import SymbolTableStructEntry as StructEntry\n"
 output += "from SymbolTable import SymbolTableFunctionEntry as FuncEntry\n"
 output += "from SymbolTable import SymbolTableImportEntry as ImportEntry\n\n"
 
+output += "from utils import symTableToCSV\n\n"
+
 output += "symTableDict = {'rootSymTable': SymbolTable(None, 'rootSymTable')}\n"
 output += "symTableSt = ['rootSymTable']\n"
 
@@ -137,7 +139,7 @@ output += '''
 def p_error(p):
 \tprint("Error encountered at line number", p.lineno)
 
-go_parser = yacc.yacc(start="SourceFile", write_tables=False)
+go_parser = yacc.yacc(start="SourceFile")
 '''
 
 print(output)
