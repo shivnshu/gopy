@@ -11,6 +11,7 @@ class SymbolTableVariableEntry(SymbolTableEntry):
         self.variableType = "Unknown"
         self.width = "Unknown"
         self.value = "Unknown"
+        self.dimention = 0
     def setValue(self, value):
         self.value = value
     def getValue(self):
@@ -19,9 +20,13 @@ class SymbolTableVariableEntry(SymbolTableEntry):
         self.variableType = type
     def getType(self):
         return self.variableType
+    def getDim(self):
+        return self.dimention
+    def setDim(self, dimention):
+        self.dimention = dimention
     def prettyPrint(self):
         SymbolTableEntry.prettyPrint(self)
-        print(self.variableType, ",")
+        print(self.variableType, ",", self.dimention, ",")
 
 class SymbolTablePackageEntry(SymbolTableEntry):
     def __init__(self, name):

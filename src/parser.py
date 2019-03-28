@@ -79,16 +79,16 @@ def p_source_file(p):
 	p[0] = {}
 	p[0]['code'] = []
 	p[0]['code'] = p[1]['code'] + p[2]['code'] + p[3]['code']
-	#print(symTableDict)
-	#for key in symTableDict:
-	#    symTableDict[key].prettyPrint()
-	import sys
-	sys.stdout = open('output.csv', 'w')
-	symTableToCSV(symTableDict)
-	file = open("output.code", "w")
-	for c in p[0]['code']:
-	    file.write(c + '\n')
-	p[0] = ''
+	print(symTableDict)
+	for key in symTableDict:
+	    symTableDict[key].prettyPrint()
+	#import sys
+	#sys.stdout = open('output.csv', 'w')
+	#symTableToCSV(symTableDict)
+	#file = open("output.code", "w")
+	#for c in p[0]['code']:
+	#    file.write(c + '\n')
+	#p[0] = ''
 
 def p_package_clause(p):
 	'''
@@ -101,7 +101,8 @@ def p_package_clause(p):
 	scope = symTableSt[-1]
 	symTable = symTableDict[scope]
 	pkg = PackageEntry(p[2])
-	symTable.put(pkg)
+	if (symTable.put(pkg) == False):
+	     print("Error:", p[2], "redeclared on line number", p.lexer.lineno)
 
 def p_import_decl_list(p):
 	'''
@@ -174,7 +175,8 @@ def p_import_path(p):
 	symTable = symTableDict[scope]
 	name = p[1].replace('"', '')
 	entry = ImportEntry(name)
-	symTable.put(entry)
+	if (symTable.put(entry) == False):
+	     print("Error:", name, "redeclared on line number", p.lexer.lineno)
 
 def p_top_level_decl_list(p):
 	'''
@@ -214,7 +216,8 @@ def p_struct_def(p):
 	scope = symTableSt[-1]
 	symTable = symTableDict[scope]
 	struc = StructEntry(p[2])
-	symTable.put(struc)
+	if (symTable.put(struc) == False):
+	     print("Error:", p[2], "redeclared on line number", p.lexer.lineno)
 
 def p_parameter_decl_list2(p):
 	'''
@@ -265,7 +268,8 @@ def p_interface_decl(p):
 	scope = symTableSt[-1]
 	symTable = symTableDict[scope]
 	interfc = InterfaceEntry(p[2])
-	symTable.put(interfc)
+	if (symTable.put(interfc) == False):
+	    print("Error:", p[2], "redeclared on line number", p.lexer.lineno)
 
 def p_interface_block(p):
 	'''
@@ -297,7 +301,8 @@ def p_i_func_dec(p):
 	scope = symTableSt[-1]
 	symTable = symTableDict[scope]
 	fn = FuncEntry(p[1])
-	symTable.put(fn)
+	if (symTable.put(fn) == False):
+	    print("Error:", p[1], "redeclared on line number", p.lexer.lineno)
 
 def p_i_func_def(p):
 	'''
@@ -361,7 +366,8 @@ def p_go_func(p):
 		scope = symTableSt[-1]
 		symTable = symTableDict[scope]
 		fn = FuncEntry(p[2])
-		symTable.put(fn)
+		if (symTable.put(fn) == False):
+		    print("Error:", p[2], "redeclared on line number", p.lexer.lineno)
 
 def p_func_call_stmt(p):
 	'''
@@ -485,10 +491,11 @@ def p_const_spec(p):
 		return
 	p[0]['code'] = p[1]['code'] + p[2]['code']
 	for i,j,k in zip(p[1]['idlist'], p[2]['namelist'], p[2]['typelist']):
-		p[0]['code'] += [i + ' := ' + j]
-		var = VarEntry(i)
-		var.setType(k)
-		symTable.put(var)
+	    p[0]['code'] += [i + ' := ' + j]
+	    var = VarEntry(i)
+	    var.setType(k)
+	    if (symTable.put(var) == False):
+	      print("Error:", i, "redeclared on line number", p.lexer.lineno)
 
 def p_const_spec_tail(p):
 	'''
@@ -601,6 +608,62 @@ def p_identifier_bot_list2(p):
 	if len(p)==2 and p.slice[1].type=="empty":
 		p[0]['idlist'] = []
 
+def p_id_or_array_elem_list(p):
+	'''
+	IdOrArrayElemList : IdOrArrayElem IdOrArrayElemBotList
+	'''
+	global symTableSt
+	global symTableDict
+	p[0] = {}
+	p[0]['code'] = []
+	p[0]['idlist'] = [p[1]['id']] + p[2]['idlist']
+	p[0]['idxlists'] = [p[1]['idxlist']] + p[2]['idxlists']
+	p[0]['code'] = p[1]['code'] + p[2]['code']
+
+def p_id_or_array_elem_bot_list(p):
+	'''
+	IdOrArrayElemBotList : IdOrArrayElemBotList COMMA IdOrArrayElem
+	                      | empty
+	'''
+	global symTableSt
+	global symTableDict
+	p[0] = {}
+	p[0]['code'] = []
+	if len(p)==4 and p.slice[3].type=="IdOrArrayElem" and p.slice[2].type=="COMMA" and p.slice[1].type=="IdOrArrayElemBotList":
+		p[0]['idlist'] = p[1]['idlist'] + p[3]['id']
+		p[0]['idxlists'] = p[1]['idxlists'] + [p[3]['idxlist']]
+		p[0]['code'] = p[1]['code'] + p[3]['code']
+	if len(p)==2 and p.slice[1].type=="empty":
+		p[0]['idlist'] = []
+		p[0]['idxlists'] = []
+
+def p_id_or_array_elem(p):
+	'''
+	IdOrArrayElem : IDENTIFIER MoreDims
+	'''
+	global symTableSt
+	global symTableDict
+	p[0] = {}
+	p[0]['code'] = []
+	p[0]['id'] = p[1]
+	p[0]['idxlist'] = p[2]['idxlist']
+	p[0]['code'] = p[2]['code']
+
+def p_more_dims(p):
+	'''
+	MoreDims : LSQUARE Expression RSQUARE MoreDims
+	           | empty
+	'''
+	global symTableSt
+	global symTableDict
+	p[0] = {}
+	p[0]['code'] = []
+	if len(p)==5 and p.slice[4].type=="MoreDims" and p.slice[3].type=="RSQUARE" and p.slice[2].type=="Expression" and p.slice[1].type=="LSQUARE":
+		p[0]['idxlist'] = [p[2]['place']] + p[4]['idxlist']
+		p[0]['code'] = p[2]['code'] + p[4]['code']
+	if len(p)==2 and p.slice[1].type=="empty":
+		p[0]['idxlist']  = []
+
 def p_expression_list(p):
 	'''
 	ExpressionList :  Expression ExpressionBotList
@@ -689,7 +752,8 @@ def p_type_def(p):
 	scope = symTableSt[-1]
 	symTable = symTableDict[scope]
 	var = VarEntry(p[1])
-	symTable.put(var)
+	if (symTable.put(var) == False):
+	    print("Error:", p[1], "redeclared on line number", p.lexer.lineno)
 
 def p_type(p):
 	'''
@@ -754,7 +818,7 @@ def p_array_type(p):
 	p[0]['code'] = []
 	if p[2]['type'] != "int" and p[2]['type'] != '':
 		print("Array index error on line number", p.lexer.lineno)
-	p[0]['type'] = 'array-of-' + p[4]['type']
+	p[0]['type'] = p[4]['type']
 
 def p_array_length(p):
 	'''
@@ -910,7 +974,8 @@ def p_parameters(p):
 	    entry = VarEntry(param)
 	    entry.setType(t)
 	    table = symTableDict[scope]
-	    table.put(entry)
+	    if (table.put(entry) == False):
+	        print("Error:", param, "redeclared on line number", p.lexer.lineno)
 
 def p_parameter_list_top(p):
 	'''
@@ -1050,13 +1115,14 @@ def p_var_spec(p):
 	mylist = p[1]['idlist']
 	mytypelist = p[2]['typelist']
 	for index in range(len(mylist)):
-		i = mylist[index]
-		var = VarEntry(i)
-		if (p[2]['type_used'] == False):
-			var.setType(mytypelist[index])
-		else:
-			var.setType(p[2]['typelist'][0])
-		symTable.put(var)
+	    i = mylist[index]
+	    var = VarEntry(i)
+	    if (p[2]['type_used'] == False):
+	      var.setType(mytypelist[index])
+	    else:
+	      var.setType(p[2]['typelist'][0])
+	    if (symTable.put(var) == False):
+	        print("Error:", i, "redeclared on line number", p.lexer.lineno)
 
 def p_var_spec_tail(p):
 	'''
@@ -1106,7 +1172,8 @@ def p_function_decl(p):
 	table = symTableDict[scope]
 	entry = FuncEntry(func_name)
 	entry.setInputArgs(input_args)
-	table.put(entry)
+	if (table.put(entry) == False):
+	    print("Error:", func_name, "redeclared on line number", p.lexer.lineno)
 
 def p_function_decl_tail(p):
 	'''
@@ -1172,7 +1239,8 @@ def p_method_name(p):
 	scope = symTableSt[-1]
 	symTable = symTableDict[scope]
 	fn = FuncEntry(p[1])
-	symTable.put(fn)
+	if (symTable.put(fn) == False):
+	    print("Error:", p[1], "redeclared on line number", p.lexer.lineno)
 
 def p_receiver(p):
 	'''
@@ -1187,6 +1255,7 @@ def p_simple_stmt(p):
 	'''
 	SimpleStmt : ExpressionStmt
 	           | Assignment
+	           | AssignmentGen
 	           | ShortVarDecl
 	'''
 	global symTableSt
@@ -1225,7 +1294,8 @@ def p_short_var_decl(p):
 	for i, j, k in zip(p[1]['idlist'], p[3]['namelist'], p[3]['typelist']):
 	  p[0]['code'] += [i + ' := ' + j]
 	  entry = VarEntry(i)
-	  table.put(entry)
+	  if (table.put(entry) == False):
+	     print("Error:", i, "redeclared on line number", p.lexer.lineno)
 	  entry.setType(k)
 
 def p_assignment(p):
@@ -1246,7 +1316,27 @@ def p_assignment(p):
 	  for i, j in zip(p[1]['idlist'], p[3]['namelist']):
 	    if verifyCalType(i, p.lexer.lineno) != k:
 	      print("Error type mismatch in line " +str(p.lexer.lineno) +". Expected type " +verifyCalType(i, p.lexer.lineno)+", got type "+ k)
-	    p[0]['code'] += [i + ' :=  i '+p2['symbol'] + j]
+	    p[0]['code'] += [i + ' :=  '+ i + p2['symbol'] + j]
+
+def p_assignment_gen(p):
+	'''
+	AssignmentGen : IdOrArrayElemList assign_op ExpressionList
+	'''
+	global symTableSt
+	global symTableDict
+	p[0] = {}
+	p[0]['code'] = []
+	p[0]['code'] = p[1]['code'] + p[3]['code']
+	if (p[2]['len'] == 1):
+	  for i, idx,  j, k in zip(p[1]['idlist'], p[1]['idxlists'],  p[3]['namelist'], p[3]['typelist']):
+	    if verifyCalType(i, p.lexer.lineno) != k:
+	      print("Error type mismatch in line " +str(p.lexer.lineno) +". Expected type " +verifyCalType(i, p.lexer.lineno)+", got type "+ k)
+	    p[0]['code'] += [i +str(idx) + ' := ' + j] 
+	else:
+	  for i, idx, j in zip(p[1]['idlist'], p[1]['idxlists'], p[3]['namelist']):
+	    if verifyCalType(i, p.lexer.lineno) != k:
+	      print("Error type mismatch in line " +str(p.lexer.lineno) +". Expected type " +verifyCalType(i, p.lexer.lineno)+", got type "+ k)
+	    p[0]['code'] += [i + ' := ' + i +str(idx)+p2['symbol'] + j]
 
 def p_assign_op(p):
 	'''

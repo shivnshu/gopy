@@ -3,6 +3,6 @@ package mypkg
 import "fmt"
 
 func main() {
-	var a int
-	a = 1
+	var a [2]string
+	a[1] = "Hello"
 }
