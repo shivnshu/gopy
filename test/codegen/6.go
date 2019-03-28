@@ -4,5 +4,5 @@ import "fmt"
 
 func main() {
 	var a [2]string
-	a[1] = "Hello"
+	a[1], b = "Hello", "aa"
 }
