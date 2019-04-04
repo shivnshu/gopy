@@ -1,3 +1,10 @@
+type_to_size = {}
+type_to_size["int"] = 4
+type_to_size["long"] = 8
+type_to_size["char"] = 1
+type_to_size["float"] = 4
+type_to_size["double"] = 8
+
 class SymbolTableEntry:
     def __init__(self, name, type):
         self.name = name
@@ -66,15 +73,19 @@ class SymbolTableFunctionEntry(SymbolTableEntry):
     def __init__(self, name):
         SymbolTableEntry.__init__(self, name, "FuncType")
         self.input_args = []
-        self.return_type = ""
+        self.ret_types = []
         self.memoryLocation = ""
     def setInputArgs(self, l):
         self.input_args = l
     def getInputArgs(self):
         return self.input_args
+    def setReturnTypes(self, l):
+        self.ret_types = l
+    def getReturnTypes(self):
+        return self.ret_types
     def prettyPrint(self):
         SymbolTableEntry.prettyPrint(self)
-        print(",", self.input_args)
+        print(",", self.input_args, ",", self.ret_types)
 
 class SymbolTableImportEntry(SymbolTableEntry):
     def __init__(self, name):
@@ -143,3 +154,42 @@ class SymbolTable(object):
     #     for sym in self.symbols:
     #         entry = self.symbols[sym]
     #         entry.prettyPrint()
+
+
+class ActivationRecord:
+    def __init__(self, func_entry):
+        self.ret_values = []
+        self.input_args = []
+        self.old_st_ptrs = {"%ebp": (0, 8)}
+        self.saved_regs = {}
+        self.local_vars = {}
+        self.offset = 0
+        self.setRetValues(func_entry)
+        self.setInputArgs(func_entry)
+        self.offset = -8
+
+    def setRetValues(self, func_entry):
+        global type_to_size
+        ret_list = func_entry.getReturnTypes()
+        for typ in ret_list:
+            size = type_to_size(typ)
+            self.offset += size
+            self.ret_values += [(self.offset, size)]
+
+    def setInputArgs(self, func_entry):
+        global type_to_size
+        args_list = func_entry.getInputArgs()
+        for arg in args_list:
+            size = type_to_size(arg)
+            self.offset += size
+            self.input_args += [(self.offset, size)]
+
+    def setLocalVar(self, sym_table, name):
+        global type_to_size
+        var_entry = sym_table.symbols[name]
+        size = max(1, var_entry.getDim()) * type_to_size(var_entry.getType())
+        self.offset -= size
+        self.local_vars[name] = (self.offset, size)
+
+    def prettyPrint(self):
+        print("Ret value:", self.ret_values, "Params:", self.input_args, "OldStPtrs:", self.old_st_ptrs, "SavedRegs:", self.saved_regs, "LocalVars:", self.local_vars)
