@@ -56,7 +56,7 @@ def p_keyword_lcurly(p):
 	p[0] = {}
 	p[0]['code'] = []
 	key = "sym#" + str(p.lexer.lineno) + "#" + str(p.lexer.lexpos)
-	symtab = SymbolTable(symTableSt[-1], key)
+	symtab = SymbolTable(symTableDict[symTableSt[-1]], key)
 	symTableDict[key] = symtab
 	symTableSt += [key]
 
