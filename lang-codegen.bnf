@@ -4,11 +4,18 @@ key = "sym#" + str(p.lexer.lineno) + "#" + str(p.lexer.lexpos)
 symtab = SymbolTable(symTableDict[symTableSt[-1]], key)
 symTableDict[key] = symtab
 symTableSt += [key]
+actRecord = ActivationRecord(key)
+actRecordDict[key] = actRecord
+actRecordSt += [actRecord.getName()]
 >>
 
 keyword_rcurly : RCURLY
 <<0
+sym_table = symTableDict[symTableSt[-1]]
+act_record = actRecordDict[actRecordSt[-1]]
+act_record.setLocalVarsInputArgs(sym_table)
 symTableSt = symTableSt[:-1]
+actRecordSt = actRecordSt[:-1]
 >>
 
 SourceFile  : PackageClause ImportDeclList TopLevelDeclList
@@ -685,8 +692,9 @@ for index in range(len(mylist)):
       var.setType(p[2]['typelist'][0])
     if (symTable.put(var) == False):
         print("Error:", i, "redeclared on line number", p.lexer.lineno)
-    j = p[2]['namelist'][index]
-    p[0]['code'] += [i + " := " + j] 
+    if (len(p[2]['namelist']) != 0):
+      j = p[2]['namelist'][index]
+      p[0]['code'] += [i + " := " + j] 
 >>
 
 VarSpecTail : Type VarSpecMid
@@ -718,19 +726,24 @@ p[0]['typelist'] = []
 
 FunctionDecl : FUNC FunctionName FunctionDeclTail
 <<0
+this_func_sym_table = symTableDict[symTableSt[-1]]
+act_record = actRecordDict[actRecordSt[-1]]
+actRecordSt = actRecordSt[:-1]
 symTableSt = symTableSt[:-1]
 input_args = p[3]['input_args']
 ret_types = p[3]['ret_types']
 func_name = p[2]['func_name']
 scope = symTableSt[-1]
 table = symTableDict[scope]
-entry = FuncEntry(func_name)
-entry.setInputArgs(input_args)
-entry.setReturnTypes(ret_types)
+#entry = FuncEntry(func_name)
+entry = symTableDict[symTableSt[-1]].get(func_name)
+#entry.setInputArgs(input_args)
+#entry.setReturnTypes(ret_types)
+act_record.setRetValues(entry)
+act_record.storeOldStPtr("%rbp")
+act_record.setLocalVarsInputArgs(this_func_sym_table)
 #p[0]['code'] = p[3]['code']
 p[0]['dict_code'] = { func_name: p[3]['code'] }
-actRecord = ActivationRecord(entry)
-actRecordDict[func_name] = actRecord
 if (p[3]['ret_types'] != p[3]['ret_actual_types']):
     print("Error:", func_name, "return types mismatch on line number", p.lexer.lineno)
 if (table.put(entry) == False):
@@ -751,11 +764,17 @@ p[0]['ret_actual_types'] = p[1]['ret_actual_types']
 
 FunctionName : IDENTIFIER
 <<0
+entry = FuncEntry(func_name)
+if (table.put(entry) == False):
+    print("Error:", func_name, "redeclared on line number", p.lexer.lineno)
 p[0]['func_name'] = p[1]
 key = "sym#" + str(p.lexer.lineno) + "#" + str(p.lexer.lexpos)
 symtab = SymbolTable(symTableDict[symTableSt[-1]], key)
 symTableDict[key] = symtab
 symTableSt += [key]
+actRecord = ActivationRecord(p[1])
+actRecordDict[p[1]] = actRecord
+actRecordSt += [actRecord.getName()]
 >>
 
 Function  : Signature FunctionBody

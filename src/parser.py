@@ -15,7 +15,7 @@ from utils import symTableToCSV
 
 symTableDict = {'rootSymTable': SymbolTable(None, 'rootSymTable')}
 symTableSt = ['rootSymTable']
-actRecordDict = {'root': ActivationRecord(None)}
+actRecordDict = {'root': ActivationRecord('root')}
 actRecordSt = ['root']
 counter = 0
 label_counter = 0
@@ -65,6 +65,9 @@ def p_keyword_lcurly(p):
 	symtab = SymbolTable(symTableDict[symTableSt[-1]], key)
 	symTableDict[key] = symtab
 	symTableSt += [key]
+	actRecord = ActivationRecord(key)
+	actRecordDict[key] = actRecord
+	actRecordSt += [actRecord.getName()]
 
 def p_keyword_rcurly(p):
 	'''
@@ -77,7 +80,11 @@ def p_keyword_rcurly(p):
 	p[0] = {}
 	p[0]['code'] = []
 	p[0]['dict_code'] = {}
+	sym_table = symTableDict[symTableSt[-1]]
+	act_record = actRecordDict[actRecordSt[-1]]
+	act_record.setLocalVarsInputArgs(sym_table)
 	symTableSt = symTableSt[:-1]
+	actRecordSt = actRecordSt[:-1]
 
 def p_source_file(p):
 	'''
@@ -1493,8 +1500,9 @@ def p_var_spec(p):
 	      var.setType(p[2]['typelist'][0])
 	    if (symTable.put(var) == False):
 	        print("Error:", i, "redeclared on line number", p.lexer.lineno)
-	    j = p[2]['namelist'][index]
-	    p[0]['code'] += [i + " := " + j] 
+	    if (len(p[2]['namelist']) != 0):
+	      j = p[2]['namelist'][index]
+	      p[0]['code'] += [i + " := " + j] 
 
 def p_var_spec_tail(p):
 	'''
@@ -1548,6 +1556,9 @@ def p_function_decl(p):
 	p[0] = {}
 	p[0]['code'] = []
 	p[0]['dict_code'] = {}
+	this_func_sym_table = symTableDict[symTableSt[-1]]
+	act_record = actRecordDict[actRecordSt[-1]]
+	actRecordSt = actRecordSt[:-1]
 	symTableSt = symTableSt[:-1]
 	input_args = p[3]['input_args']
 	ret_types = p[3]['ret_types']
@@ -1557,10 +1568,11 @@ def p_function_decl(p):
 	entry = FuncEntry(func_name)
 	entry.setInputArgs(input_args)
 	entry.setReturnTypes(ret_types)
+	act_record.setRetValues(entry)
+	act_record.storeOldStPtr("%rbp")
+	act_record.setLocalVarsInputArgs(this_func_sym_table)
 	#p[0]['code'] = p[3]['code']
 	p[0]['dict_code'] = { func_name: p[3]['code'] }
-	actRecord = ActivationRecord(entry)
-	actRecordDict[func_name] = actRecord
 	if (p[3]['ret_types'] != p[3]['ret_actual_types']):
 	    print("Error:", func_name, "return types mismatch on line number", p.lexer.lineno)
 	if (table.put(entry) == False):
@@ -1601,6 +1613,9 @@ def p_function_name(p):
 	symtab = SymbolTable(symTableDict[symTableSt[-1]], key)
 	symTableDict[key] = symtab
 	symTableSt += [key]
+	actRecord = ActivationRecord(p[1])
+	actRecordDict[p[1]] = actRecord
+	actRecordSt += [actRecord.getName()]
 
 def p_function(p):
 	'''
