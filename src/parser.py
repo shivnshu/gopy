@@ -97,7 +97,6 @@ def p_source_file(p):
 	p[0] = {}
 	p[0]['code'] = []
 	p[0]['dict_code'] = {}
-	#p[0]['code'] = p[1]['code'] + p[2]['code'] + p[3]['code']
 	p[0]['dict_code'] = p[3]['dict_code']
 	print(symTableDict)
 	for key in symTableDict:
@@ -240,7 +239,6 @@ def p_top_level_decl_list(p):
 	p[0]['code'] = []
 	p[0]['dict_code'] = {}
 	if len(p)==3 and p.slice[2].type=="TopLevelDeclList" and p.slice[1].type=="TopLevelDecl":
-		#p[0]['code'] = p[1]['code'] + p[2]['code']
 		p[0]['dict_code'].update(p[1]['dict_code'])
 		p[0]['dict_code'].update(p[2]['dict_code'])
 
@@ -426,7 +424,6 @@ def p_block(p):
 def p_statement_list(p):
 	'''
 	StatementList : Statement StatementList
-	              | Statement empty
 	              | empty
 	'''
 	global symTableSt
@@ -439,10 +436,7 @@ def p_statement_list(p):
 	p[0]['ret_typelist'] = []
 	if len(p)==3 and p.slice[2].type=="StatementList" and p.slice[1].type=="Statement":
 		p[0]['code'] = p[1]['code'] + p[2]['code']
-		p[0]['ret_typelist'] = p[2]['ret_typelist']
-	if len(p)==3 and p.slice[2].type=="empty" and p.slice[1].type=="Statement":
-		p[0]['code'] = p[1]['code']
-		p[0]['ret_typelist'] = p[1]['typelist']
+		p[0]['ret_typelist'] = [p[1]['typelist']] + p[2]['ret_typelist']
 
 def p_statement(p):
 	'''
@@ -467,9 +461,17 @@ def p_statement(p):
 	p[0]['typelist'] = []
 	if len(p)==2 and p.slice[1].type=="ReturnStmt":
 		p[0]['typelist'] = p[1]['typelist']
+	if len(p)==2 and p.slice[1].type=="Block":
+		for typ in p[1]['ret_typelist']:
+		    p[0]['typelist'] += typ
+	if len(p)==2 and p.slice[1].type=="IfStmt":
+		for typ in p[1]['ret_typelist']:
+		    p[0]['typelist'] += typ
+	if len(p)==2 and p.slice[1].type=="SwitchStmt":
+		for typ in p[1]['ret_typelist']:
+		    p[0]['typelist'] += typ
 	if len(p)==2 and p.slice[1].type=="FuncCallStmt":
 		actRecordSt = actRecordSt[:-1]
-		#print(actRecordSt)
 
 def p_go_func(p):
 	'''
@@ -553,10 +555,12 @@ def p_func_call_stmt(p):
 		entry = table.get(p[1])
 		p[0]['ret_types'] = entry.getReturnTypes()
 		actRecordSt[-1] = entry.getName()
-		#print(actRecordSt)
 		for typ in p[0]['ret_types']:
 		  p[0]['namelist'] += [newVar()]
-		p[0]['code'] = [str(p[0]['namelist']) + " := " + "call " + p[1]] + p[3]['code']
+		p[0]['code'] = p[3]['code']
+		for param in p[3]['namelist']:
+		    p[0]['code'] += ["push_param " + param]
+		p[0]['code'] += [str(p[0]['namelist']) + " := " + "call " + p[1]]
 		if entry.getInputArgs() != p[3]['typelist']:
 		   print("Function", p[1], "arguments mismatch at line num", p.lexer.lineno)
 
@@ -872,7 +876,6 @@ def p_expression_list(p):
 		p[0]['namelist'] = p[1]['namelist'] + p[2]['namelist']
 		p[0]['typelist'] = p[1]['ret_types'] + p[2]['typelist']
 		actRecordSt = actRecordSt[:-1]
-		#print(actRecordSt)
 
 def p_expression_bot_list(p):
 	'''
@@ -1289,7 +1292,6 @@ def p_parameters(p):
 	p[0]['code'] = []
 	p[0]['dict_code'] = {}
 	p[0]['args_types'] = p[2]['args_types']
-	#p[0]['idlist'] = p[2]['idlist']
 	params = p[2]['idlist']
 	scope = symTableSt[-1]
 	for param,t in zip(params, p[0]['args_types']):
@@ -1556,10 +1558,9 @@ def p_function_decl(p):
 	act_record.storeOldStPtr("%rbp")
 	act_record.setLocalVarsInputArgs(this_func_sym_table)
 	p[0]['dict_code'] = { func_name: p[3]['code'] }
-	if (p[2]['ret_types'] != p[3]['ret_actual_types']):
-	    print("Error:", func_name, "return types mismatch on line number", p.lexer.lineno)
-	#if (table.put(entry) == False):
-	#    print("Error:", func_name, "redeclared on line number", p.lexer.lineno)
+	for ret_actual in p[3]['ret_actual_types']:
+	      if (len(ret_actual) > 0 and p[2]['ret_types'] != ret_actual):
+	           print("Error:", func_name, "return types mismatch on line number", p.lexer.lineno)
 
 def p_signature(p):
 	'''
@@ -1630,7 +1631,7 @@ def p_function_name(p):
 	table = symTableDict[symTableSt[-1]]
 	entry = FuncEntry(p[1])
 	if (table.put(entry) == False):
-	    print("Error:", func_name, "redeclared on line number", p.lexer.lineno)
+	    print("Error:", p[1], "redeclared on line number", p.lexer.lineno)
 	p[0]['func_name'] = p[1]
 	key = "sym#" + str(p.lexer.lineno) + "#" + str(p.lexer.lexpos)
 	symtab = SymbolTable(symTableDict[symTableSt[-1]], key)
@@ -1681,7 +1682,6 @@ def p_method_decl(p):
 	p[0] = {}
 	p[0]['code'] = []
 	p[0]['dict_code'] = {}
-	#p[0]['code'] = p[4]['code']
 	p[0]['dict_code'] = { p[3]: p[4]['code'] }
 
 def p_method_name(p):
@@ -1869,6 +1869,7 @@ def p_if_stmt(p):
 	p[0]['code'] = p[2]['code'] + ['if '+ p[2]['place'] + p[3]['symbol'] + ' goto ' + p[4]['label'] + " " +p[5]['symbol']]
 	p[0]['code'] += [p[4]['label'] + ':'] + p[4]['code']
 	p[0]['code'] += p[5]['code']
+	p[0]['ret_typelist'] = p[4]['ret_typelist']
 
 def p_simple_stmt_bot(p):
 	'''
@@ -1942,6 +1943,7 @@ def p_switch_stmt(p):
 	p[0]['code'] = []
 	p[0]['dict_code'] = {}
 	p[0]['code'] = p[1]['code']
+	p[0]['ret_typelist'] = p[1]['ret_typelist']
 
 def p_expr_switch_stmt(p):
 	'''
@@ -1968,6 +1970,7 @@ def p_expr_switch_stmt(p):
 		p[0]['code'] += codeblock
 		p[0]['code'] += ['goto ' + p[4]['labellist'][-1]]
 	p[0]['code'] += [p[4]['labellist'][-1] + ':']
+	p[0]['ret_typelist'] = p[4]['ret_typelist']
 
 def p_expr_case_clause_list(p):
 	'''
@@ -1986,11 +1989,13 @@ def p_expr_case_clause_list(p):
 		p[0]['expcodelist'] = p[1]['expcode'] + p[2]['expcodelist']
 		p[0]['labellist'] = [p[1]['label']] + p[2]['labellist']
 		p[0]['code'] = [p[1]['code']] + p[2]['code']
+		p[0]['ret_typelist'] = [p[1]['ret_typelist']] + p[2]['ret_typelist']
 	if len(p)==2 and p.slice[1].type=="empty":
 		p[0]['explist'] = []
 		p[0]['expcodelist'] = []
 		p[0]['labellist'] = [newLabel()]
 		p[0]['code'] = []
+		p[0]['ret_typelist'] = []
 
 def p_expr_case_clause(p):
 	'''
@@ -2007,6 +2012,7 @@ def p_expr_case_clause(p):
 	p[0]['expcode'] = p[1]['code']
 	p[0]['label'] = newLabel()
 	p[0]['code'] = [p[0]['label'] + ' : '] + p[4]['code']
+	p[0]['ret_typelist'] = p[4]['ret_typelist']
 
 def p_expr_switch_case(p):
 	'''
@@ -2065,6 +2071,9 @@ def p_return_stmt(p):
 	p[0]['code'] = []
 	p[0]['dict_code'] = {}
 	p[0]['typelist'] = p[2]['typelist']
+	p[0]['code'] = p[2]['code']
+	for name in p[2]['namelist']:
+	      p[0]['code'] += ["ret " + name]
 
 def p_expression_list_bot(p):
 	'''
@@ -2079,6 +2088,7 @@ def p_expression_list_bot(p):
 	p[0]['code'] = []
 	p[0]['dict_code'] = {}
 	if len(p)==2 and p.slice[1].type=="ExpressionList":
+		p[0]['code'] = p[1]['code']
 		p[0]['typelist'] = p[1]['typelist']
 		p[0]['namelist'] = p[1]['namelist']
 	if len(p)==2 and p.slice[1].type=="empty":
