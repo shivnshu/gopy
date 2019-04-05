@@ -1,10 +1,12 @@
 package mypkg
 
+var d int = 4
+
 func test(a int, b float) (int, int) {
-	c := a + b
-	return c, a
+	f := 10
+	return 2, 3
 }
 
 func main() {
-	a, b := test(1, 2.3)
+	c, d := test(1, 2.3)
 }

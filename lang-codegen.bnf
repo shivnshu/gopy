@@ -13,10 +13,16 @@ symTableSt = symTableSt[:-1]
 
 SourceFile  : PackageClause ImportDeclList TopLevelDeclList
 <<0
-p[0]['code'] = p[1]['code'] + p[2]['code'] + p[3]['code']
+#p[0]['code'] = p[1]['code'] + p[2]['code'] + p[3]['code']
+p[0]['dict_code'] = p[3]['dict_code']
 print(symTableDict)
 for key in symTableDict:
     symTableDict[key].prettyPrint()
+print()
+for key in actRecordDict:
+    actRecordDict[key].prettyPrint()
+print()
+#print(actRecordSt)
 #import sys
 #sys.stdout = open('output.csv', 'w')
 #symTableToCSV(symTableDict)
@@ -65,7 +71,9 @@ if (symTable.put(entry) == False):
 TopLevelDeclList : TopLevelDecl TopLevelDeclList
                  | empty
 <<1
-p[0]['code'] = p[1]['code'] + p[2]['code']
+#p[0]['code'] = p[1]['code'] + p[2]['code']
+p[0]['dict_code'].update(p[1]['dict_code'])
+p[0]['dict_code'].update(p[2]['dict_code'])
 >>
 
 TopLevelDecl  : Declaration
@@ -75,7 +83,19 @@ TopLevelDecl  : Declaration
               | IFuncDef
               | StructDef
 <<0
-p[0]['code'] = p[1]['code']
+p[0]['dict_code'] = {}
+>>
+<<1
+if 'global_dict' in p[0]['dict_code']:
+  p[0]['dict_code']['global_decl'] += p[1]['code']
+else:
+  p[0]['dict_code']['global_decl'] = p[1]['code']
+>>
+<<2
+p[0]['dict_code'].update(p[1]['dict_code'])
+>>
+<<3
+p[0]['dict_code'].update(p[1]['dict_code'])
 >>
 
 StructDef : TYPE IDENTIFIER STRUCT keyword_lcurly ParameterDeclList2 keyword_rcurly
@@ -125,12 +145,22 @@ IFuncDef      : FUNC LPAREN IDENTIFIER IDENTIFIER RPAREN IFuncDec Block
 Block : keyword_lcurly StatementList keyword_rcurly
 <<0
 p[0]['code'] = p[2]['code']
+p[0]['ret_typelist'] = p[2]['ret_typelist']
 >>
 
 StatementList : Statement StatementList
+              | Statement empty
               | empty
+<<0
+p[0]['ret_typelist'] = []
+>>
 <<1
 p[0]['code'] = p[1]['code'] + p[2]['code']
+p[0]['ret_typelist'] = p[2]['ret_typelist']
+>>
+<<2
+p[0]['code'] = p[1]['code']
+p[0]['ret_typelist'] = p[1]['typelist']
 >>
 
 Statement : Declaration
@@ -144,6 +174,14 @@ Statement : Declaration
           | GoFunc
 <<0
 p[0]['code'] = p[1]['code']
+p[0]['typelist'] = []
+>>
+<<3
+p[0]['typelist'] = p[1]['typelist']
+>>
+<<8
+actRecordSt = actRecordSt[:-1]
+#print(actRecordSt)
 >>
 
 GoFunc    : GO FUNC Parameters FunctionBody LPAREN ExpressionList RPAREN
@@ -157,13 +195,14 @@ if (symTable.put(fn) == False):
 >>
 
 FuncCallStmt : IDENTIFIER DOT FuncCallStmt
-             | IDENTIFIER DOT FunctionName LPAREN RPAREN
-             | IDENTIFIER DOT FunctionName LPAREN ExpressionList RPAREN
-             | IDENTIFIER DOT FunctionName LPAREN ObjectMethod RPAREN
-             | FunctionName LPAREN ExpressionListBot RPAREN
+             | IDENTIFIER DOT IDENTIFIER LPAREN RPAREN
+             | IDENTIFIER DOT IDENTIFIER LPAREN ExpressionList RPAREN
+             | IDENTIFIER DOT IDENTIFIER LPAREN ObjectMethod RPAREN
+             | IDENTIFIER LPAREN ExpressionListBot RPAREN
 <<0
 p[0]['ret_types'] = []
 p[0]['namelist'] = []
+actRecordSt += ["root"]
 >>
 <<1
 b = False
@@ -205,19 +244,21 @@ if not b:
 <<5
 b = False
 for scope in symTableSt:
-  if p[1]['func_name'] in symTableDict[scope].symbols:
+  if p[1] in symTableDict[scope].symbols:
     b = True
     table = symTableDict[scope]
     break
 if not b:
-	print("Function", p[1]['func_name'], "not defined on line number", p.lexer.lineno)
-entry = table.get(p[1]['func_name'])
+	print("Function", p[1], "not defined on line number", p.lexer.lineno)
+entry = table.get(p[1])
 p[0]['ret_types'] = entry.getReturnTypes()
+actRecordSt[-1] = entry.getName()
+#print(actRecordSt)
 for typ in p[0]['ret_types']:
   p[0]['namelist'] += [newVar()]
-p[0]['code'] = [str(p[0]['namelist']) + " := " + "call " + p[1]['func_name']] + p[3]['code']
+p[0]['code'] = [str(p[0]['namelist']) + " := " + "call " + p[1]] + p[3]['code']
 if entry.getInputArgs() != p[3]['typelist']:
-   print("Function", p[1]['func_name'], "arguments mismatch at line num", p.lexer.lineno)
+   print("Function", p[1], "arguments mismatch at line num", p.lexer.lineno)
 >>
 
 ObjectMethod : IDENTIFIER DOT IDENTIFIER LPAREN ParameterDeclList2 RPAREN
@@ -373,6 +414,8 @@ p[0]['typelist'] = [p[1]['type']] + p[2]['typelist']
 <<2
 p[0]['namelist'] = p[1]['namelist'] + p[2]['namelist']
 p[0]['typelist'] = p[1]['ret_types'] + p[2]['typelist']
+actRecordSt = actRecordSt[:-1]
+#print(actRecordSt)
 >>
 
 ExpressionBotList : ExpressionBotList COMMA Expression
@@ -536,11 +579,13 @@ p[0]['types'] = []
 Parameters  : LPAREN ParameterListTop RPAREN
 <<0
 p[0]['args_types'] = p[2]['args_types']
+#p[0]['idlist'] = p[2]['idlist']
 params = p[2]['idlist']
 scope = symTableSt[-1]
 for param,t in zip(params, p[0]['args_types']):
     entry = VarEntry(param)
     entry.setType(t)
+    entry.isNotLocal()
     table = symTableDict[scope]
     if (table.put(entry) == False):
         print("Error:", param, "redeclared on line number", p.lexer.lineno)
@@ -602,12 +647,24 @@ p[0]['idlist'] = []
 >>
 
 VarDecl : VAR VarSpecTopList
+<<0
+p[0]['code'] = p[2]['code']
+>>
 
 VarSpecTopList : VarSpec
                | LPAREN VarSpecList RPAREN
+<<1
+p[0]['code'] = p[1]['code']
+>>
+<<2
+p[0]['code'] = p[2]['code']
+>>
 
 VarSpecList : VarSpec VarSpecList SEMICOLON
             | empty
+<<1
+p[0]['code'] = p[1]['code'] + p[2]['code']
+>>
 
 VarSpec  : IdentifierList1 VarSpecTail
 <<0
@@ -628,12 +685,15 @@ for index in range(len(mylist)):
       var.setType(p[2]['typelist'][0])
     if (symTable.put(var) == False):
         print("Error:", i, "redeclared on line number", p.lexer.lineno)
+    j = p[2]['namelist'][index]
+    p[0]['code'] += [i + " := " + j] 
 >>
 
 VarSpecTail : Type VarSpecMid
             | EQ ExpressionList
 <<0
 p[0]['namelist'] = p[2]['namelist']
+p[0]['code'] = p[2]['code']
 >>
 <<1
 p[0]['typelist'] = [p[1]['type']]
@@ -649,6 +709,7 @@ VarSpecMid : EQ ExpressionList
 <<1
 p[0]['namelist'] = p[2]['namelist']
 p[0]['typelist'] = p[2]['typelist']
+p[0]['code'] = p[2]['code']
 >>
 <<2
 p[0]['namelist'] = []
@@ -657,7 +718,7 @@ p[0]['typelist'] = []
 
 FunctionDecl : FUNC FunctionName FunctionDeclTail
 <<0
-p[0]['code'] = p[3]['code']
+symTableSt = symTableSt[:-1]
 input_args = p[3]['input_args']
 ret_types = p[3]['ret_types']
 func_name = p[2]['func_name']
@@ -666,6 +727,12 @@ table = symTableDict[scope]
 entry = FuncEntry(func_name)
 entry.setInputArgs(input_args)
 entry.setReturnTypes(ret_types)
+#p[0]['code'] = p[3]['code']
+p[0]['dict_code'] = { func_name: p[3]['code'] }
+actRecord = ActivationRecord(entry)
+actRecordDict[func_name] = actRecord
+if (p[3]['ret_types'] != p[3]['ret_actual_types']):
+    print("Error:", func_name, "return types mismatch on line number", p.lexer.lineno)
 if (table.put(entry) == False):
     print("Error:", func_name, "redeclared on line number", p.lexer.lineno)
 >>
@@ -676,11 +743,19 @@ FunctionDeclTail : Function
 p[0]['code'] = p[1]['code']
 p[0]['input_args'] = p[1]['input_args']
 p[0]['ret_types'] = p[1]['ret_types']
+p[0]['ret_actual_types'] = []
+>>
+<<1
+p[0]['ret_actual_types'] = p[1]['ret_actual_types']
 >>
 
 FunctionName : IDENTIFIER
 <<0
 p[0]['func_name'] = p[1]
+key = "sym#" + str(p.lexer.lineno) + "#" + str(p.lexer.lexpos)
+symtab = SymbolTable(symTableDict[symTableSt[-1]], key)
+symTableDict[key] = symtab
+symTableSt += [key]
 >>
 
 Function  : Signature FunctionBody
@@ -688,16 +763,19 @@ Function  : Signature FunctionBody
 p[0]['code'] = p[2]['code']
 p[0]['input_args'] = p[1]['input_args']
 p[0]['ret_types'] = p[1]['ret_types']
+p[0]['ret_actual_types'] = p[2]['ret_typelist']
 >>
 
-FunctionBody : Block
+FunctionBody : LCURLY StatementList RCURLY
 <<0
-p[0]['code'] = p[1]['code']
+p[0]['code'] = p[2]['code']
+p[0]['ret_typelist'] = p[2]['ret_typelist']
 >>
 
 MethodDecl : FUNC Receiver MethodName FunctionDeclTail
 <<0
-p[0]['code'] = p[4]['code']
+#p[0]['code'] = p[4]['code']
+p[0]['dict_code'] = { p[3]: p[4]['code'] }
 >>
 
 MethodName : IDENTIFIER
@@ -911,6 +989,9 @@ p[0]['symbol'] = ''
 >>
 
 ReturnStmt : RETURN ExpressionListBot
+<<0
+p[0]['typelist'] = p[2]['typelist']
+>>
 
 ExpressionListBot : ExpressionList
                   | empty

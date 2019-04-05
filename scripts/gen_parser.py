@@ -42,11 +42,15 @@ output += "from SymbolTable import SymbolTableInterfaceEntry as InterfaceEntry\n
 output += "from SymbolTable import SymbolTableStructEntry as StructEntry\n"
 output += "from SymbolTable import SymbolTableFunctionEntry as FuncEntry\n"
 output += "from SymbolTable import SymbolTableImportEntry as ImportEntry\n\n"
+output += "from SymbolTable import ActivationRecord\n"
 
 output += "from utils import symTableToCSV\n\n"
 
 output += "symTableDict = {'rootSymTable': SymbolTable(None, 'rootSymTable')}\n"
 output += "symTableSt = ['rootSymTable']\n"
+
+output += "actRecordDict = {'root': ActivationRecord(None)}\n"
+output += "actRecordSt = ['root']\n"
 
 output += "counter = 0\n"
 output += "label_counter = 0\n\n"
@@ -107,8 +111,10 @@ for grammer in grammers:
     output += "\n\t'''\n"
     (tmp_out, i) = insertActionsHelper(0, grammer_list, i, 1)
     output += "\tglobal symTableSt\n\tglobal symTableDict\n"
+    output += "\tglobal actRecordSt\n\tglobal actRecordDict\n"
     output += "\tp[0] = {}\n"
     output += "\tp[0]['code'] = []\n"
+    output += "\tp[0]['dict_code'] = {}\n"
     output += tmp_out
     if (len(tmp_out) == 0):
         i -= 1
