@@ -116,6 +116,9 @@ class SymbolTable(object):
             self.offset = 0
         self.currOffset = 0
 
+    def getSymbols(self):
+        return self.symbols
+
     def getVarSymbols(self):
         res = {}
         for symbol in self.symbols:

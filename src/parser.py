@@ -1196,20 +1196,6 @@ def p_function_type(p):
 	p[0]['code'] = []
 	p[0]['dict_code'] = {}
 
-def p_signature(p):
-	'''
-	Signature  : Parameters ResultTop
-	'''
-	global symTableSt
-	global symTableDict
-	global actRecordSt
-	global actRecordDict
-	p[0] = {}
-	p[0]['code'] = []
-	p[0]['dict_code'] = {}
-	p[0]['input_args'] = p[1]['args_types']
-	p[0]['ret_types'] = p[2]['ret_types']
-
 def p_result_top(p):
 	'''
 	ResultTop : Result
@@ -1547,7 +1533,7 @@ def p_var_spec_mid(p):
 
 def p_function_decl(p):
 	'''
-	FunctionDecl : FUNC FunctionName FunctionDeclTail
+	FunctionDecl : FUNC Signature FunctionBodyTop
 	'''
 	global symTableSt
 	global symTableDict
@@ -1560,23 +1546,56 @@ def p_function_decl(p):
 	act_record = actRecordDict[actRecordSt[-1]]
 	actRecordSt = actRecordSt[:-1]
 	symTableSt = symTableSt[:-1]
-	input_args = p[3]['input_args']
-	ret_types = p[3]['ret_types']
+	input_args = p[2]['input_args']
+	ret_types = p[2]['ret_types']
 	func_name = p[2]['func_name']
 	scope = symTableSt[-1]
 	table = symTableDict[scope]
-	entry = FuncEntry(func_name)
-	entry.setInputArgs(input_args)
-	entry.setReturnTypes(ret_types)
+	entry = symTableDict[symTableSt[-1]].get(func_name)
 	act_record.setRetValues(entry)
 	act_record.storeOldStPtr("%rbp")
 	act_record.setLocalVarsInputArgs(this_func_sym_table)
-	#p[0]['code'] = p[3]['code']
 	p[0]['dict_code'] = { func_name: p[3]['code'] }
-	if (p[3]['ret_types'] != p[3]['ret_actual_types']):
+	if (p[2]['ret_types'] != p[3]['ret_actual_types']):
 	    print("Error:", func_name, "return types mismatch on line number", p.lexer.lineno)
-	if (table.put(entry) == False):
-	    print("Error:", func_name, "redeclared on line number", p.lexer.lineno)
+	#if (table.put(entry) == False):
+	#    print("Error:", func_name, "redeclared on line number", p.lexer.lineno)
+
+def p_signature(p):
+	'''
+	Signature  : FunctionName Parameters ResultTop
+	'''
+	global symTableSt
+	global symTableDict
+	global actRecordSt
+	global actRecordDict
+	p[0] = {}
+	p[0]['code'] = []
+	p[0]['dict_code'] = {}
+	func_name = p[1]['func_name']
+	p[0]['input_args'] = p[2]['args_types']
+	p[0]['ret_types'] = p[3]['ret_types']
+	p[0]['func_name'] = func_name
+	entry = symTableDict[symTableSt[-2]].get(func_name)
+	entry.setInputArgs(p[0]['input_args'])
+	entry.setReturnTypes(p[0]['ret_types'])
+
+def p_function_body_top(p):
+	'''
+	FunctionBodyTop : FunctionBody
+	                | empty
+	'''
+	global symTableSt
+	global symTableDict
+	global actRecordSt
+	global actRecordDict
+	p[0] = {}
+	p[0]['code'] = []
+	p[0]['dict_code'] = {}
+	p[0]['ret_actual_types'] = []
+	if len(p)==2 and p.slice[1].type=="FunctionBody":
+		p[0]['code'] = p[1]['code']
+		p[0]['ret_actual_types'] = p[1]['ret_typelist']
 
 def p_function_decl_tail(p):
 	'''
@@ -1608,6 +1627,10 @@ def p_function_name(p):
 	p[0] = {}
 	p[0]['code'] = []
 	p[0]['dict_code'] = {}
+	table = symTableDict[symTableSt[-1]]
+	entry = FuncEntry(p[1])
+	if (table.put(entry) == False):
+	    print("Error:", func_name, "redeclared on line number", p.lexer.lineno)
 	p[0]['func_name'] = p[1]
 	key = "sym#" + str(p.lexer.lineno) + "#" + str(p.lexer.lexpos)
 	symtab = SymbolTable(symTableDict[symTableSt[-1]], key)
