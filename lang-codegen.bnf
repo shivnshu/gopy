@@ -28,14 +28,6 @@ print()
 for key in actRecordDict:
     actRecordDict[key].prettyPrint()
 print()
-#print(actRecordSt)
-#import sys
-#sys.stdout = open('output.csv', 'w')
-#symTableToCSV(symTableDict)
-#file = open("output.code", "w")
-#for c in p[0]['code']:
-#    file.write(c + '\n')
-#p[0] = ''
 >>
 
 PackageClause  : PACKAGE IDENTIFIER
@@ -389,7 +381,7 @@ p[0]['code'] = p[1]['code'] + p[2]['code']
 IdOrArrayElemBotList : IdOrArrayElemBotList COMMA IdOrArrayElem
                       | empty
 <<1
-p[0]['idlist'] = p[1]['idlist'] + p[3]['id']
+p[0]['idlist'] = p[1]['idlist'] + [p[3]['id']]
 p[0]['idxlists'] = p[1]['idxlists'] + [p[3]['idxlist']]
 p[0]['code'] = p[1]['code'] + p[3]['code']
 >>
@@ -864,10 +856,10 @@ if (p[2]['len'] == 1):
       print("Error type mismatch in line " +str(p.lexer.lineno) +". Expected type " +verifyCalType(i, p.lexer.lineno)+", got type "+ k)
     p[0]['code'] += [i + ' := ' + j] 
 else:
-  for i, j in zip(p[1]['idlist'], p[3]['namelist']):
+  for i, j, k in zip(p[1]['idlist'], p[3]['namelist'], p[3]['typelist']):
     if verifyCalType(i, p.lexer.lineno) != k:
       print("Error type mismatch in line " +str(p.lexer.lineno) +". Expected type " +verifyCalType(i, p.lexer.lineno)+", got type "+ k)
-    p[0]['code'] += [i + ' :=  '+ i + p2['symbol'] + j]
+    p[0]['code'] += [i + ' :=  '+ i + p[2]['symbol'] + j]
 >>
 
 AssignmentGen : IdOrArrayElemList assign_op ExpressionList
@@ -877,12 +869,16 @@ if (p[2]['len'] == 1):
   for i, idx,  j, k in zip(p[1]['idlist'], p[1]['idxlists'],  p[3]['namelist'], p[3]['typelist']):
     if verifyCalType(i, p.lexer.lineno) != k:
       print("Error type mismatch in line " +str(p.lexer.lineno) +". Expected type " +verifyCalType(i, p.lexer.lineno)+", got type "+ k)
-    p[0]['code'] += [i +str(idx) + ' := ' + j] 
+    if (len(idx) == 0):
+      idx = ""
+    p[0]['code'] += [i + str(idx) + ' := ' + j] 
 else:
-  for i, idx, j in zip(p[1]['idlist'], p[1]['idxlists'], p[3]['namelist']):
+  for i, idx, j, k in zip(p[1]['idlist'], p[1]['idxlists'], p[3]['namelist'], p[3]['typelist']):
     if verifyCalType(i, p.lexer.lineno) != k:
       print("Error type mismatch in line " +str(p.lexer.lineno) +". Expected type " +verifyCalType(i, p.lexer.lineno)+", got type "+ k)
-    p[0]['code'] += [i + ' := ' + i +str(idx)+p2['symbol'] + j]
+    if (len(idx) == 0):
+      idx = ""
+    p[0]['code'] += [i + str(idx) + ' := ' + i + str(idx) + p[2]['symbol'] + j]
 >>
 
 assign_op : addmul_op EQ
@@ -896,7 +892,7 @@ addmul_op : add_op
           | empty
 <<1
 p[0]['len'] = 1
-p[0][symbol] = p[1][symbol]
+p[0]['symbol'] = p[1]['symbol']
 >>
 <<2
 p[0]['len'] = 1
@@ -1196,6 +1192,7 @@ Operand : Literal
         | LPAREN Expression RPAREN
         | TRUE
         | FALSE
+        | FuncCallStmt
 <<0
 p[0]['place'] = newVar()
 >>
@@ -1219,6 +1216,12 @@ p[0]['type'] = 'bool'
 <<6
 p[0]['code'] = [p[0]['place'] + ' := false']
 p[0]['type'] = 'bool'
+>>
+<<7
+p[0]['code'] = p[1]['code']
+p[0]['type'] = ""
+if len(p[1]['ret_types']) > 0:
+  p[0]['type'] = p[1]['ret_types'][0]
 >>
 
 Literal : BasicLit

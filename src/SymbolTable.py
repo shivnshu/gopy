@@ -22,12 +22,9 @@ class SymbolTableEntry:
 class SymbolTableVariableEntry(SymbolTableEntry):
     def __init__(self, name):
         SymbolTableEntry.__init__(self, name, "VarType")
-        self.variableType = "Unknown"
+        self.variableType = ""
         self.dimension = 0
         self.dim_ranges = []
-        self.width = "Unknown"
-        self.value = "Unknown"
-        self.memoryLocation = 0
         self.is_local = True
     def setValue(self, value):
         self.value = value
@@ -45,10 +42,6 @@ class SymbolTableVariableEntry(SymbolTableEntry):
         return self.dim_ranges
     def setDimRanges(self, dim_ranges):
         self.dim_ranges = dim_ranges
-    def setMemoryLocation(self, size):
-        self.memoryLocation = self.table.getCurrOffset()
-        self.size = size
-        self.table.decCurrOffset(size)
     def isNotLocal(self):
         self.is_local = False
     def getIsLocal(self):

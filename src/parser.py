@@ -816,7 +816,7 @@ def p_id_or_array_elem_bot_list(p):
 	p[0]['code'] = []
 	p[0]['dict_code'] = {}
 	if len(p)==4 and p.slice[3].type=="IdOrArrayElem" and p.slice[2].type=="COMMA" and p.slice[1].type=="IdOrArrayElemBotList":
-		p[0]['idlist'] = p[1]['idlist'] + p[3]['id']
+		p[0]['idlist'] = p[1]['idlist'] + [p[3]['id']]
 		p[0]['idxlists'] = p[1]['idxlists'] + [p[3]['idxlist']]
 		p[0]['code'] = p[1]['code'] + p[3]['code']
 	if len(p)==2 and p.slice[1].type=="empty":
@@ -1787,10 +1787,10 @@ def p_assignment(p):
 	      print("Error type mismatch in line " +str(p.lexer.lineno) +". Expected type " +verifyCalType(i, p.lexer.lineno)+", got type "+ k)
 	    p[0]['code'] += [i + ' := ' + j] 
 	else:
-	  for i, j in zip(p[1]['idlist'], p[3]['namelist']):
+	  for i, j, k in zip(p[1]['idlist'], p[3]['namelist'], p[3]['typelist']):
 	    if verifyCalType(i, p.lexer.lineno) != k:
 	      print("Error type mismatch in line " +str(p.lexer.lineno) +". Expected type " +verifyCalType(i, p.lexer.lineno)+", got type "+ k)
-	    p[0]['code'] += [i + ' :=  '+ i + p2['symbol'] + j]
+	    p[0]['code'] += [i + ' :=  '+ i + p[2]['symbol'] + j]
 
 def p_assignment_gen(p):
 	'''
@@ -1808,12 +1808,16 @@ def p_assignment_gen(p):
 	  for i, idx,  j, k in zip(p[1]['idlist'], p[1]['idxlists'],  p[3]['namelist'], p[3]['typelist']):
 	    if verifyCalType(i, p.lexer.lineno) != k:
 	      print("Error type mismatch in line " +str(p.lexer.lineno) +". Expected type " +verifyCalType(i, p.lexer.lineno)+", got type "+ k)
-	    p[0]['code'] += [i +str(idx) + ' := ' + j] 
+	    if (len(idx) == 0):
+	      idx = ""
+	    p[0]['code'] += [i + str(idx) + ' := ' + j] 
 	else:
-	  for i, idx, j in zip(p[1]['idlist'], p[1]['idxlists'], p[3]['namelist']):
+	  for i, idx, j, k in zip(p[1]['idlist'], p[1]['idxlists'], p[3]['namelist'], p[3]['typelist']):
 	    if verifyCalType(i, p.lexer.lineno) != k:
 	      print("Error type mismatch in line " +str(p.lexer.lineno) +". Expected type " +verifyCalType(i, p.lexer.lineno)+", got type "+ k)
-	    p[0]['code'] += [i + ' := ' + i +str(idx)+p2['symbol'] + j]
+	    if (len(idx) == 0):
+	      idx = ""
+	    p[0]['code'] += [i + str(idx) + ' := ' + i + str(idx) + p[2]['symbol'] + j]
 
 def p_assign_op(p):
 	'''
@@ -1844,7 +1848,7 @@ def p_addmul_op(p):
 	p[0]['dict_code'] = {}
 	if len(p)==2 and p.slice[1].type=="add_op":
 		p[0]['len'] = 1
-		p[0][symbol] = p[1][symbol]
+		p[0]['symbol'] = p[1]['symbol']
 	if len(p)==2 and p.slice[1].type=="mul_op":
 		p[0]['len'] = 1
 		p[0]['symbol'] = p[1]['symbol']
@@ -2330,6 +2334,7 @@ def p_operand(p):
 	        | LPAREN Expression RPAREN
 	        | TRUE
 	        | FALSE
+	        | FuncCallStmt
 	'''
 	global symTableSt
 	global symTableDict
@@ -2355,6 +2360,12 @@ def p_operand(p):
 	if len(p)==2 and p.slice[1].type=="FALSE":
 		p[0]['code'] = [p[0]['place'] + ' := false']
 		p[0]['type'] = 'bool'
+	if len(p)==2 and p.slice[1].type=="FuncCallStmt":
+		p[0]['code'] = p[1]['code']
+		p[0]['type'] = ""
+		print(p[1]['ret_types'])
+		if len(p[1]['ret_types']) > 0:
+		  p[0]['type'] = p[1]['ret_types'][0]
 
 def p_literal(p):
 	'''
