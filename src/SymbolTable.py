@@ -176,6 +176,7 @@ class ActivationRecord:
         self.old_st_ptrs = {}
         self.saved_regs = {}
         self.local_vars = {}
+        self.global_vars = {}
         self.access_links = {}
         self.pos_offset = 8
         self.offset = 0
@@ -209,5 +210,14 @@ class ActivationRecord:
                 self.input_args[var_entry.getName()] = (self.pos_offset, size)
                 self.pos_offset += size
 
+    def getLocalVars(self):
+        return self.local_vars
+
+    def setGlobalVars(self, global_vars):
+        self.global_vars = global_vars
+
+    def getGlobalVars(self):
+        return self.global_vars
+
     def prettyPrint(self):
-        print("Name:", self.name, "Ret value:", self.ret_values, "Params:", self.input_args, "OldStPtrs:", self.old_st_ptrs, "SavedRegs:", self.saved_regs, "LocalVars:", self.local_vars, "\n")
+        print("Name:", self.name, "Ret value:", self.ret_values, "Params:", self.input_args, "OldStPtrs:", self.old_st_ptrs, "SavedRegs:", self.saved_regs, "LocalVars:", self.local_vars, "GlobalVars:", self.global_vars, "\n")

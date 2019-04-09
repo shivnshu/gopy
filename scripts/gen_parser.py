@@ -44,7 +44,8 @@ output += "from SymbolTable import SymbolTableFunctionEntry as FuncEntry\n"
 output += "from SymbolTable import SymbolTableImportEntry as ImportEntry\n\n"
 output += "from SymbolTable import ActivationRecord\n"
 
-output += "from utils import symTableToCSV\n\n"
+output += "from utils import symTableToCSV\n"
+output += "from code_optimization import code_optimization\n\n"
 
 output += "symTableDict = {'rootSymTable': SymbolTable(None, 'rootSymTable')}\n"
 output += "symTableSt = ['rootSymTable']\n"
@@ -57,13 +58,13 @@ output += "label_counter = 0\n\n"
 
 output += "def newVar():\n"
 output += "\tglobal counter\n"
-output += "\tres = 't' + str(counter)\n"
+output += "\tres = '_t' + str(counter)\n"
 output += "\tcounter += 1\n"
 output += "\treturn res\n\n"
 
 output += "def newLabel():\n"
 output += "\tglobal label_counter\n"
-output += "\tres = 'label' + str(label_counter)\n"
+output += "\tres = '_label' + str(label_counter)\n"
 output += "\tlabel_counter += 1\n"
 output += "\treturn res\n\n"
 

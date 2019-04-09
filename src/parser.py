@@ -12,6 +12,7 @@ from SymbolTable import SymbolTableImportEntry as ImportEntry
 
 from SymbolTable import ActivationRecord
 from utils import symTableToCSV
+from code_optimization import code_optimization
 
 symTableDict = {'rootSymTable': SymbolTable(None, 'rootSymTable')}
 symTableSt = ['rootSymTable']
@@ -22,13 +23,13 @@ label_counter = 0
 
 def newVar():
 	global counter
-	res = 't' + str(counter)
+	res = '_t' + str(counter)
 	counter += 1
 	return res
 
 def newLabel():
 	global label_counter
-	res = 'label' + str(label_counter)
+	res = '_label' + str(label_counter)
 	label_counter += 1
 	return res
 
@@ -65,7 +66,9 @@ def p_keyword_lcurly(p):
 	symtab = SymbolTable(symTableDict[symTableSt[-1]], key)
 	symTableDict[key] = symtab
 	symTableSt += [key]
+	prevActRecord = actRecordDict[actRecordSt[-1]]
 	actRecord = ActivationRecord(key)
+	actRecord.setGlobalVars(prevActRecord.getGlobalVars())
 	actRecordDict[key] = actRecord
 	actRecordSt += [actRecord.getName()]
 
@@ -105,14 +108,6 @@ def p_source_file(p):
 	for key in actRecordDict:
 	    actRecordDict[key].prettyPrint()
 	print()
-	#print(actRecordSt)
-	#import sys
-	#sys.stdout = open('output.csv', 'w')
-	#symTableToCSV(symTableDict)
-	#file = open("output.code", "w")
-	#for c in p[0]['code']:
-	#    file.write(c + '\n')
-	#p[0] = ''
 
 def p_package_clause(p):
 	'''
@@ -263,7 +258,16 @@ def p_top_level_decl(p):
 		if 'global_dict' in p[0]['dict_code']:
 		  p[0]['dict_code']['global_decl'] += p[1]['code']
 		else:
-		  p[0]['dict_code']['global_decl'] = p[1]['code']
+		  p[0]['dict_code']['global_decl'] = code_optimization(p[1]['code'])
+		global_vars = {}
+		for line in p[0]['dict_code']['global_decl']:
+		  stmt = line.split(" := ")
+		  global_vars[stmt[0]] = stmt[1]
+		sym_table = symTableDict[symTableSt[-1]]
+		#print(sym_table.getVarSymbols())
+		act_record = actRecordDict[actRecordSt[-1]]
+		act_record.setLocalVarsInputArgs(sym_table)
+		act_record.setGlobalVars(act_record.getLocalVars())
 	if len(p)==2 and p.slice[1].type=="FunctionDecl":
 		p[0]['dict_code'].update(p[1]['dict_code'])
 	if len(p)==2 and p.slice[1].type=="MethodDecl":
@@ -485,6 +489,12 @@ def p_go_func(p):
 	p[0] = {}
 	p[0]['code'] = []
 	p[0]['dict_code'] = {}
+	if len(p)==8 and p.slice[7].type=="RPAREN" and p.slice[6].type=="ExpressionList" and p.slice[5].type=="LPAREN" and p.slice[4].type=="FunctionBody" and p.slice[3].type=="Parameters" and p.slice[2].type=="FUNC" and p.slice[1].type=="GO":
+		code = ["start_go_func:"] + p[6]['code']
+		for id, value in zip(p[3]['idlist'], p[6]['namelist']):
+		    code += [id + " := " + value]
+		code += p[4]['code']
+		p[0]['code'] = code + ["end_go_func"]
 	if len(p)==6 and p.slice[5].type=="RPAREN" and p.slice[4].type=="ExpressionListBot" and p.slice[3].type=="LPAREN" and p.slice[2].type=="IDENTIFIER" and p.slice[1].type=="GO":
 		scope = symTableSt[-1]
 		symTable = symTableDict[scope]
@@ -495,8 +505,7 @@ def p_go_func(p):
 def p_func_call_stmt(p):
 	'''
 	FuncCallStmt : IDENTIFIER DOT FuncCallStmt
-	             | IDENTIFIER DOT IDENTIFIER LPAREN RPAREN
-	             | IDENTIFIER DOT IDENTIFIER LPAREN ExpressionList RPAREN
+	             | IDENTIFIER DOT IDENTIFIER LPAREN ExpressionListBot RPAREN
 	             | IDENTIFIER DOT IDENTIFIER LPAREN ObjectMethod RPAREN
 	             | IDENTIFIER LPAREN ExpressionListBot RPAREN
 	'''
@@ -519,7 +528,8 @@ def p_func_call_stmt(p):
 		if not b:
 			print("Function", p[1], "not defined on line number", p.lexer.lineno)
 		p[0]['ret_types'] = p[3]['ret_types']
-	if len(p)==6 and p.slice[5].type=="RPAREN" and p.slice[4].type=="LPAREN" and p.slice[3].type=="IDENTIFIER" and p.slice[2].type=="DOT" and p.slice[1].type=="IDENTIFIER":
+		p[0]['code'] = p[3]['code']
+	if len(p)==7 and p.slice[6].type=="RPAREN" and p.slice[5].type=="ExpressionListBot" and p.slice[4].type=="LPAREN" and p.slice[3].type=="IDENTIFIER" and p.slice[2].type=="DOT" and p.slice[1].type=="IDENTIFIER":
 		b = False
 		for scope in symTableSt:
 			if p[1] in symTableDict[scope].symbols:
@@ -527,14 +537,10 @@ def p_func_call_stmt(p):
 				break
 		if not b:
 			print("Function", p[1], "not defined on line number", p.lexer.lineno)
-	if len(p)==7 and p.slice[6].type=="RPAREN" and p.slice[5].type=="ExpressionList" and p.slice[4].type=="LPAREN" and p.slice[3].type=="IDENTIFIER" and p.slice[2].type=="DOT" and p.slice[1].type=="IDENTIFIER":
-		b = False
-		for scope in symTableSt:
-			if p[1] in symTableDict[scope].symbols:
-				b = True
-				break
-		if not b:
-			print("Function", p[1], "not defined on line number", p.lexer.lineno)
+		p[0]['code'] = p[5]['code']
+		for param in p[5]['namelist']:
+		    p[0]['code'] += ["push_param " + param]
+		p[0]['code'] += [str(p[0]['namelist']) + " := " + "call " + p[1] + "." + p[3]]
 	if len(p)==7 and p.slice[6].type=="RPAREN" and p.slice[5].type=="ObjectMethod" and p.slice[4].type=="LPAREN" and p.slice[3].type=="IDENTIFIER" and p.slice[2].type=="DOT" and p.slice[1].type=="IDENTIFIER":
 		b = False
 		for scope in symTableSt:
@@ -602,6 +608,7 @@ def p_const_decl(p):
 	p[0] = {}
 	p[0]['code'] = []
 	p[0]['dict_code'] = {}
+	p[0]['code'] = p[2]['code']
 
 def p_const_spec_top_list(p):
 	'''
@@ -615,6 +622,10 @@ def p_const_spec_top_list(p):
 	p[0] = {}
 	p[0]['code'] = []
 	p[0]['dict_code'] = {}
+	if len(p)==2 and p.slice[1].type=="ConstSpec":
+		p[0]['code'] = p[1]['code']
+	if len(p)==4 and p.slice[3].type=="RPAREN" and p.slice[2].type=="ConstSpecList" and p.slice[1].type=="LPAREN":
+		p[0]['code'] = p[2]['code']
 
 def p_const_spec_list(p):
 	'''
@@ -628,6 +639,8 @@ def p_const_spec_list(p):
 	p[0] = {}
 	p[0]['code'] = []
 	p[0]['dict_code'] = {}
+	if len(p)==3 and p.slice[2].type=="ConstSpecList" and p.slice[1].type=="ConstSpec":
+		p[0]['code'] = p[1]['code'] + p[2]['code']
 
 def p_const_spec(p):
 	'''
@@ -668,6 +681,7 @@ def p_const_spec_tail(p):
 	if len(p)==4 and p.slice[3].type=="ExpressionList" and p.slice[2].type=="EQ" and p.slice[1].type=="TypeTop":
 		p[0]['namelist'] = p[3]['namelist']
 		p[0]['typelist'] = p[3]['typelist']
+		p[0]['code'] = p[3]['code']
 
 def p_type_top(p):
 	'''
@@ -1292,6 +1306,7 @@ def p_parameters(p):
 	p[0]['code'] = []
 	p[0]['dict_code'] = {}
 	p[0]['args_types'] = p[2]['args_types']
+	p[0]['idlist'] = p[2]['idlist']
 	params = p[2]['idlist']
 	scope = symTableSt[-1]
 	for param,t in zip(params, p[0]['args_types']):
@@ -1557,7 +1572,7 @@ def p_function_decl(p):
 	act_record.setRetValues(entry)
 	act_record.storeOldStPtr("%rbp")
 	act_record.setLocalVarsInputArgs(this_func_sym_table)
-	p[0]['dict_code'] = { func_name: p[3]['code'] }
+	p[0]['dict_code'] = { func_name: code_optimization(p[3]['code']) }
 	for ret_actual in p[3]['ret_actual_types']:
 	      if (len(ret_actual) > 0 and p[2]['ret_types'] != ret_actual):
 	           print("Error:", func_name, "return types mismatch on line number", p.lexer.lineno)
@@ -1637,7 +1652,9 @@ def p_function_name(p):
 	symtab = SymbolTable(symTableDict[symTableSt[-1]], key)
 	symTableDict[key] = symtab
 	symTableSt += [key]
+	prevActRecord = actRecordDict[actRecordSt[-1]]
 	actRecord = ActivationRecord(p[1])
+	actRecord.setGlobalVars(prevActRecord.getGlobalVars())
 	actRecordDict[p[1]] = actRecord
 	actRecordSt += [actRecord.getName()]
 
@@ -1682,7 +1699,7 @@ def p_method_decl(p):
 	p[0] = {}
 	p[0]['code'] = []
 	p[0]['dict_code'] = {}
-	p[0]['dict_code'] = { p[3]: p[4]['code'] }
+	p[0]['dict_code'] = { p[3]: code_optimization(p[4]['code']) }
 
 def p_method_name(p):
 	'''
@@ -2363,7 +2380,6 @@ def p_operand(p):
 	if len(p)==2 and p.slice[1].type=="FuncCallStmt":
 		p[0]['code'] = p[1]['code']
 		p[0]['type'] = ""
-		print(p[1]['ret_types'])
 		if len(p[1]['ret_types']) > 0:
 		  p[0]['type'] = p[1]['ret_types'][0]
 

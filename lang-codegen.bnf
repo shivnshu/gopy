@@ -4,7 +4,9 @@ key = "sym#" + str(p.lexer.lineno) + "#" + str(p.lexer.lexpos)
 symtab = SymbolTable(symTableDict[symTableSt[-1]], key)
 symTableDict[key] = symtab
 symTableSt += [key]
+prevActRecord = actRecordDict[actRecordSt[-1]]
 actRecord = ActivationRecord(key)
+actRecord.setGlobalVars(prevActRecord.getGlobalVars())
 actRecordDict[key] = actRecord
 actRecordSt += [actRecord.getName()]
 >>
@@ -86,7 +88,16 @@ p[0]['dict_code'] = {}
 if 'global_dict' in p[0]['dict_code']:
   p[0]['dict_code']['global_decl'] += p[1]['code']
 else:
-  p[0]['dict_code']['global_decl'] = p[1]['code']
+  p[0]['dict_code']['global_decl'] = code_optimization(p[1]['code'])
+global_vars = {}
+for line in p[0]['dict_code']['global_decl']:
+  stmt = line.split(" := ")
+  global_vars[stmt[0]] = stmt[1]
+sym_table = symTableDict[symTableSt[-1]]
+#print(sym_table.getVarSymbols())
+act_record = actRecordDict[actRecordSt[-1]]
+act_record.setLocalVarsInputArgs(sym_table)
+act_record.setGlobalVars(act_record.getLocalVars())
 >>
 <<2
 p[0]['dict_code'].update(p[1]['dict_code'])
@@ -189,6 +200,13 @@ actRecordSt = actRecordSt[:-1]
 
 GoFunc    : GO FUNC Parameters FunctionBody LPAREN ExpressionList RPAREN
           | GO IDENTIFIER LPAREN ExpressionListBot RPAREN
+<<1
+code = ["start_go_func:"] + p[6]['code']
+for id, value in zip(p[3]['idlist'], p[6]['namelist']):
+    code += [id + " := " + value]
+code += p[4]['code']
+p[0]['code'] = code + ["end_go_func"]
+>>
 <<2
 scope = symTableSt[-1]
 symTable = symTableDict[scope]
@@ -198,8 +216,7 @@ if (symTable.put(fn) == False):
 >>
 
 FuncCallStmt : IDENTIFIER DOT FuncCallStmt
-             | IDENTIFIER DOT IDENTIFIER LPAREN RPAREN
-             | IDENTIFIER DOT IDENTIFIER LPAREN ExpressionList RPAREN
+             | IDENTIFIER DOT IDENTIFIER LPAREN ExpressionListBot RPAREN
              | IDENTIFIER DOT IDENTIFIER LPAREN ObjectMethod RPAREN
              | IDENTIFIER LPAREN ExpressionListBot RPAREN
 <<0
@@ -216,6 +233,7 @@ for scope in symTableSt:
 if not b:
 	print("Function", p[1], "not defined on line number", p.lexer.lineno)
 p[0]['ret_types'] = p[3]['ret_types']
+p[0]['code'] = p[3]['code']
 >>
 <<2
 b = False
@@ -225,6 +243,10 @@ for scope in symTableSt:
 		break
 if not b:
 	print("Function", p[1], "not defined on line number", p.lexer.lineno)
+p[0]['code'] = p[5]['code']
+for param in p[5]['namelist']:
+    p[0]['code'] += ["push_param " + param]
+p[0]['code'] += [str(p[0]['namelist']) + " := " + "call " + p[1] + "." + p[3]]
 >>
 <<3
 b = False
@@ -236,15 +258,6 @@ if not b:
 	print("Function", p[1], "not defined on line number", p.lexer.lineno)
 >>
 <<4
-b = False
-for scope in symTableSt:
-	if p[1] in symTableDict[scope].symbols:
-		b = True
-		break
-if not b:
-	print("Function", p[1], "not defined on line number", p.lexer.lineno)
->>
-<<5
 b = False
 for scope in symTableSt:
   if p[1] in symTableDict[scope].symbols:
@@ -276,12 +289,24 @@ p[0]['code'] = p[1]['code']
 >>
 
 ConstDecl  : CONST ConstSpecTopList
+<<0
+p[0]['code'] = p[2]['code']
+>>
 
 ConstSpecTopList : ConstSpec
                  | LPAREN ConstSpecList RPAREN
+<<1
+p[0]['code'] = p[1]['code']
+>>
+<<2
+p[0]['code'] = p[2]['code']
+>>
 
 ConstSpecList : ConstSpec ConstSpecList
               | empty
+<<1
+p[0]['code'] = p[1]['code'] + p[2]['code']
+>>
 
 ConstSpec : IdentifierList1 ConstSpecTail
 <<0
@@ -304,6 +329,7 @@ ConstSpecTail : TypeTop EQ ExpressionList
 <<1
 p[0]['namelist'] = p[3]['namelist']
 p[0]['typelist'] = p[3]['typelist']
+p[0]['code'] = p[3]['code']
 >>
 
 TypeTop : Type
@@ -577,6 +603,7 @@ p[0]['types'] = []
 Parameters  : LPAREN ParameterListTop RPAREN
 <<0
 p[0]['args_types'] = p[2]['args_types']
+p[0]['idlist'] = p[2]['idlist']
 params = p[2]['idlist']
 scope = symTableSt[-1]
 for param,t in zip(params, p[0]['args_types']):
@@ -729,7 +756,7 @@ entry = symTableDict[symTableSt[-1]].get(func_name)
 act_record.setRetValues(entry)
 act_record.storeOldStPtr("%rbp")
 act_record.setLocalVarsInputArgs(this_func_sym_table)
-p[0]['dict_code'] = { func_name: p[3]['code'] }
+p[0]['dict_code'] = { func_name: code_optimization(p[3]['code']) }
 for ret_actual in p[3]['ret_actual_types']:
       if (len(ret_actual) > 0 and p[2]['ret_types'] != ret_actual):
            print("Error:", func_name, "return types mismatch on line number", p.lexer.lineno)
@@ -779,7 +806,9 @@ key = "sym#" + str(p.lexer.lineno) + "#" + str(p.lexer.lexpos)
 symtab = SymbolTable(symTableDict[symTableSt[-1]], key)
 symTableDict[key] = symtab
 symTableSt += [key]
+prevActRecord = actRecordDict[actRecordSt[-1]]
 actRecord = ActivationRecord(p[1])
+actRecord.setGlobalVars(prevActRecord.getGlobalVars())
 actRecordDict[p[1]] = actRecord
 actRecordSt += [actRecord.getName()]
 >>
@@ -800,7 +829,7 @@ p[0]['ret_typelist'] = p[2]['ret_typelist']
 
 MethodDecl : FUNC Receiver MethodName FunctionDeclTail
 <<0
-p[0]['dict_code'] = { p[3]: p[4]['code'] }
+p[0]['dict_code'] = { p[3]: code_optimization(p[4]['code']) }
 >>
 
 MethodName : IDENTIFIER

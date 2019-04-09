@@ -2,6 +2,11 @@ package mypkg
 
 import "fmt"
 
+const (
+  z = 10
+  y = 11
+)
+
 func fibonacci(x int) int {
 	if (x <= 1) {
 		return 1

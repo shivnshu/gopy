@@ -1,6 +1,12 @@
 package mypkg
 
+import "fmt"
+
+const z = 2
+
 func main() {
-  a := 1
-  a += 3
+  d := 10
+  a := d
+  b := a
+  c := a
 }
