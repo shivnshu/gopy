@@ -1,8 +1,0 @@
-Start : PackageClause
-
-PackageClause  : keyword_package PackageName
-
-PackageName    : IDENTIFIER
-               | empty
-
-keyword_package : PACKAGE
