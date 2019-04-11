@@ -108,6 +108,7 @@ def p_source_file(p):
 	for key in actRecordDict:
 	    actRecordDict[key].prettyPrint()
 	print()
+	p[0]['activationRecords'] = actRecordDict
 
 def p_package_clause(p):
 	'''

@@ -30,6 +30,7 @@ print()
 for key in actRecordDict:
     actRecordDict[key].prettyPrint()
 print()
+p[0]['activationRecords'] = actRecordDict
 >>
 
 PackageClause  : PACKAGE IDENTIFIER

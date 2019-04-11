@@ -1,5 +1,7 @@
 package mypkg
 
 func main() {
-  a := 10
+	var a int
+	a = 10
+	b := -10
 }
