@@ -5,26 +5,26 @@ def asm_gen(line, activation_record):
     res = []
     toks = line.split()
     print(toks)
-    left_type = getTokType(toks[0])
-    right_type = getTokType(toks[2])
-    if (left_type == "register"):
-        dst_entry = get_register(toks[0])
-    elif (left_type == "variable"):
-        (offset, size) = activation_record.getVarTuple(toks[0])
-        dst_entry = str(offset) + "%(rbp)"
+    # left_type = getTokType(toks[0])
+    # right_type = getTokType(toks[2])
+    # if (left_type == "register"):
+    #     dst_entry = get_register(toks[0])
+    # elif (left_type == "variable"):
+    #     (offset, size) = activation_record.getVarTuple(toks[0])
+    #     dst_entry = str(offset) + "%(rbp)"
 
-    if (right_type == "register"):
-        free_register(toks[2])
-        src_entry = toks[2]
-        res.append("mov " + src_entry + ", " + dst_entry)
-    elif (right_type == "positive-integer"):
-        src_entry = "$" + toks[2]
-        res.append("mov " + src_entry + ", " + dst_entry)
-    elif (right_type == "negative-integer"):
-        src_entry = "$" + str(abs(int(toks[2][1:])))
-        res.append("mov " + src_entry + ", " + dst_entry)
-        res.append("negl " + dst_entry)
-    elif (right_type == "variable"):
-        (offset, size) = activation_record.getVarTuple(toks[2])
-        src_entry = str(offset) + "%(rbp)"
-    print(res)
+    # if (right_type == "register"):
+    #     free_register(toks[2])
+    #     src_entry = toks[2]
+    #     res.append("mov " + src_entry + ", " + dst_entry)
+    # elif (right_type == "positive-integer"):
+    #     src_entry = "$" + toks[2]
+    #     res.append("mov " + src_entry + ", " + dst_entry)
+    # elif (right_type == "negative-integer"):
+    #     src_entry = "$" + str(abs(int(toks[2][1:])))
+    #     res.append("mov " + src_entry + ", " + dst_entry)
+    #     res.append("negl " + dst_entry)
+    # elif (right_type == "variable"):
+    #     (offset, size) = activation_record.getVarTuple(toks[2])
+    #     src_entry = str(offset) + "%(rbp)"
+    # print(res)

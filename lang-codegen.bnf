@@ -31,6 +31,11 @@ for key in actRecordDict:
     actRecordDict[key].prettyPrint()
 print()
 p[0]['activationRecords'] = actRecordDict
+for key in p[0]['dict_code']:
+  print(key + ":")
+  for code in p[0]['dict_code'][key]:
+    print(code)
+  print()
 >>
 
 PackageClause  : PACKAGE IDENTIFIER
@@ -1126,7 +1131,7 @@ p[0]['code'] = p[1]['code']
 <<2
 p[0]['place'] = newVar()
 p[0]['type'] = p[2]['type']
-p[0]['code'] = [p[0]['place'] + ' := ' + p[1]['symbol'] + p[2]['place']]
+p[0]['code'] = p[2]['code'] + [p[0]['place'] + ' := ' + p[1]['symbol'] + p[2]['place']]
 >>
 
 binary_op  : OR_OR

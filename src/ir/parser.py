@@ -109,6 +109,11 @@ def p_source_file(p):
 	    actRecordDict[key].prettyPrint()
 	print()
 	p[0]['activationRecords'] = actRecordDict
+	for key in p[0]['dict_code']:
+	  print(key + ":")
+	  for code in p[0]['dict_code'][key]:
+	    print(code)
+	  print()
 
 def p_package_clause(p):
 	'''
@@ -2214,7 +2219,7 @@ def p_unary_expr(p):
 	if len(p)==3 and p.slice[2].type=="UnaryExpr" and p.slice[1].type=="unary_op":
 		p[0]['place'] = newVar()
 		p[0]['type'] = p[2]['type']
-		p[0]['code'] = [p[0]['place'] + ' := ' + p[1]['symbol'] + p[2]['place']]
+		p[0]['code'] = p[2]['code'] + [p[0]['place'] + ' := ' + p[1]['symbol'] + p[2]['place']]
 
 def p_binary_op(p):
 	'''

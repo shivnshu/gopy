@@ -13,7 +13,7 @@ args = arg_parser.parse_args()
 input_file = open(args.input[0], "r")
 
 ir_info = ir_gen(input_file)
-print(ir_info)
+#print(ir_info)
 dict_code = ir_info['dict_code']
 activation_records = ir_info['activationRecords']
 
