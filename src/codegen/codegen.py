@@ -7,6 +7,7 @@ from ir_gen import ir_gen
 from common import getCodeType
 import assignments
 import func_calls
+import binaryop
 
 arg_parser = argparse.ArgumentParser()
 arg_parser.add_argument("input", nargs="*")
@@ -29,7 +30,7 @@ def asm_gen(code_line, func_name):
         res, context = func_calls.asm_gen(code_line, activation_records, func_name, context)
         return res
     if (code_type == "binary-op"):
-        res, context = binaryop.asm_gen(code_line, activation_records, func_name, context)
+        res, context = binaryop.asm_gen(code_line, activation_records[func_name], context)
         return res
     return None
 
@@ -62,6 +63,8 @@ def main():
             gen_code = asm_gen(code_line, func_name)
             if (gen_code != None):
                 res += gen_code
+            else:
+                print("Error: in ", code_line)
         res += func_end
     return res
 

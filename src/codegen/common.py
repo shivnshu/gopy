@@ -37,7 +37,7 @@ def getCodeType(code):
         return "assignments"
     if (len(toks) == 2 and ("call" in toks or "push_param" in toks or "ret_param" in toks or "ret" in toks)):
         return "function-call"
-    if  (len(toks)==5 and toks[1]==":=" and toks[3] in binary_op_list):
+    if  (len(toks)==5 and toks[1]==":=" and (toks[3][0] in binary_op_list or toks[3][0:2] in binary_op_list)):
         return "binary-op"
     return None
 

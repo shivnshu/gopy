@@ -34,4 +34,5 @@ def asm_gen(line, activation_record):
             pass
         else:
             src_entry = str(offset) + "(%ebp)"
+            res.append("movl " + src_entry + ", " + dst_entry)
     return res
