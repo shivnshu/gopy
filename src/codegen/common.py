@@ -12,6 +12,8 @@ def getCodeType(code):
     toks = code.split()
     if (len(toks) == 3 and ":=" in code):
         return "assignments"
+    if (len(toks) == 2 and ("call" in toks or "push_param" in toks or "ret_param" in toks or "ret" in toks)):
+        return "function-call"
     return None
 
 def getTokType(tok):

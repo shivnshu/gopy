@@ -196,6 +196,9 @@ class ActivationRecord:
             self.ret_values += [(self.pos_offset, size)]
             self.pos_offset += size
 
+    def getRetValues(self):
+        return self.ret_values
+
     def setLocalVarsInputArgs(self, sym_table):
         global type_to_size
         varSymbols = sym_table.getVarSymbols()

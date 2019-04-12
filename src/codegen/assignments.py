@@ -18,8 +18,8 @@ def asm_gen(line, activation_record):
             dst_entry = str(offset) + "(%ebp)"
 
     if (right_type == "register"):
+        src_entry = get_register(toks[2])
         free_register(toks[2])
-        src_entry = toks[2]
         res.append("movl " + src_entry + ", " + dst_entry)
     elif (right_type == "positive-integer"):
         src_entry = "$" + toks[2]

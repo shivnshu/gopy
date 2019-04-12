@@ -546,9 +546,9 @@ def p_func_call_stmt(p):
 		p[0]['code'] = p[5]['code']
 		for param in p[5]['namelist']:
 		    p[0]['code'] += ["push_param " + param]
+		p[0]['code'] += ["call " + p[1] + "." + p[3]]
 		for name in p[0]['namelist']:
 		  p[0]['code'] += ["ret_param " + name]
-		p[0]['code'] += ["call " + p[1] + "." + p[3]]
 	if len(p)==7 and p.slice[6].type=="RPAREN" and p.slice[5].type=="ObjectMethod" and p.slice[4].type=="LPAREN" and p.slice[3].type=="IDENTIFIER" and p.slice[2].type=="DOT" and p.slice[1].type=="IDENTIFIER":
 		b = False
 		for scope in symTableSt:
@@ -574,9 +574,9 @@ def p_func_call_stmt(p):
 		p[0]['code'] = p[3]['code']
 		for param in p[3]['namelist']:
 		    p[0]['code'] += ["push_param " + param]
+		p[0]['code'] += ["call " + p[1]]
 		for name in p[0]['namelist']:
 		  p[0]['code'] += ["ret_param " + name]
-		p[0]['code'] += ["call " + p[1]]
 		if entry.getInputArgs() != p[3]['typelist']:
 		   print("Function", p[1], "arguments mismatch at line num", p.lexer.lineno)
 
