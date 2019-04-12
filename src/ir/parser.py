@@ -1894,13 +1894,43 @@ def p_if_stmt(p):
 	p[0] = {}
 	p[0]['code'] = []
 	p[0]['dict_code'] = {}
+	p[0]['lastlabel'] = p[5]['lastlabel']
 	p[4]['label'] = newLabel()
 	if (p[2]['place'] == ''):
 	   print("Inadequate condition at line num", p.lexer.lineno)
-	p[0]['code'] = p[2]['code'] + ['if '+ p[2]['place'] + p[3]['symbol'] + ' goto ' + p[4]['label'] + " " +p[5]['symbol']]
-	p[0]['code'] += [p[4]['label'] + ':'] + p[4]['code']
+	if (p[5]['symbol'] != ""):
+	   p[0]['code'] = p[2]['code'] + ['if '+ p[2]['place'] + p[3]['symbol'] + ' goto ' + p[4]['label'] + " " +p[5]['symbol']]
+	else:
+	   p[0]['code'] = p[2]['code'] + ['if '+ p[2]['place'] + p[3]['symbol'] + ' goto ' + p[4]['label'] + " else goto " +p[0]['lastlabel']]
+	   
+	p[0]['code'] += [p[4]['label'] + ':'] + p[4]['code'] + ["goto " + p[0]['lastlabel']]
+	p[0]['code'] += p[5]['code'] + [p[0]['lastlabel'] +": "]
+	p[0]['ret_typelist'] = p[4]['ret_typelist']
+
+def p_if_stmt2(p):
+	'''
+	IfStmt2 : IF SimpleStmtBot ExpressionBot Block elseBot
+	'''
+	global symTableSt
+	global symTableDict
+	global actRecordSt
+	global actRecordDict
+	p[0] = {}
+	p[0]['code'] = []
+	p[0]['dict_code'] = {}
+	p[0]['lastlabel'] = p[5]['lastlabel']
+	p[4]['label'] = newLabel()
+	if (p[2]['place'] == ''):
+	   print("Inadequate condition at line num", p.lexer.lineno)
+	if (p[5]['symbol'] != ""):
+	   p[0]['code'] = p[2]['code'] + ['if '+ p[2]['place'] + p[3]['symbol'] + ' goto ' + p[4]['label'] + " " +p[5]['symbol']]
+	else:
+	   p[0]['code'] = p[2]['code'] + ['if '+ p[2]['place'] + p[3]['symbol'] + ' goto ' + p[4]['label'] + " else goto " +p[0]['lastlabel']]
+	   
+	p[0]['code'] += [p[4]['label'] + ':'] + p[4]['code'] + ["goto " + p[0]['lastlabel']]
 	p[0]['code'] += p[5]['code']
 	p[0]['ret_typelist'] = p[4]['ret_typelist']
+	print(p[0]['code'])
 
 def p_simple_stmt_bot(p):
 	'''
@@ -1943,13 +1973,15 @@ def p_else_bot(p):
 		p[2]['label'] = newLabel()
 		p[0]['symbol'] = 'else goto ' + p[2]['label']
 		p[0]['code'] = [p[2]['label'] + ' : '] + p[2]['code']
+		p[0]['lastlabel'] = p[2]['lastlabel']
 	if len(p)==2 and p.slice[1].type=="empty":
 		p[0]['symbol'] = ''
 		p[0]['code'] = []
+		p[0]['lastlabel'] = newLabel()
 
 def p_else_tail(p):
 	'''
-	elseTail : IfStmt
+	elseTail : IfStmt2
 	         | Block
 	'''
 	global symTableSt
@@ -1960,6 +1992,10 @@ def p_else_tail(p):
 	p[0]['code'] = []
 	p[0]['dict_code'] = {}
 	p[0]['code'] = p[1]['code']
+	if len(p)==2 and p.slice[1].type=="IfStmt2":
+		p[0]['lastlabel'] = p[1]['lastlabel']
+	if len(p)==2 and p.slice[1].type=="Block":
+		p[0]['lastlabel'] = newLabel()
 
 def p_switch_stmt(p):
 	'''
