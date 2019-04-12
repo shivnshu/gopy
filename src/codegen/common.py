@@ -1,8 +1,30 @@
+import sys
+
+usable_registers = ["%eax", "%ebx", "%ecx", "%edx", "%esi", "%edi"]
+free_registers = usable_registers.copy()
+
+register_mapping = {}
+
 def get_register(name):
-    return "%eax"
+    global free_registers
+    global register_mapping
+    if (name in register_mapping):
+        return register_mapping[name]
+    if (len(free_registers) == 0):
+        print("Error: out of registers")
+        sys.exit(0)
+    register_mapping[name] = free_registers[0]
+    free_registers = free_registers[1:]
+    return register_mapping[name]
 
 def free_register(name):
-    pass
+    global free_registers
+    global register_mapping
+    if (not name in register_mapping):
+        print("Error: register can not be freed")
+        sys.exit(0)
+    free_registers += [register_mapping[name]]
+    del register_mapping[name]
 
 # assignments
 # function call

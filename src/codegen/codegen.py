@@ -18,7 +18,7 @@ ir_info = ir_gen(input_file)
 dict_code = ir_info['dict_code']
 activation_records = ir_info['activationRecords']
 
-context = {"last_func_call_ret": [], "func_ret": []}
+context = {"last_func_call_ret": [], "last_func_call_ret_offset": 0, "func_ret": []}
 
 def asm_gen(code_line, func_name):
     global context
@@ -48,7 +48,10 @@ def main():
     for func_name in dict_code:
         if (func_name == "global_decl"):
             continue
-        res += ["func_" + func_name + ":"]
+        if (func_name == "main"):
+            res += ["func_main:"]
+        else:
+            res += [func_name + ":"]
         res += func_init
         res += alloc_st_code(func_name)
         code_list = dict_code[func_name]
