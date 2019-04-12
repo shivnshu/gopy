@@ -252,7 +252,9 @@ if not b:
 p[0]['code'] = p[5]['code']
 for param in p[5]['namelist']:
     p[0]['code'] += ["push_param " + param]
-p[0]['code'] += [str(p[0]['namelist']) + " := " + "call " + p[1] + "." + p[3]]
+for name in p[0]['namelist']:
+  p[0]['code'] += ["ret_param " + name]
+p[0]['code'] += ["call " + p[1] + "." + p[3]]
 >>
 <<3
 b = False
@@ -280,7 +282,9 @@ for typ in p[0]['ret_types']:
 p[0]['code'] = p[3]['code']
 for param in p[3]['namelist']:
     p[0]['code'] += ["push_param " + param]
-p[0]['code'] += [str(p[0]['namelist']) + " := " + "call " + p[1]]
+for name in p[0]['namelist']:
+  p[0]['code'] += ["ret_param " + name]
+p[0]['code'] += ["call " + p[1]]
 if entry.getInputArgs() != p[3]['typelist']:
    print("Function", p[1], "arguments mismatch at line num", p.lexer.lineno)
 >>

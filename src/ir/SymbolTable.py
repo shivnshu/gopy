@@ -221,12 +221,12 @@ class ActivationRecord:
 
     def getVarTuple(self,var_name):
         if var_name in self.local_vars:
-            return self.local_vars[var_name]
+            return self.local_vars[var_name], ""
         if var_name in self.input_args:
-            return self.input_args[var_name]
+            return self.input_args[var_name], ""
         if var_name in self.global_vars:
-            return self.global_vars[var_name]
-        return None
+            return self.global_vars[var_name], "global"
+        return (None, None), ""
 
     def prettyPrint(self):
         print("Name:", self.name, "Ret value:", self.ret_values, "Params:", self.input_args, "OldStPtrs:", self.old_st_ptrs, "SavedRegs:", self.saved_regs, "LocalVars:", self.local_vars, "GlobalVars:", self.global_vars, "\n")
