@@ -77,3 +77,6 @@ code_lines = main()
 print("+++++++++++++++++++++++++++++++++++++++++++++++++")
 for code_line in code_lines:
     print(code_line)
+f = open("tmp.S", "w")
+for code_line in code_lines:
+    f.write(code_line + "\n")

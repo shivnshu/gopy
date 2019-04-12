@@ -1,8 +1,9 @@
 package mypkg
 
-func test(a int, b int) {
-}
+import "fmt"
 
 func main() {
-  test(1,2)
+  a := "Lol"
+  b := "haha"
+  fmt.Printf("I say %s and %s with number %d\n", a, b, 111)
 }

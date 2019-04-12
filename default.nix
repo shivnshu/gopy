@@ -1,14 +1,15 @@
 let
     pkgs = import <nixpkgs> {};
 in
-    { stdenv ? pkgs.stdenv }:
+    { multiStdenv ? pkgs.multiStdenv }:
 
-    stdenv.mkDerivation {
+    multiStdenv.mkDerivation {
         name = "GoPy";
         buildInputs = [
             pkgs.python3
             pkgs.python36Packages.ipython
             pkgs.python36Packages.ply
             pkgs.python36Packages.graphviz
+            pkgs.gcc_multi
         ];
     }

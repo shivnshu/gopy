@@ -4,6 +4,7 @@ type_to_size["long"] = 8
 type_to_size["char"] = 1
 type_to_size["float"] = 4
 type_to_size["double"] = 8
+type_to_size["string"] = 4 # Since storing address
 
 class SymbolTableEntry:
     def __init__(self, name, type):
@@ -26,10 +27,6 @@ class SymbolTableVariableEntry(SymbolTableEntry):
         self.dimension = 0
         self.dim_ranges = []
         self.is_local = True
-    def setValue(self, value):
-        self.value = value
-    def getValue(self):
-        return self.value
     def setType(self, type):
         self.variableType = type
     def getType(self):
@@ -103,11 +100,6 @@ class SymbolTable(object):
         self.name = name
         self.parent = parent
         self.symbols = {}
-        if (parent != None):
-            self.offset = parent.getOffset() + parent.getCurrOffset()
-        else:
-            self.offset = 0
-        self.currOffset = 0
 
     def getSymbols(self):
         return self.symbols
@@ -138,25 +130,14 @@ class SymbolTable(object):
     def getName(self):
         return self.name
 
-    def getOffset(self):
-        return self.offset
-
-    def getCurrOffset(self):
-        return self.currOffset
-
-    def decCurrOffset(self, size):
-        self.currOffset -= size
-
     def prettyPrint(self):
         print("\nName:", self.name)
         if (self.parent != None):
             print("Parent:", self.parent.getName())
         else:
             print("Parent:", None)
-        print("Offset:", self.offset)
         for sym in self.symbols:
             self.symbols[sym].prettyPrint()
-            #print(sym + ":", self.symbols[sym].type)
         print()
 
     # def toCSV(self):
@@ -178,15 +159,15 @@ class ActivationRecord:
         self.local_vars = {}
         self.global_vars = {}
         self.access_links = {}
-        self.pos_offset = 8
+        self.pos_offset = 4
         self.offset = 0
 
     def getName(self):
         return self.name
 
     def storeOldStPtr(self, name):
-        self.old_st_ptrs[name] = (self.pos_offset, 8)
-        self.pos_offset += 8
+        self.old_st_ptrs[name] = (self.pos_offset, 4)
+        self.pos_offset += 4
 
     def setRetValues(self, func_entry):
         global type_to_size
@@ -204,12 +185,13 @@ class ActivationRecord:
         varSymbols = sym_table.getVarSymbols()
         for symbol in varSymbols:
             var_entry = varSymbols[symbol]
+            var_type = var_entry.getType()
             if (var_entry.getIsLocal() == True):
-                size = max(1, var_entry.getDim()) * type_to_size[var_entry.getType()]
+                size = max(1, var_entry.getDim()) * type_to_size[var_type]
                 self.offset -= size
                 self.local_vars[var_entry.getName()] = (self.offset, size)
             else:
-                size = type_to_size[var_entry.getType()]
+                size = type_to_size[var_type]
                 self.input_args[var_entry.getName()] = (self.pos_offset, size)
                 self.pos_offset += size
 

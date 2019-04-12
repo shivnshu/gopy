@@ -914,7 +914,7 @@ def p_expression_bot_list(p):
 	p[0]['code'] = []
 	p[0]['dict_code'] = {}
 	if len(p)==4 and p.slice[3].type=="Expression" and p.slice[2].type=="COMMA" and p.slice[1].type=="ExpressionBotList":
-		p[0]['namelist'] = [p[3]['place']] + p[1]['namelist']
+		p[0]['namelist'] = p[1]['namelist'] + [p[3]['place']]
 		p[0]['typelist'] = p[1]['typelist'] + [p[3]['type']]
 		p[0]['code'] = p[1]['code'] + p[3]['code']
 	if len(p)==2 and p.slice[1].type=="empty":

@@ -3,5 +3,6 @@ package mypkg
 import "fmt"
 
 func main() {
-  fmt.Printf("I am ")
+  a := "abcd"
+  fmt.Printf(a)
 }

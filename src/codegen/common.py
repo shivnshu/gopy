@@ -34,6 +34,20 @@ def free_register(name):
         free_registers += [register_mapping[name]]
     del register_mapping[name]
 
+def reserve_register(reg):
+    global free_registers
+    if not reg in free_registers:
+        print("Error: " + reg + " could not be reserved")
+        sys.exit(0)
+    free_registers.remove(reg)
+
+def unreserve_register(reg):
+    global free_registers
+    if reg in free_registers:
+        print("Warning: " + reg + " is already unreserved")
+    else:
+        free_registers += [reg]
+
 binary_op_list = ["+", "-", "*", "/", "&&", "||", "==", "!=", "<", ">", "<=", ">=", "|", "^"]
 # assignments
 # function call

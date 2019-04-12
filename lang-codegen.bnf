@@ -461,7 +461,7 @@ actRecordSt = actRecordSt[:-1]
 ExpressionBotList : ExpressionBotList COMMA Expression
                   | empty
 <<1
-p[0]['namelist'] = [p[3]['place']] + p[1]['namelist']
+p[0]['namelist'] = p[1]['namelist'] + [p[3]['place']]
 p[0]['typelist'] = p[1]['typelist'] + [p[3]['type']]
 p[0]['code'] = p[1]['code'] + p[3]['code']
 >>

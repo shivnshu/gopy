@@ -1,5 +1,6 @@
 import common
 from common import get_register, set_register, free_register, getTokType
+from common import reserve_register, unreserve_register
 
 def asm_gen(line, activation_record, context, data_section):
     res = []
@@ -36,9 +37,19 @@ def asm_gen(line, activation_record, context, data_section):
             src_entry = str(offset) + "(%ebp)"
             res.append("movl " + src_entry + ", " + dst_entry)
     elif (right_type == "string"):
-        string_name = "string_" + str(context["num"])
-        data_section += [string_name + ': .string ' + toks[2]]
-        context["num"] += 1
-        free_register(toks[0])
-        set_register(toks[0], "$" + string_name)
+        string_lit = toks[2][1:-1].encode().decode('unicode_escape') # Allow newline etc.
+        if (left_type == "register"):
+            free_register(toks[0])
+            reserve_register("%eax")
+            dst_entry = get_register(toks[0])
+            unreserve_register("%eax")
+        res += ["push $" + str(len(string_lit) + 1)]
+        res += ["call malloc"]
+        index = 0
+        for ch_lit in string_lit:
+            res += ["movb $" + hex(ord(ch_lit)) + ", " + str(index) + "(%eax)"]
+            index += 1
+        res += ["movb $0x0, " + str(index) + "(%eax)"]
+        res += ["movl %eax, " + dst_entry]
+        pass
     return res, context
