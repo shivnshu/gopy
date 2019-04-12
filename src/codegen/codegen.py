@@ -19,13 +19,14 @@ ir_info = ir_gen(input_file)
 dict_code = ir_info['dict_code']
 activation_records = ir_info['activationRecords']
 
-context = {"last_func_call_ret": [], "last_func_call_ret_offset": 0, "func_ret": [], "rel_op_num": 0}
+context = {"last_func_call_ret": [], "last_func_call_ret_offset": 0, "func_ret": [], "rel_op_num": 0, "num": 0}
 
-def asm_gen(code_line, func_name):
+def asm_gen(code_line, func_name, data_section):
     global context
     code_type = getCodeType(code_line)
     if (code_type == "assignments"):
-        return assignments.asm_gen(code_line, activation_records[func_name])
+        res, context = assignments.asm_gen(code_line, activation_records[func_name], context, data_section)
+        return res
     if (code_type == "function-call"):
         res, context = func_calls.asm_gen(code_line, activation_records, func_name, context)
         return res
@@ -49,6 +50,7 @@ def main():
     res += ["_init:", "push %ebp", "movl %esp, %ebp", "movl %ebp, %esp", "pop %ebp", "ret", ""]
     func_init = ["push %ebp", "mov %esp, %ebp"]
     func_end = ["mov %ebp, %esp", "pop %ebp", "ret", ""]
+    data_section = [".section .data"]
     for func_name in dict_code:
         if (func_name == "global_decl"):
             continue
@@ -60,12 +62,15 @@ def main():
         res += alloc_st_code(func_name)
         code_list = dict_code[func_name]
         for code_line in code_list:
-            gen_code = asm_gen(code_line, func_name)
+            if (code_line == "call fmt.Printf"):
+                code_line = "call printf"
+            gen_code = asm_gen(code_line, func_name, data_section)
             if (gen_code != None):
                 res += gen_code
             else:
-                print("Error: in ", code_line)
+                print("Code generation error for line: ", code_line)
         res += func_end
+    res += data_section
     return res
 
 code_lines = main()

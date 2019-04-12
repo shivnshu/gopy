@@ -1,5 +1,8 @@
 package mypkg
 
+func test(a int, b int) {
+}
+
 func main() {
-  c := 10 || 20
+  test(1,2)
 }

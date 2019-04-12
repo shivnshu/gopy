@@ -8,8 +8,9 @@ def asm_gen(line, activation_records, func_name, context):
     if (len(toks) != 2):
         return res, context
     if (toks[0] == "call"):
-        context["last_func_call_ret"] = activation_records[toks[1]].getRetValues()
-        context["last_func_call_ret_offset"] = 0
+        if (toks[1] != "printf"):
+            context["last_func_call_ret"] = activation_records[toks[1]].getRetValues()
+            context["last_func_call_ret_offset"] = 0
         res += [line]
     if (toks[0] == "push_param"):
         param_type = getTokType(toks[1])

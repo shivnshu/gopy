@@ -1,4 +1,5 @@
 import sys
+import re
 
 usable_registers = ["%eax", "%ebx", "%ecx", "%edx", "%esi", "%edi"]
 free_registers = usable_registers.copy()
@@ -17,13 +18,20 @@ def get_register(name):
     free_registers = free_registers[1:]
     return register_mapping[name]
 
+def set_register(name, value):
+    if (name in register_mapping):
+        print("Error: duplicate entry")
+        sys.exit(0)
+    register_mapping[name] = value
+
 def free_register(name):
     global free_registers
     global register_mapping
     if (not name in register_mapping):
-        print("Error: register can not be freed")
+        print("Error: " + name + " register can not be freed")
         sys.exit(0)
-    free_registers += [register_mapping[name]]
+    if (register_mapping[name] in usable_registers):
+        free_registers += [register_mapping[name]]
     del register_mapping[name]
 
 binary_op_list = ["+", "-", "*", "/", "&&", "||", "==", "!=", "<", ">", "<=", ">=", "|", "^"]
@@ -32,6 +40,7 @@ binary_op_list = ["+", "-", "*", "/", "&&", "||", "==", "!=", "<", ">", "<=", ">
 # binary ops
 # return from function
 def getCodeType(code):
+    code = re.sub(r'".*"', 'string', code)
     toks = code.split()
     if (len(toks) == 3 and ":=" in code):
         return "assignments"

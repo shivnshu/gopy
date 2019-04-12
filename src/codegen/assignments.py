@@ -1,9 +1,9 @@
 import common
-from common import get_register, free_register, getTokType
+from common import get_register, set_register, free_register, getTokType
 
-def asm_gen(line, activation_record):
+def asm_gen(line, activation_record, context, data_section):
     res = []
-    toks = line.split()
+    toks = line.split(" ", 2) # string support
     # print(toks)
 
     left_type = getTokType(toks[0])
@@ -35,4 +35,10 @@ def asm_gen(line, activation_record):
         else:
             src_entry = str(offset) + "(%ebp)"
             res.append("movl " + src_entry + ", " + dst_entry)
-    return res
+    elif (right_type == "string"):
+        string_name = "string_" + str(context["num"])
+        data_section += [string_name + ': .string ' + toks[2]]
+        context["num"] += 1
+        free_register(toks[0])
+        set_register(toks[0], "$" + string_name)
+    return res, context
