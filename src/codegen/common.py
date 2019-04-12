@@ -26,6 +26,7 @@ def free_register(name):
     free_registers += [register_mapping[name]]
     del register_mapping[name]
 
+binary_op_list = ["+", "-", "*", "/", "&&", "||", "==", "!=", "<", ">", "<=", ">=", "|", "^"]
 # assignments
 # function call
 # binary ops
@@ -36,6 +37,8 @@ def getCodeType(code):
         return "assignments"
     if (len(toks) == 2 and ("call" in toks or "push_param" in toks or "ret_param" in toks or "ret" in toks)):
         return "function-call"
+    if  (len(toks)==5 and toks[1]==":=" and toks[3] in binary_op_list):
+        return "binary-op"
     return None
 
 def getTokType(tok):
