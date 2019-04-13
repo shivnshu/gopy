@@ -1,9 +1,9 @@
 .section .text
-.globl _main
+.globl main
 
-_main:
+main:
 call _init
-call main
+call func_main
 push $0
 call exit
 
@@ -14,7 +14,16 @@ movl %ebp, %esp
 pop %ebp
 ret
 
-main:
+func_main:
+push %ebp
+mov %esp, %ebp
 movl $10, -4(%ebp)
 negl -4(%ebp)
-movl $20, -8(%ebp)
+push $string_0
+call printf
+mov %ebp, %esp
+pop %ebp
+ret
+
+.section .data
+string_0: .string "abcd\n"

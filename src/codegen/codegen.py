@@ -18,7 +18,7 @@ ir_info = ir_gen(input_file)
 dict_code = ir_info['dict_code']
 activation_records = ir_info['activationRecords']
 
-context = {"last_func_call_ret": [], "func_ret": []}
+context = {"last_func_call_ret": [], "func_ret": [], "rel_op_num": 0}
 
 def asm_gen(code_line, func_name):
     global context
@@ -27,6 +27,9 @@ def asm_gen(code_line, func_name):
         return assignments.asm_gen(code_line, activation_records[func_name])
     if (code_type == "function-call"):
         res, context = func_calls.asm_gen(code_line, activation_records, func_name, context)
+        return res
+    if (code_type == "binary-op"):
+        res, context = binaryop.asm_gen(code_line, activation_records, func_name, context)
         return res
     return None
 
