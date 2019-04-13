@@ -888,6 +888,16 @@ p[0]['place'] = ''
 p[0]['place'] = p[1]['place']
 >>
 
+SimpleStmtBot : SimpleStmt
+           | empty
+<<1
+p[0]['code'] = p[1]['code']
+p[0]['place'] = p[1]['place']
+>>
+<<2
+p[0]['place'] = ""
+>>
+
 ExpressionStmt : Expression
 <<0
 p[0]['code'] = p[1]['code']
@@ -1103,7 +1113,21 @@ p[0]['exp'] = p[2]['place']
 p[0]['code'] = p[2]['code']
 >>
 
-ForStmt : FOR ExpressionBot Block
+ForStmt : FOR SimpleStmtBot SEMICOLON SimpleStmtBot SEMICOLON SimpleStmtBot Block
+<<1
+p[0]['code'] = p[2]['code'] + p[4]['code']
+beglabel = newLabel()
+endlabel = newLabel()
+if (p[4]['place'] != ""):
+  p[0]['code'] += ["if " + p[4]['place'] + " goto " + beglabel + " else goto " + endlabel]
+p[0]['code'] += [beglabel + ":"]
+p[0]['code'] += p[7]['code']
+p[0]['code'] += p[6]['code']
+p[0]['code'] += p[4]['code']
+if (p[4]['place'] != ""):
+  p[0]['code'] += ["if " + p[4]['place'] + " goto " + beglabel + " else goto " + endlabel]
+p[0]['code'] += [endlabel + ":"]
+>>
 
 ExpressionBot : Expression
               | empty
