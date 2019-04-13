@@ -4,7 +4,7 @@ import argparse
 
 sys.path.insert(0, '../ir')
 from ir_gen import ir_gen
-from common import getCodeType
+from common import getCodeType, getLitType, free_all_regs
 import assignments
 import func_calls
 import binaryop
@@ -20,13 +20,21 @@ ir_info = ir_gen(input_file)
 dict_code = ir_info['dict_code']
 activation_records = ir_info['activationRecords']
 
-context = {"last_func_call_ret": [], "last_func_call_ret_offset": 0, "func_ret": [], "rel_op_num": 0, "num": 0}
+context = {"last_func_call_ret": [], "func_ret": [], "rel_op_num": 0}
 
-def asm_gen(code_line, func_name, data_section):
+def get_data_section(const_decl):
+    res = [".section .data"]
+    for line in const_decl:
+        toks = line.split(" ", 2)
+        lit_type = getLitType(toks[2])
+        res += [toks[0] + ": ." + lit_type + " " + toks[2]]
+    return res
+
+def asm_gen(code_line, func_name):
     global context
     code_type = getCodeType(code_line)
     if (code_type == "assignments"):
-        res, context = assignments.asm_gen(code_line, activation_records[func_name], context, data_section)
+        res, context = assignments.asm_gen(code_line, activation_records[func_name], context)
         return res
     if (code_type == "function-call"):
         res, context = func_calls.asm_gen(code_line, activation_records, func_name, context)
@@ -37,7 +45,8 @@ def asm_gen(code_line, func_name, data_section):
     if (code_type == "ifstmt"):
         res = ifstmt.asm_gen(code_line, activation_records)
         return res
-    return [code_line]
+    return None
+    # return [code_line]
 
 def alloc_st_code(func_name):
     act_record = activation_records[func_name]
@@ -54,9 +63,9 @@ def main():
     res += ["_init:", "push %ebp", "movl %esp, %ebp", "movl %ebp, %esp", "pop %ebp", "ret", ""]
     func_init = ["push %ebp", "mov %esp, %ebp"]
     func_end = ["mov %ebp, %esp", "pop %ebp", "ret", ""]
-    data_section = [".section .data"]
     for func_name in dict_code:
-        if (func_name == "global_decl"):
+        free_all_regs() # Free if new function comes
+        if (func_name == "global_decl" or func_name == "const_decl"):
             continue
         if (func_name == "main"):
             res += ["func_main:"]
@@ -68,13 +77,14 @@ def main():
         for code_line in code_list:
             if (code_line == "call fmt.Printf"):
                 code_line = "call printf"
-            gen_code = asm_gen(code_line, func_name, data_section)
+            gen_code = asm_gen(code_line, func_name)
             if (gen_code != None):
                 res += gen_code
             else:
                 print("Code generation error for line: ", code_line)
         res += func_end
-    res += data_section
+    if 'const_decl' in dict_code:
+        res += get_data_section(dict_code['const_decl'])
     return res
 
 code_lines = main()

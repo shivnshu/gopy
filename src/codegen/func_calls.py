@@ -29,13 +29,12 @@ def asm_gen(line, activation_records, func_name, context):
             print("Error")
             sys.exit(0)
     if (toks[0] == "ret_param"):
-        (_, ret_size) = context["last_func_call_ret"][0]
+        (offset, _) = context["last_func_call_ret"][0]
         ret_offset = context["last_func_call_ret_offset"]
-        context["last_func_call_ret_offset"] += ret_size
         context["last_func_call_ret"] = context["last_func_call_ret"][1:]
         param_type = getTokType(toks[1])
         if (param_type == "register"):
-            res += ["movl " + str(ret_offset) + "(%esp), " + get_register(toks[1])]
+            res += ["movl " + str(offset - 8) + "(%esp), " + get_register(toks[1])]
         elif (param_type == "variable"):
             (offset, _), typ = activation_record.getVarTuple(toks[1])
             if typ == "global":
@@ -54,4 +53,6 @@ def asm_gen(line, activation_records, func_name, context):
         else:
             print("Error")
             sys.exit(0)
+    if (toks[0] == "ret_alloc"):
+        res += ["subl $" + toks[1] + ", %esp"]
     return res, context

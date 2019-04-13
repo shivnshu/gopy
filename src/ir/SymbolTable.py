@@ -158,16 +158,17 @@ class ActivationRecord:
         self.saved_regs = {}
         self.local_vars = {}
         self.global_vars = {}
+        self.const_vars = []
         self.access_links = {}
-        self.pos_offset = 4
+        self.pos_offset = 8 # 4 for saved ebp and 4 for return address
         self.offset = 0
 
     def getName(self):
         return self.name
 
-    def storeOldStPtr(self, name):
-        self.old_st_ptrs[name] = (self.pos_offset, 4)
-        self.pos_offset += 4
+    # def storeOldStPtr(self, name):
+    #     self.old_st_ptrs[name] = (self.pos_offset, 4)
+    #     self.pos_offset += 4
 
     def setRetValues(self, func_entry):
         global type_to_size
@@ -204,6 +205,15 @@ class ActivationRecord:
     def getGlobalVars(self):
         return self.global_vars
 
+    def putConstVar(self, var):
+        self.const_vars += [var]
+
+    def setConstVars(self, const_vars):
+        self.const_vars = const_vars
+
+    def getConstVars(self):
+        return self.const_vars
+
     def getVarTuple(self,var_name):
         if var_name in self.local_vars:
             return self.local_vars[var_name], ""
@@ -211,7 +221,9 @@ class ActivationRecord:
             return self.input_args[var_name], ""
         if var_name in self.global_vars:
             return self.global_vars[var_name], "global"
+        if var_name in self.const_vars:
+            return (None, None), "const"
         return (None, None), ""
 
     def prettyPrint(self):
-        print("Name:", self.name, "Ret value:", self.ret_values, "Params:", self.input_args, "OldStPtrs:", self.old_st_ptrs, "SavedRegs:", self.saved_regs, "LocalVars:", self.local_vars, "GlobalVars:", self.global_vars, "\n")
+        print("Name:", self.name, "Ret value:", self.ret_values, "Params:", self.input_args, "OldStPtrs:", self.old_st_ptrs, "SavedRegs:", self.saved_regs, "LocalVars:", self.local_vars, "GlobalVars:", self.global_vars, "ConstVars:", self.const_vars, "\n")

@@ -1,10 +1,15 @@
 import sys
 import re
 
+# %esi store global starting address
 usable_registers = ["%eax", "%ebx", "%ecx", "%edx", "%esi", "%edi"]
-free_registers = usable_registers.copy()
+#free_registers = usable_registers.copy()
 
 register_mapping = {}
+
+def free_all_regs():
+    global free_registers
+    free_registers = usable_registers.copy()
 
 def get_register(name):
     global free_registers
@@ -58,7 +63,7 @@ def getCodeType(code):
     toks = code.split()
     if (len(toks) == 3 and ":=" in code):
         return "assignments"
-    if (len(toks) == 2 and ("call" in toks or "push_param" in toks or "ret_param" in toks or "ret" in toks)):
+    if (len(toks) == 2 and ("call" in toks or "push_param" in toks or "ret_param" in toks or "ret" in toks or "ret_alloc" in toks)):
         return "function-call"
     if  (len(toks)==5 and toks[1]==":=" and (toks[3][0] in binary_op_list or toks[3][0:2] in binary_op_list)):
         return "binary-op"
@@ -76,3 +81,19 @@ def getTokType(tok):
     if (tok[0] != "'" and tok[0] != '"'):
         return "variable"
     return "string"
+
+def getLitType(lit):
+    try:
+        int(lit)
+        return "int"
+    except:
+        pass
+    try:
+        float(lit)
+        return "float"
+    except:
+        pass
+    if (lit[0] == '"' or lit[0] == "'"):
+        return "string"
+    print("Error: unknown const type:", lit)
+    sys.exit(0)

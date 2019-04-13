@@ -66,9 +66,7 @@ def p_keyword_lcurly(p):
 	symtab = SymbolTable(symTableDict[symTableSt[-1]], key)
 	symTableDict[key] = symtab
 	symTableSt += [key]
-	prevActRecord = actRecordDict[actRecordSt[-1]]
 	actRecord = ActivationRecord(key)
-	actRecord.setGlobalVars(prevActRecord.getGlobalVars())
 	actRecordDict[key] = actRecord
 	actRecordSt += [actRecord.getName()]
 
@@ -100,6 +98,11 @@ def p_source_file(p):
 	p[0] = {}
 	p[0]['code'] = []
 	p[0]['dict_code'] = {}
+	for record_name in actRecordDict:
+	  if (record_name == "root"):
+	    continue
+	  actRecordDict[record_name].setGlobalVars(actRecordDict["root"].getGlobalVars())
+	  actRecordDict[record_name].setConstVars(actRecordDict["root"].getConstVars())
 	p[0]['dict_code'] = p[3]['dict_code']
 	print(symTableDict)
 	for key in symTableDict:
@@ -240,8 +243,23 @@ def p_top_level_decl_list(p):
 	p[0]['code'] = []
 	p[0]['dict_code'] = {}
 	if len(p)==3 and p.slice[2].type=="TopLevelDeclList" and p.slice[1].type=="TopLevelDecl":
-		p[0]['dict_code'].update(p[1]['dict_code'])
-		p[0]['dict_code'].update(p[2]['dict_code'])
+		#p[0]['dict_code'].update(p[1]['dict_code'])
+		#p[0]['dict_code'].update(p[2]['dict_code'])
+		final_dict_code = {}
+		for key in p[1]['dict_code']:
+		  if key in p[2]['dict_code']:
+		    final_dict_code[key] = p[1]['dict_code'][key] + p[2]['dict_code'][key]
+		  else:
+		    final_dict_code[key] = p[1]['dict_code'][key]
+		for key in p[2]['dict_code']:
+		  if not key in p[1]['dict_code']:
+		    final_dict_code[key] = p[2]['dict_code'][key]
+		p[0]['dict_code'] = final_dict_code
+	if len(p)==2 and p.slice[1].type=="empty":
+		sym_table = symTableDict[symTableSt[-1]]
+		act_record = actRecordDict[actRecordSt[-1]]
+		act_record.setLocalVarsInputArgs(sym_table)
+		act_record.setGlobalVars(act_record.getLocalVars())
 
 def p_top_level_decl(p):
 	'''
@@ -261,19 +279,8 @@ def p_top_level_decl(p):
 	p[0]['dict_code'] = {}
 	p[0]['dict_code'] = {}
 	if len(p)==2 and p.slice[1].type=="Declaration":
-		if 'global_dict' in p[0]['dict_code']:
-		  p[0]['dict_code']['global_decl'] += p[1]['code']
-		else:
-		  p[0]['dict_code']['global_decl'] = code_optimization(p[1]['code'])
-		global_vars = {}
-		for line in p[0]['dict_code']['global_decl']:
-		  stmt = line.split(" := ")
-		  global_vars[stmt[0]] = stmt[1]
-		sym_table = symTableDict[symTableSt[-1]]
-		#print(sym_table.getVarSymbols())
-		act_record = actRecordDict[actRecordSt[-1]]
-		act_record.setLocalVarsInputArgs(sym_table)
-		act_record.setGlobalVars(act_record.getLocalVars())
+		p[0]['dict_code']['global_decl'] = code_optimization(p[1]['global_decl'])
+		p[0]['dict_code']['const_decl'] = code_optimization(p[1]['const_decl'])
 	if len(p)==2 and p.slice[1].type=="FunctionDecl":
 		p[0]['dict_code'].update(p[1]['dict_code'])
 	if len(p)==2 and p.slice[1].type=="MethodDecl":
@@ -544,10 +551,12 @@ def p_func_call_stmt(p):
 		if not b:
 			print("Function", p[1], "not defined on line number", p.lexer.lineno)
 		p[0]['code'] = p[5]['code']
+		for name in p[0]['namelist']:
+		  p[0]['code'] += ["ret_alloc 4"] # 4 for now
 		for param in p[5]['namelist'][::-1]:
 		    p[0]['code'] += ["push_param " + param]
 		p[0]['code'] += ["call " + p[1] + "." + p[3]]
-		for name in p[0]['namelist'][::-1]:
+		for name in p[0]['namelist']:
 		  p[0]['code'] += ["ret_param " + name]
 	if len(p)==7 and p.slice[6].type=="RPAREN" and p.slice[5].type=="ObjectMethod" and p.slice[4].type=="LPAREN" and p.slice[3].type=="IDENTIFIER" and p.slice[2].type=="DOT" and p.slice[1].type=="IDENTIFIER":
 		b = False
@@ -572,10 +581,12 @@ def p_func_call_stmt(p):
 		for typ in p[0]['ret_types']:
 		  p[0]['namelist'] += [newVar()]
 		p[0]['code'] = p[3]['code']
+		for name in p[0]['namelist']:
+		  p[0]['code'] += ["ret_alloc 4"] # 4 for now
 		for param in p[3]['namelist'][::-1]:
 		    p[0]['code'] += ["push_param " + param]
 		p[0]['code'] += ["call " + p[1]]
-		for name in p[0]['namelist'][::-1]:
+		for name in p[0]['namelist']:
 		  p[0]['code'] += ["ret_param " + name]
 		if entry.getInputArgs() != p[3]['typelist']:
 		   print("Function", p[1], "arguments mismatch at line num", p.lexer.lineno)
@@ -606,6 +617,12 @@ def p_declaration(p):
 	p[0]['code'] = []
 	p[0]['dict_code'] = {}
 	p[0]['code'] = p[1]['code']
+	p[0]['const_decl'] = []
+	p[0]['global_decl'] = []
+	if len(p)==2 and p.slice[1].type=="ConstDecl":
+		p[0]['const_decl'] = p[1]['code']
+	if len(p)==2 and p.slice[1].type=="VarDecl":
+		p[0]['global_decl'] = p[1]['code']
 
 def p_const_decl(p):
 	'''
@@ -665,16 +682,18 @@ def p_const_spec(p):
 	p[0]['dict_code'] = {}
 	scope = symTableSt[-1]
 	symTable = symTableDict[scope]
+	actRecord = actRecordDict[actRecordSt[-1]]
 	if (len(p[1]['idlist']) != len(p[2]['namelist'])):
 		print("Length mismatch on line number", p.lexer.lineno)
 		return
 	p[0]['code'] = p[1]['code'] + p[2]['code']
 	for i,j,k in zip(p[1]['idlist'], p[2]['namelist'], p[2]['typelist']):
 	    p[0]['code'] += [i + ' := ' + j]
-	    var = VarEntry(i)
-	    var.setType(k)
-	    if (symTable.put(var) == False):
-	      print("Error:", i, "redeclared on line number", p.lexer.lineno)
+	    actRecord.putConstVar(i)
+	    #var = VarEntry(i)
+	    #var.setType(k)
+	    #if (symTable.put(var) == False):
+	    #  print("Error:", i, "redeclared on line number", p.lexer.lineno)
 
 def p_const_spec_tail(p):
 	'''
@@ -1579,9 +1598,9 @@ def p_function_decl(p):
 	scope = symTableSt[-1]
 	table = symTableDict[scope]
 	entry = symTableDict[symTableSt[-1]].get(func_name)
-	act_record.setRetValues(entry)
-	act_record.storeOldStPtr("%rbp")
 	act_record.setLocalVarsInputArgs(this_func_sym_table)
+	#act_record.storeOldStPtr("%rbp")
+	act_record.setRetValues(entry)
 	p[0]['dict_code'] = { func_name: code_optimization(p[3]['code']) }
 	for ret_actual in p[3]['ret_actual_types']:
 	      if (len(ret_actual) > 0 and p[2]['ret_types'] != ret_actual):
@@ -1662,9 +1681,7 @@ def p_function_name(p):
 	symtab = SymbolTable(symTableDict[symTableSt[-1]], key)
 	symTableDict[key] = symtab
 	symTableSt += [key]
-	prevActRecord = actRecordDict[actRecordSt[-1]]
 	actRecord = ActivationRecord(p[1])
-	actRecord.setGlobalVars(prevActRecord.getGlobalVars())
 	actRecordDict[p[1]] = actRecord
 	actRecordSt += [actRecord.getName()]
 

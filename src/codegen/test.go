@@ -1,23 +1,20 @@
 package mypkg
 
-var d int = 4
+import "fmt"
+
+const (
+  p = 1
+  q = 1.2
+  r = "acs"
+)
+var b int
+var c int
+
+func test(p int) {
+}
 
 func main() {
-	c := 1
-	var s int
-	if (c == 1){
-		s = 1
-	}
-	else if(c == 2){
-		s=2
-	}
-	else if(c == 3){
-		s=5
-	}
-	else if (c<10){
-		s=6
-	}
-	else if (c>11){
-		s=99
-	}
+  a := 10
 }
+
+var d int

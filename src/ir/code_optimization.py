@@ -53,7 +53,8 @@ def code_optimization(code_list):
         res += [first + " := " + last]
         first = toks[0]
         last = toks[2]
-    res += [first + " := " + last]
+    if (first != ""):
+        res += [first + " := " + last]
     res = unary_optimization(res)
     return res
 
