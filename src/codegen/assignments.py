@@ -3,7 +3,11 @@ import sys
 from common import get_register, set_register, free_register, getTokType
 from common import reserve_register, unreserve_register
 
+# Two sources of following truth. Another in common
+reserved_words = {"true": "1", "false": "0"}
+
 def asm_gen(line, activation_record, context):
+    global reserved_words
     res = []
     toks = line.split(" ", 2) # string support
 
@@ -57,5 +61,7 @@ def asm_gen(line, activation_record, context):
             index += 1
         res += ["movb $0x0, " + str(index) + "(%eax)"]
         res += ["movl %eax, " + dst_entry]
-        pass
+    elif (right_type == "const"):
+        res += ["movl " + "$" + reserved_words[toks[2]] + ", " + dst_entry]
+
     return res, context

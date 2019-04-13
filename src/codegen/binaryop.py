@@ -65,7 +65,7 @@ def asm_gen(line, activation_record, context):
             jmp_stmt = jmp_instr[toks[3][0]]
         else:
             jmp_stmt = jmp_instr[toks[3][0:2]]
-        res.append("cmpl" + r1 + ", " + r2)
+        res.append("cmpl " + r1 + ", " + r2)
         res.append(jmp_stmt + " _rel_op_" + str(context["rel_op_num"]) + "_true")
         res.append("movl $0, " + r0)
         res.append("jmp _rel_op_" + str(context["rel_op_num"]) + "_end")
@@ -74,7 +74,6 @@ def asm_gen(line, activation_record, context):
         res.append("_rel_op_" + str(context["rel_op_num"]) + "_end:")
         context["rel_op_num"] += 1
 
-    free_register(toks[0])
     free_register(toks[2])
     free_register(toks[4])
 

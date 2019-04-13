@@ -1043,6 +1043,7 @@ def p_type(p):
 def p_type_name(p):
 	'''
 	TypeName  : IDENTIFIER
+	          | MULT IDENTIFIER
 	          | QualifiedIdent
 	'''
 	global symTableSt
@@ -1054,6 +1055,8 @@ def p_type_name(p):
 	p[0]['dict_code'] = {}
 	if len(p)==2 and p.slice[1].type=="IDENTIFIER":
 		p[0]['type'] = p[1]
+	if len(p)==3 and p.slice[2].type=="IDENTIFIER" and p.slice[1].type=="MULT":
+		p[0]['type'] = "*" + p[2]
 	if len(p)==2 and p.slice[1].type=="QualifiedIdent":
 		p[0]['type'] = p[1]['type']
 
@@ -2275,6 +2278,8 @@ def p_unary_expr(p):
 	if len(p)==3 and p.slice[2].type=="UnaryExpr" and p.slice[1].type=="unary_op":
 		p[0]['place'] = newVar()
 		p[0]['type'] = p[2]['type']
+		if (p[1]['symbol'] == "&"):
+		  p[0]['type'] = "*" + p[0]['type']
 		p[0]['code'] = p[2]['code'] + [p[0]['place'] + ' := ' + p[1]['symbol'] + p[2]['place']]
 
 def p_binary_op(p):

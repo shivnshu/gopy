@@ -9,6 +9,7 @@ def asm_gen(line, activation_record):
     Some niggas like pow are left out
     '''
 
+    print(toks)
     r = get_register(toks[1])
     l1 = toks[3]
     l2 = toks[6]

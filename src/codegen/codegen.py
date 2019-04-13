@@ -9,6 +9,7 @@ import assignments
 import func_calls
 import binaryop
 import ifstmt
+import gotostmt
 
 arg_parser = argparse.ArgumentParser()
 arg_parser.add_argument("input", nargs="*")
@@ -45,8 +46,10 @@ def asm_gen(code_line, func_name):
     if (code_type == "ifstmt"):
         res = ifstmt.asm_gen(code_line, activation_records)
         return res
-    return None
-    # return [code_line]
+    if (code_type == "gotostmt"):
+        return gotostmt.asm_gen(code_line)
+    # return None
+    return [code_line]
 
 def alloc_st_code(func_name):
     act_record = activation_records[func_name]

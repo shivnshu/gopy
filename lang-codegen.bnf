@@ -527,11 +527,15 @@ p[0]['type'] = p[2]['type']
 >>
 
 TypeName  : IDENTIFIER
+          | MULT IDENTIFIER
           | QualifiedIdent
 <<1
 p[0]['type'] = p[1]
 >>
 <<2
+p[0]['type'] = "*" + p[2]
+>>
+<<3
 p[0]['type'] = p[1]['type']
 >>
 
@@ -1183,6 +1187,8 @@ p[0]['code'] = p[1]['code']
 <<2
 p[0]['place'] = newVar()
 p[0]['type'] = p[2]['type']
+if (p[1]['symbol'] == "&"):
+  p[0]['type'] = "*" + p[0]['type']
 p[0]['code'] = p[2]['code'] + [p[0]['place'] + ' := ' + p[1]['symbol'] + p[2]['place']]
 >>
 

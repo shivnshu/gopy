@@ -5,6 +5,8 @@ import re
 usable_registers = ["%eax", "%ebx", "%ecx", "%edx", "%edi"]
 #free_registers = usable_registers.copy()
 
+reserved_words = {"true": "1", "false": "0"}
+
 register_mapping = {}
 
 def free_all_regs():
@@ -69,18 +71,25 @@ def getCodeType(code):
         return "binary-op"
     if (toks[0] == "if"):
         return "ifstmt"
+    if (toks[0] == "goto"):
+        return "gotostmt"
     return None
 
 def getTokType(tok):
+    global reserved_words
     if (tok[0] == "_"):
         return "register"
     if (tok.isdigit()):
         return "positive-integer"
     if (tok[1:].isdigit() and tok[0] == "-"):
         return "negative-integer"
-    if (tok[0] != "'" and tok[0] != '"'):
-        return "variable"
-    return "string"
+    if (tok[0] == "'" or tok[0] == '"'):
+        return "string"
+    if (tok[0] == "&"):
+        return "address"
+    if (tok in reserved_words):
+        return "const"
+    return "variable"
 
 def getLitType(lit):
     try:

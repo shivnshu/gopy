@@ -5,6 +5,11 @@ type_to_size["char"] = 1
 type_to_size["float"] = 4
 type_to_size["double"] = 8
 type_to_size["string"] = 4 # Since storing address
+type_to_size["*int"] = 4
+type_to_size["*long"] = 4
+type_to_size["*char"] = 4
+type_to_size["*float"] = 4
+
 
 class SymbolTableEntry:
     def __init__(self, name, type):
