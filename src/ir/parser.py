@@ -728,6 +728,7 @@ def p_type_top(p):
 def p_identifier_list1(p):
 	'''
 	IdentifierList1 : IDENTIFIER IdentifierBotList1
+	                | MULT IDENTIFIER IdentifierBotList1
 	'''
 	global symTableSt
 	global symTableDict
@@ -736,11 +737,15 @@ def p_identifier_list1(p):
 	p[0] = {}
 	p[0]['code'] = []
 	p[0]['dict_code'] = {}
-	p[0]['idlist'] = [p[1]] + p[2]['idlist']
+	if len(p)==3 and p.slice[2].type=="IdentifierBotList1" and p.slice[1].type=="IDENTIFIER":
+		p[0]['idlist'] = [p[1]] + p[2]['idlist']
+	if len(p)==4 and p.slice[3].type=="IdentifierBotList1" and p.slice[2].type=="IDENTIFIER" and p.slice[1].type=="MULT":
+		p[0]['idlist'] = [p[1]+p[2]] + p[3]['idlist']
 
 def p_identifier_bot_list1(p):
 	'''
 	IdentifierBotList1 :  IdentifierBotList1 COMMA IDENTIFIER
+	                  |  IdentifierBotList1 COMMA MULT IDENTIFIER
 	                  | empty
 	'''
 	global symTableSt
@@ -751,13 +756,16 @@ def p_identifier_bot_list1(p):
 	p[0]['code'] = []
 	p[0]['dict_code'] = {}
 	if len(p)==4 and p.slice[3].type=="IDENTIFIER" and p.slice[2].type=="COMMA" and p.slice[1].type=="IdentifierBotList1":
-		p[0]['idlist'] = [p[1]] + p[2]['idlist']
+		p[0]['idlist'] = p[1]['idlist'] + [p[3]]
+	if len(p)==5 and p.slice[4].type=="IDENTIFIER" and p.slice[3].type=="MULT" and p.slice[2].type=="COMMA" and p.slice[1].type=="IdentifierBotList1":
+		p[0]['idlist'] = p[1]['idlist'] + [p[3]+p[4]]
 	if len(p)==2 and p.slice[1].type=="empty":
 		p[0]['idlist'] = []
 
 def p_identifier_list2(p):
 	'''
 	IdentifierList2 : IDENTIFIER IdentifierBotList2
+	                | MULT IDENTIFIER IdentifierBotList2
 	'''
 	global symTableSt
 	global symTableDict
@@ -766,18 +774,29 @@ def p_identifier_list2(p):
 	p[0] = {}
 	p[0]['code'] = []
 	p[0]['dict_code'] = {}
-	b = False
-	for scope in symTableSt:
-		if p[1] in symTableDict[scope].symbols:
-			b = True
-			break
-	if not b:
-		print("Error:", p[1], "not defined on line number", p.lexer.lineno)
-	p[0]['idlist'] = [p[1]] + p[2]['idlist']
+	if len(p)==3 and p.slice[2].type=="IdentifierBotList2" and p.slice[1].type=="IDENTIFIER":
+		b = False
+		for scope in symTableSt:
+			if p[1] in symTableDict[scope].symbols:
+				b = True
+				break
+		if not b:
+			print("Error:", p[1], "not defined on line number", p.lexer.lineno)
+		p[0]['idlist'] = [p[1]] + p[2]['idlist']
+	if len(p)==4 and p.slice[3].type=="IdentifierBotList2" and p.slice[2].type=="IDENTIFIER" and p.slice[1].type=="MULT":
+		b = False
+		for scope in symTableSt:
+		  if p[2] in symTableDict[scope].symbols:
+		    b = True
+		    break
+		if not b:
+		  print("Error:", p[1], "not defined on line number", p.lexer.lineno)
+		p[0]['idlist'] = [p[1]+p[2]] + p[3]['idlist']
 
 def p_identifier_list3(p):
 	'''
 	IdentifierList3 : IDENTIFIER IdentifierBotList3
+	                | MULT IDENTIFIER IdentifierBotList3
 	'''
 	global symTableSt
 	global symTableDict
@@ -786,11 +805,15 @@ def p_identifier_list3(p):
 	p[0] = {}
 	p[0]['code'] = []
 	p[0]['dict_code'] = {}
-	p[0]['idlist'] = [p[1]] + p[2]['idlist']
+	if len(p)==3 and p.slice[2].type=="IdentifierBotList3" and p.slice[1].type=="IDENTIFIER":
+		p[0]['idlist'] = [p[1]] + p[2]['idlist']
+	if len(p)==4 and p.slice[3].type=="IdentifierBotList3" and p.slice[2].type=="IDENTIFIER" and p.slice[1].type=="MULT":
+		p[0]['idlist'] = [p[1]+p[2]] + p[3]['idlist']
 
 def p_identifier_bot_list3(p):
 	'''
-	IdentifierBotList3 :  IdentifierBotList2 COMMA IDENTIFIER
+	IdentifierBotList3 :  IdentifierBotList3 COMMA IDENTIFIER
+	                  |  IdentifierBotList3 COMMA MULT IDENTIFIER
 	                  | empty
 	'''
 	global symTableSt
@@ -800,15 +823,17 @@ def p_identifier_bot_list3(p):
 	p[0] = {}
 	p[0]['code'] = []
 	p[0]['dict_code'] = {}
-	p[0]['idlist'] = []
-	if len(p)==4 and p.slice[3].type=="IDENTIFIER" and p.slice[2].type=="COMMA" and p.slice[1].type=="IdentifierBotList2":
+	if len(p)==4 and p.slice[3].type=="IDENTIFIER" and p.slice[2].type=="COMMA" and p.slice[1].type=="IdentifierBotList3":
 		p[0]['idlist'] = [p[3]] + p[1]['idlist']
+	if len(p)==5 and p.slice[4].type=="IDENTIFIER" and p.slice[3].type=="MULT" and p.slice[2].type=="COMMA" and p.slice[1].type=="IdentifierBotList3":
+		p[0]['idlist'] = [p[3]+p[4]] + p[1]['idlist']
 	if len(p)==2 and p.slice[1].type=="empty":
 		p[0]['idlist'] = []
 
 def p_identifier_bot_list2(p):
 	'''
 	IdentifierBotList2 :  IdentifierBotList2 COMMA IDENTIFIER
+	                  |  IdentifierBotList2 COMMA MULT IDENTIFIER
 	                  | empty
 	'''
 	global symTableSt
@@ -818,7 +843,6 @@ def p_identifier_bot_list2(p):
 	p[0] = {}
 	p[0]['code'] = []
 	p[0]['dict_code'] = {}
-	p[0]['idlist'] = []
 	if len(p)==4 and p.slice[3].type=="IDENTIFIER" and p.slice[2].type=="COMMA" and p.slice[1].type=="IdentifierBotList2":
 		b = False
 		for scope in symTableSt:
@@ -828,6 +852,15 @@ def p_identifier_bot_list2(p):
 		if not b:
 			print("Error:", p[3], "not defined on line number", p.lexer.lineno)
 		p[0]['idlist'] = [p[3]] + p[1]['idlist']
+	if len(p)==5 and p.slice[4].type=="IDENTIFIER" and p.slice[3].type=="MULT" and p.slice[2].type=="COMMA" and p.slice[1].type=="IdentifierBotList2":
+		b = False
+		for scope in symTableSt:
+		  if p[4] in symTableDict[scope].symbols:
+		    b = True
+		    break
+		if not b:
+		  print("Error:", p[4], "not defined on line number", p.lexer.lineno)
+		p[0]['idlist'] = [p[3]+p[4]] + p[1]['idlist']
 	if len(p)==2 and p.slice[1].type=="empty":
 		p[0]['idlist'] = []
 
@@ -1855,7 +1888,11 @@ def p_assignment(p):
 	  for i, j, k in zip(p[1]['idlist'], p[3]['namelist'], p[3]['typelist']):
 	    if verifyCalType(i, p.lexer.lineno) != k:
 	      print("Error type mismatch in line " +str(p.lexer.lineno) +". Expected type " +verifyCalType(i, p.lexer.lineno)+", got type "+ k)
-	    p[0]['code'] += [i + ' :=  '+ i + p[2]['symbol'] + j]
+	    var = newVar()
+	    var_dest = newVar()
+	    p[0]['code'] += [var + " := " + i]
+	    p[0]['code'] += [var_dest + ' :=  '+ var + " " + p[2]['symbol'] + k + " " + j]
+	    p[0]['code'] += [i + " := " + var_dest]
 
 def p_assignment_gen(p):
 	'''
@@ -2069,7 +2106,13 @@ def p_expr_switch_stmt(p):
 		print("Switch variable", p[2], "not declared on line number", p.lexer.lineno)
 	p[0]['code'] = p[4]['expcodelist']
 	for exp, label in zip(p[4]['explist'], p[4]['labellist'][:-1]):
-		p[0]['code'] += ['if ' + p[2] + ' == ' + exp + ' goto ' + label]
+	  exp_var = newVar()
+	  var = newVar()
+	  var2 = newVar()
+	  p[0]['code'] += [exp_var + " := " + exp]
+	  p[0]['code'] += [var2 + " := " + p[2]]
+	  p[0]['code'] += [var + " := " + var2 + ' == ' + exp_var]
+	  p[0]['code'] += ['if ' + var + ' goto ' + label]
 	for label, codeblock in zip(p[4]['labellist'][:-1], p[4]['code']):
 		p[0]['code'] += codeblock
 		p[0]['code'] += ['goto ' + p[4]['labellist'][-1]]

@@ -367,21 +367,30 @@ TypeTop : Type
         | empty
 
 IdentifierList1 : IDENTIFIER IdentifierBotList1
-<<0
-p[0]['idlist'] = [p[1]] + p[2]['idlist']
->>
-
-IdentifierBotList1 :  IdentifierBotList1 COMMA IDENTIFIER
-                  | empty
+                | MULT IDENTIFIER IdentifierBotList1
 <<1
 p[0]['idlist'] = [p[1]] + p[2]['idlist']
 >>
 <<2
+p[0]['idlist'] = [p[1]+p[2]] + p[3]['idlist']
+>>
+
+IdentifierBotList1 :  IdentifierBotList1 COMMA IDENTIFIER
+                  |  IdentifierBotList1 COMMA MULT IDENTIFIER
+                  | empty
+<<1
+p[0]['idlist'] = p[1]['idlist'] + [p[3]]
+>>
+<<2
+p[0]['idlist'] = p[1]['idlist'] + [p[3]+p[4]]
+>>
+<<3
 p[0]['idlist'] = []
 >>
 
 IdentifierList2 : IDENTIFIER IdentifierBotList2
-<<0
+                | MULT IDENTIFIER IdentifierBotList2
+<<1
 b = False
 for scope in symTableSt:
 	if p[1] in symTableDict[scope].symbols:
@@ -391,29 +400,42 @@ if not b:
 	print("Error:", p[1], "not defined on line number", p.lexer.lineno)
 p[0]['idlist'] = [p[1]] + p[2]['idlist']
 >>
+<<2
+b = False
+for scope in symTableSt:
+  if p[2] in symTableDict[scope].symbols:
+    b = True
+    break
+if not b:
+  print("Error:", p[1], "not defined on line number", p.lexer.lineno)
+p[0]['idlist'] = [p[1]+p[2]] + p[3]['idlist']
+>>
 
 IdentifierList3 : IDENTIFIER IdentifierBotList3
-<<0
+                | MULT IDENTIFIER IdentifierBotList3
+<<1
 p[0]['idlist'] = [p[1]] + p[2]['idlist']
 >>
-
-IdentifierBotList3 :  IdentifierBotList2 COMMA IDENTIFIER
-                  | empty
-<<0
-p[0]['idlist'] = []
+<<2
+p[0]['idlist'] = [p[1]+p[2]] + p[3]['idlist']
 >>
+
+IdentifierBotList3 :  IdentifierBotList3 COMMA IDENTIFIER
+                  |  IdentifierBotList3 COMMA MULT IDENTIFIER
+                  | empty
 <<1
 p[0]['idlist'] = [p[3]] + p[1]['idlist']
 >>
 <<2
+p[0]['idlist'] = [p[3]+p[4]] + p[1]['idlist']
+>>
+<<3
 p[0]['idlist'] = []
 >>
 
 IdentifierBotList2 :  IdentifierBotList2 COMMA IDENTIFIER
+                  |  IdentifierBotList2 COMMA MULT IDENTIFIER
                   | empty
-<<0
-p[0]['idlist'] = []
->>
 <<1
 b = False
 for scope in symTableSt:
@@ -425,6 +447,16 @@ if not b:
 p[0]['idlist'] = [p[3]] + p[1]['idlist']
 >>
 <<2
+b = False
+for scope in symTableSt:
+  if p[4] in symTableDict[scope].symbols:
+    b = True
+    break
+if not b:
+  print("Error:", p[4], "not defined on line number", p.lexer.lineno)
+p[0]['idlist'] = [p[3]+p[4]] + p[1]['idlist']
+>>
+<<3
 p[0]['idlist'] = []
 >>
 
@@ -931,7 +963,11 @@ else:
   for i, j, k in zip(p[1]['idlist'], p[3]['namelist'], p[3]['typelist']):
     if verifyCalType(i, p.lexer.lineno) != k:
       print("Error type mismatch in line " +str(p.lexer.lineno) +". Expected type " +verifyCalType(i, p.lexer.lineno)+", got type "+ k)
-    p[0]['code'] += [i + ' :=  '+ i + p[2]['symbol'] + j]
+    var = newVar()
+    var_dest = newVar()
+    p[0]['code'] += [var + " := " + i]
+    p[0]['code'] += [var_dest + ' :=  '+ var + " " + p[2]['symbol'] + k + " " + j]
+    p[0]['code'] += [i + " := " + var_dest]
 >>
 
 AssignmentGen : IdOrArrayElemList assign_op ExpressionList
@@ -1072,7 +1108,13 @@ if not b:
 	print("Switch variable", p[2], "not declared on line number", p.lexer.lineno)
 p[0]['code'] = p[4]['expcodelist']
 for exp, label in zip(p[4]['explist'], p[4]['labellist'][:-1]):
-	p[0]['code'] += ['if ' + p[2] + ' == ' + exp + ' goto ' + label]
+  exp_var = newVar()
+  var = newVar()
+  var2 = newVar()
+  p[0]['code'] += [exp_var + " := " + exp]
+  p[0]['code'] += [var2 + " := " + p[2]]
+  p[0]['code'] += [var + " := " + var2 + ' == ' + exp_var]
+  p[0]['code'] += ['if ' + var + ' goto ' + label]
 for label, codeblock in zip(p[4]['labellist'][:-1], p[4]['code']):
 	p[0]['code'] += codeblock
 	p[0]['code'] += ['goto ' + p[4]['labellist'][-1]]
