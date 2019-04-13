@@ -1776,6 +1776,24 @@ def p_simple_stmt(p):
 	if len(p)==2 and p.slice[1].type=="ExpressionStmt":
 		p[0]['place'] = p[1]['place']
 
+def p_simple_stmt_bot(p):
+	'''
+	SimpleStmtBot : SimpleStmt
+	           | empty
+	'''
+	global symTableSt
+	global symTableDict
+	global actRecordSt
+	global actRecordDict
+	p[0] = {}
+	p[0]['code'] = []
+	p[0]['dict_code'] = {}
+	if len(p)==2 and p.slice[1].type=="SimpleStmt":
+		p[0]['code'] = p[1]['code']
+		p[0]['place'] = p[1]['place']
+	if len(p)==2 and p.slice[1].type=="empty":
+		p[0]['place'] = ""
+
 def p_expression_stmt(p):
 	'''
 	ExpressionStmt : Expression
@@ -2115,7 +2133,7 @@ def p_expr_switch_case(p):
 
 def p_for_stmt(p):
 	'''
-	ForStmt : FOR ExpressionBot Block
+	ForStmt : FOR SimpleStmtBot SEMICOLON SimpleStmtBot SEMICOLON SimpleStmtBot Block
 	'''
 	global symTableSt
 	global symTableDict
@@ -2124,6 +2142,19 @@ def p_for_stmt(p):
 	p[0] = {}
 	p[0]['code'] = []
 	p[0]['dict_code'] = {}
+	if len(p)==8 and p.slice[7].type=="Block" and p.slice[6].type=="SimpleStmtBot" and p.slice[5].type=="SEMICOLON" and p.slice[4].type=="SimpleStmtBot" and p.slice[3].type=="SEMICOLON" and p.slice[2].type=="SimpleStmtBot" and p.slice[1].type=="FOR":
+		p[0]['code'] = p[2]['code'] + p[4]['code']
+		beglabel = newLabel()
+		endlabel = newLabel()
+		if (p[4]['place'] != ""):
+		  p[0]['code'] += ["if " + p[4]['place'] + " goto " + beglabel + " else goto " + endlabel]
+		p[0]['code'] += [beglabel + ":"]
+		p[0]['code'] += p[7]['code']
+		p[0]['code'] += p[6]['code']
+		p[0]['code'] += p[4]['code']
+		if (p[4]['place'] != ""):
+		  p[0]['code'] += ["if " + p[4]['place'] + " goto " + beglabel + " else goto " + endlabel]
+		p[0]['code'] += [endlabel + ":"]
 
 def p_expression_bot(p):
 	'''
