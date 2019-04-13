@@ -47,6 +47,16 @@ class SymbolTableVariableEntry(SymbolTableEntry):
         SymbolTableEntry.prettyPrint(self)
         print("VariableType:" + self.variableType + ", ", "Dimensions:", self.dimension, ", " +"DimRanges:", self.dim_ranges, ", ", "Local:", self.is_local, ", ")
 
+class SymbolTableLitEntry(SymbolTableEntry):
+    def __init__(self, name, typ):
+        SymbolTableEntry.__init__(self, name, "LitEntry")
+        self.variableType = typ
+    def getType(self):
+        return self.variableType
+    def prettyPrint(self):
+        SymbolTableEntry.prettyPrint(self)
+        print("VariableType:", self.variableType, ",")
+
 class SymbolTablePackageEntry(SymbolTableEntry):
     def __init__(self, name):
         SymbolTableEntry.__init__(self, name, "PackageType")

@@ -350,10 +350,9 @@ p[0]['code'] = p[1]['code'] + p[2]['code']
 for i,j,k in zip(p[1]['idlist'], p[2]['namelist'], p[2]['typelist']):
     p[0]['code'] += [i + ' := ' + j]
     actRecord.putConstVar(i)
-    #var = VarEntry(i)
-    #var.setType(k)
-    #if (symTable.put(var) == False):
-    #  print("Error:", i, "redeclared on line number", p.lexer.lineno)
+    lit = LitEntry(i, k)
+    if (symTable.put(lit) == False):
+      print("Error:", i, "redeclared on line number", p.lexer.lineno)
 >>
 
 ConstSpecTail : TypeTop EQ ExpressionList

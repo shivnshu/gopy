@@ -59,8 +59,10 @@ def alloc_st_code(func_name):
 
 def main():
     res = [".section .text", ".globl main", ""]
-    res += ["main:", "call _init", "call func_main", "push $0", "call exit", ""]
-    res += ["_init:", "push %ebp", "movl %esp, %ebp", "movl %ebp, %esp", "pop %ebp", "ret", ""]
+    res += ["main:", "push %ebp", "movl %esp, %ebp", "movl %ebp, %esi"]
+    res += alloc_st_code("root")
+    res += ["call func_main", "push $0", "call exit", ""]
+    # res += ["_init:", "push %ebp", "movl %esp, %ebp", "movl %ebp, %esp", "pop %ebp", "ret", ""]
     func_init = ["push %ebp", "mov %esp, %ebp"]
     func_end = ["mov %ebp, %esp", "pop %ebp", "ret", ""]
     for func_name in dict_code:

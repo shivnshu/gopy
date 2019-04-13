@@ -1,8 +1,8 @@
 import sys
 import re
 
-# %esi store global starting address
-usable_registers = ["%eax", "%ebx", "%ecx", "%edx", "%esi", "%edi"]
+# %esi store global starting address, that's why not part of usable registers
+usable_registers = ["%eax", "%ebx", "%ecx", "%edx", "%edi"]
 #free_registers = usable_registers.copy()
 
 register_mapping = {}

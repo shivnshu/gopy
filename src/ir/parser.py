@@ -3,6 +3,7 @@ import ply.yacc as yacc
 from tokrules import tokens
 
 from SymbolTable import SymbolTable
+from SymbolTable import SymbolTableLitEntry as LitEntry
 from SymbolTable import SymbolTableVariableEntry as VarEntry
 from SymbolTable import SymbolTablePackageEntry as PackageEntry
 from SymbolTable import SymbolTableInterfaceEntry as InterfaceEntry
@@ -690,10 +691,9 @@ def p_const_spec(p):
 	for i,j,k in zip(p[1]['idlist'], p[2]['namelist'], p[2]['typelist']):
 	    p[0]['code'] += [i + ' := ' + j]
 	    actRecord.putConstVar(i)
-	    #var = VarEntry(i)
-	    #var.setType(k)
-	    #if (symTable.put(var) == False):
-	    #  print("Error:", i, "redeclared on line number", p.lexer.lineno)
+	    lit = LitEntry(i, k)
+	    if (symTable.put(lit) == False):
+	      print("Error:", i, "redeclared on line number", p.lexer.lineno)
 
 def p_const_spec_tail(p):
 	'''

@@ -1,20 +1,24 @@
 import common
+import sys
 from common import get_register, set_register, free_register, getTokType
 from common import reserve_register, unreserve_register
 
 def asm_gen(line, activation_record, context):
     res = []
     toks = line.split(" ", 2) # string support
-    # print(toks)
 
     left_type = getTokType(toks[0])
     right_type = getTokType(toks[2])
+    # print(toks, left_type, right_type)
     if (left_type == "register"):
         dst_entry = get_register(toks[0])
     elif (left_type == "variable"):
         (offset, size), typ = activation_record.getVarTuple(toks[0])
         if typ == "global":
-            pass
+            dst_entry = str(offset) + "(%esi)"
+        elif typ == "const":
+            print("Error: const", toks[0], "can not be assigned")
+            sys.exit(0)
         else:
             dst_entry = str(offset) + "(%ebp)"
 
@@ -32,10 +36,12 @@ def asm_gen(line, activation_record, context):
     elif (right_type == "variable"):
         (offset, size), typ = activation_record.getVarTuple(toks[2])
         if typ == "global":
-            pass
+            src_entry = str(offset) + "(%esi)"
+        elif typ == "const":
+            src_entry = "$" + toks[2]
         else:
             src_entry = str(offset) + "(%ebp)"
-            res.append("movl " + src_entry + ", " + dst_entry)
+        res.append("movl " + src_entry + ", " + dst_entry)
     elif (right_type == "string"):
         string_lit = toks[2][1:-1].encode().decode('unicode_escape') # Allow newline etc.
         if (left_type == "register"):
