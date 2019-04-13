@@ -3,9 +3,11 @@ package mypkg
 import "fmt"
 
 func main() {
-  sum := 0
-  for i := 0; i<10; i += 1 {
-    sum += i
-  }
-  fmt.Printf("%d\n", sum)
+  b:= 10
+  c:= 10*5
+  e := 5+19
+  var a [b][c][e]int
+  a[6][1][1] = 10
+  //x := 2
+  //a[x] = 1
 }

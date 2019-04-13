@@ -1,12 +1,9 @@
 type_to_size = {}
 type_to_size["int"] = 4
-type_to_size["long"] = 8
 type_to_size["char"] = 1
 type_to_size["float"] = 4
-type_to_size["double"] = 8
 type_to_size["string"] = 4 # Since storing address
 type_to_size["*int"] = 4
-type_to_size["*long"] = 4
 type_to_size["*char"] = 4
 type_to_size["*float"] = 4
 
@@ -203,7 +200,7 @@ class ActivationRecord:
             var_entry = varSymbols[symbol]
             var_type = var_entry.getType()
             if (var_entry.getIsLocal() == True):
-                size = max(1, var_entry.getDim()) * type_to_size[var_type]
+                size = type_to_size[var_type]
                 self.offset -= size
                 self.local_vars[var_entry.getName()] = (self.offset, size)
             else:

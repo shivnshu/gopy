@@ -557,6 +557,8 @@ TypeDef : IDENTIFIER Type
 scope = symTableSt[-1]
 symTable = symTableDict[scope]
 var = VarEntry(p[1])
+var.setDim(p[2]['dim'])
+var.setDimRanges(p[2]['dimrange'])
 if (symTable.put(var) == False):
     print("Error:", p[1], "redeclared on line number", p.lexer.lineno)
 >>
@@ -564,11 +566,17 @@ if (symTable.put(var) == False):
 Type : TypeName
      | TypeLit
      | LPAREN Type RPAREN
+<<0
+p[0]['dims'] = 0
+p[0]['dimrange'] = []
+>>
 <<1
 p[0]['type'] = p[1]['type']
 >>
 <<2
 p[0]['type'] = p[1]['type']
+p[0]['dims'] = p[1]['dims']
+p[0]['dimrange'] = p[1]['dimrange']
 >>
 <<3
 p[0]['type'] = p[2]['type']
@@ -598,12 +606,18 @@ TypeLit  : ArrayType
 <<0
 p[0]['type'] = p[1]['type']
 >>
+<<1
+p[0]['dims'] = p[1]['dims']
+p[0]['dimrange'] = p[1]['dimrange']
+>>
 
 ArrayType  : LSQUARE ArrayLength RSQUARE ElementType
 <<0
 if p[2]['type'] != "int" and p[2]['type'] != '':
 	print("Array index error on line number", p.lexer.lineno)
 p[0]['type'] = p[4]['type']
+p[0]['dims'] = 1 + p[4]['dims']
+p[0]['dimrange'] = [p[2]] + p[4]['dimrange']
 >>
 
 ArrayLength : Expression
@@ -618,6 +632,8 @@ p[0]['type'] = ''
 ElementType : Type
 <<0
 p[0]['type'] = p[1]['type']
+p[0]['dims'] = p[1]['dims']
+p[0]['dimrange'] = p[1]['dimrange']
 >>
 
 StructType    : STRUCT keyword_lcurly FieldDeclList keyword_rcurly
@@ -689,10 +705,11 @@ p[0]['args_types'] = p[2]['args_types']
 p[0]['idlist'] = p[2]['idlist']
 params = p[2]['idlist']
 scope = symTableSt[-1]
-for param,t in zip(params, p[0]['args_types']):
+for param,t,dim,dimrange in zip(params, p[0]['args_types'],p[2]['dims'], p[2]['dimranges']):
     entry = VarEntry(param)
     entry.setType(t)
-    entry.isNotLocal()
+    entry.setDim(dim)
+    entry.setDimRanges(dimrange)
     table = symTableDict[scope]
     if (table.put(entry) == False):
         print("Error:", param, "redeclared on line number", p.lexer.lineno)
@@ -703,10 +720,14 @@ ParameterListTop : ParameterList commaTop
 <<1
 p[0]['args_types'] = p[1]['args_types']
 p[0]['idlist'] = p[1]['idlist']
+p[0]['dims'] = p[1]['dims']
+p[0]['dimranges'] = p[1]['dimranges']
 >>
 <<2
 p[0]['args_types'] = []
 p[0]['idlist'] = []
+p[0]['dims'] = []
+p[0]['dimranges'] = []
 >>
 
 commaTop : COMMA
@@ -716,6 +737,8 @@ ParameterList  : ParameterDecl ParameterDeclList
 <<0
 p[0]['args_types'] = [p[1]['type']] + p[2]['args_types']
 p[0]['idlist'] = p[1]['idlist'] + p[2]['idlist']
+p[0]['dims'] = [p[1]['dim']] + p[2]['dims']
+p[0]['dimranges'] = [p[1]['dimrange']] + p[2]['dimranges']
 >>
 
 ParameterDeclList : COMMA ParameterDecl ParameterDeclList
@@ -723,16 +746,22 @@ ParameterDeclList : COMMA ParameterDecl ParameterDeclList
 <<1
 p[0]['args_types'] = [p[2]['type']] + p[3]['args_types']
 p[0]['idlist'] = p[2]['idlist'] + p[3]['idlist']
+p[0]['dims'] = [p[2]['dim']] + p[3]['dims']
+p[0]['dimranges'] = [p[2]['dimrange']] + p[3]['dimranges']
 >>
 <<2
 p[0]['args_types'] = []
 p[0]['idlist'] = []
+p[0]['dims'] = []
+p[0]['dimranges'] = []
 >>
 
 ParameterDecl  : ParameterDeclHead tripledotTop Type
 <<0
 p[0]['type'] = p[3]['type']
 p[0]['idlist'] = p[1]['idlist']
+p[0]['dim'] = p[3]['dim']
+p[0]['dimrange'] = p[3]['dimrange']
 >>
 
 tripledotTop : DOT_DOT_DOT
@@ -756,6 +785,18 @@ p[0]['idlist'] = []
 VarDecl : VAR VarSpecTopList
 <<0
 p[0]['code'] = p[2]['code']
+sym_table = symTableDict[symTableSt[-1]]
+var_symbols = sym_table.getVarSymbols()
+for sym in var_symbols:
+  var_entry = var_symbols[sym]
+  if (var_entry.getDim() <= 0):
+    continue
+  dim_ranges = var_entry.getDimRanges()
+  type = var_entry.getType()
+  decl = "_decl array " + type + " " + var_entry.getName() 
+  for d in range(var_entry.getDim()):
+    decl += " " + dim_ranges[d]
+  p[0]['code'] += [decl]
 >>
 
 VarSpecTopList : VarSpec
@@ -774,7 +815,8 @@ p[0]['code'] = p[1]['code'] + p[2]['code']
 >>
 
 VarSpec  : IdentifierList1 VarSpecTail
-<<0
+         | IdOrArrayElemList VarSpecTail
+<<1
 scope = symTableSt[-1]
 symTable = symTableDict[scope]
 if ((p[2]['type_used'] == False) and  len(p[1]['idlist']) != len(p[2]['namelist'])):
@@ -792,9 +834,28 @@ for index in range(len(mylist)):
       var.setType(p[2]['typelist'][0])
     if (symTable.put(var) == False):
         print("Error:", i, "redeclared on line number", p.lexer.lineno)
-    if (len(p[2]['namelist']) != 0):
-      j = p[2]['namelist'][index]
-      p[0]['code'] += [i + " := " + j] 
+>>
+<<2
+scope = symTableSt[-1]
+symTable = symTableDict[scope]
+if ((p[2]['type_used'] == False) and  len(p[1]['idlist']) != len(p[2]['namelist'])):
+	print("Length mismatch on line number", p.lexer.lineno)
+	return
+p[0]['code'] = p[1]['code'] + p[2]['code']
+mylist = p[1]['idlist']
+mytypelist = p[2]['typelist']
+myidxlists = p[1]['idxlists']
+for index in range(len(mylist)):
+    i = mylist[index]
+    var = VarEntry(i)
+    var.setDim(len(myidxlists[index]))
+    var.setDimRanges(myidxlists[index])
+    if (p[2]['type_used'] == False):
+      var.setType(mytypelist[index])
+    else:
+      var.setType(p[2]['typelist'][0])
+    if (symTable.put(var) == False):
+        print("Error:", i, "redeclared on line number", p.lexer.lineno)
 >>
 
 VarSpecTail : Type VarSpecMid
@@ -989,20 +1050,20 @@ else:
 AssignmentGen : IdOrArrayElemList assign_op ExpressionList
 <<0
 p[0]['code'] = p[1]['code'] + p[3]['code']
+for i, idx,  j, k in zip(p[1]['idlist'], p[1]['idxlists'],  p[3]['namelist'], p[3]['typelist']):
+  if verifyCalType(i, p.lexer.lineno) != k:
+    print("Error type mismatch in line " +str(p.lexer.lineno) +". Expected type " +verifyCalType(i, p.lexer.lineno)+", got type "+ k)
+  else:
+    for n in symTableSt[::-1]:
+      if i in symTableDict[n].symbols:
+        table = symTableDict[n]
+    entry = table.get(i)
+    if (entry.getDim() != len(idx)):
+       print("Error: dimention mismatch at line number", p.lexer.lineno)
 if (p[2]['len'] == 1):
-  for i, idx,  j, k in zip(p[1]['idlist'], p[1]['idxlists'],  p[3]['namelist'], p[3]['typelist']):
-    if verifyCalType(i, p.lexer.lineno) != k:
-      print("Error type mismatch in line " +str(p.lexer.lineno) +". Expected type " +verifyCalType(i, p.lexer.lineno)+", got type "+ k)
-    if (len(idx) == 0):
-      idx = ""
-    p[0]['code'] += [i + str(idx) + ' := ' + j] 
+    p[0]['code'] += [i +str(idx) + ' := ' + j]
 else:
-  for i, idx, j, k in zip(p[1]['idlist'], p[1]['idxlists'], p[3]['namelist'], p[3]['typelist']):
-    if verifyCalType(i, p.lexer.lineno) != k:
-      print("Error type mismatch in line " +str(p.lexer.lineno) +". Expected type " +verifyCalType(i, p.lexer.lineno)+", got type "+ k)
-    if (len(idx) == 0):
-      idx = ""
-    p[0]['code'] += [i + str(idx) + ' := ' + i + str(idx) + p[2]['symbol'] + j]
+    p[0]['code'] += [i + ' := ' + i +str(idx)+p2['symbol'] + j]
 >>
 
 assign_op : addmul_op EQ

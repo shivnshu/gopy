@@ -10,6 +10,7 @@ import func_calls
 import binaryop
 import ifstmt
 import gotostmt
+import arr_decl
 
 arg_parser = argparse.ArgumentParser()
 arg_parser.add_argument("input", nargs="*")
@@ -48,6 +49,8 @@ def asm_gen(code_line, func_name):
         return res
     if (code_type == "gotostmt"):
         return gotostmt.asm_gen(code_line)
+    if (code_type == "arr_decl"):
+        return arr_decl.asm_gen(code_line, context)
     # return None
     return [code_line]
 

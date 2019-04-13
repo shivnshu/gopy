@@ -95,6 +95,12 @@ def asm_gen(line, activation_record, context):
                 res.append("lea " + str(offset) + "(%ebp) ," + reg)
                 res.append("movl " + reg + ", " + dst_entry)
                 free_register("_tmp")
+    elif (right_type == "float"):
+        reg = get_register("_tmp")
+        res.append("mov $" + toks[2] + " ," + reg)
+        res.append("fld " + "$" + toks[2] + "")
+        res.append("fstp " + dst_entry)
+        free_register("_tmp")
 
     if (left_type == "dereference"):
         free_register("_tmp2")

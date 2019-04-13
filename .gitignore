@@ -4,3 +4,5 @@
 *.out
 tmp.*
 __pycache__/
+.gdb_history
+peda-session-tmp.out.txt

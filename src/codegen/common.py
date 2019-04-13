@@ -76,6 +76,8 @@ def getCodeType(code):
         return "ifstmt"
     if (toks[0] == "goto"):
         return "gotostmt"
+    if (toks[0] == "_decl"):
+        return "arr_decl"
     return None
 
 def getTokType(tok):
@@ -94,7 +96,11 @@ def getTokType(tok):
         return "dereference"
     if (tok in reserved_words):
         return "const"
-    return "variable"
+    try:
+        float(tok)
+        return "float"
+    except:
+         return "variable"
 
 def getLitType(lit):
     try:
