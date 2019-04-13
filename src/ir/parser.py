@@ -544,7 +544,7 @@ def p_func_call_stmt(p):
 		if not b:
 			print("Function", p[1], "not defined on line number", p.lexer.lineno)
 		p[0]['code'] = p[5]['code']
-		for param in p[5]['namelist']:
+		for param in p[5]['namelist'][::-1]:
 		    p[0]['code'] += ["push_param " + param]
 		p[0]['code'] += ["call " + p[1] + "." + p[3]]
 		for name in p[0]['namelist'][::-1]:
@@ -572,7 +572,7 @@ def p_func_call_stmt(p):
 		for typ in p[0]['ret_types']:
 		  p[0]['namelist'] += [newVar()]
 		p[0]['code'] = p[3]['code']
-		for param in p[3]['namelist']:
+		for param in p[3]['namelist'][::-1]:
 		    p[0]['code'] += ["push_param " + param]
 		p[0]['code'] += ["call " + p[1]]
 		for name in p[0]['namelist'][::-1]:

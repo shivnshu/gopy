@@ -1,5 +1,6 @@
 package mypkg
 
+<<<<<<< HEAD
 var d int = 4
 
 func main() {
@@ -20,5 +21,4 @@ func main() {
 	else if (c>11){
 		s=99
 	}
-
 }
