@@ -61,7 +61,10 @@ def asm_gen(line, activation_record, context):
         context["rel_op_num"] += 1
     elif (toks[3][0:2] == "==" or toks[3][0:2] == "!=" or toks[3][0] == "<" or toks[3][0] == ">" or toks[3][0:2] == "<=" or toks[3][0:2] == ">="):
         jmp_instr = {"==": "je", "<": "jl", ">": "jg", "<=": "jle", ">=": "jge", "!=": "jne"}
-        jmp_stmt = jmp_instr[toks[3][0]]
+        if (toks[3][0] in jmp_instr):
+            jmp_stmt = jmp_instr[toks[3][0]]
+        else:
+            jmp_stmt = jmp_instr[toks[3][0:2]]
         res.append("cmpl" + r1 + ", " + r2)
         res.append(jmp_stmt + " _rel_op_" + str(context["rel_op_num"]) + "_true")
         res.append("movl $0, " + r0)
@@ -70,6 +73,10 @@ def asm_gen(line, activation_record, context):
         res.append("movl $1, " + r0)
         res.append("_rel_op_" + str(context["rel_op_num"]) + "_end:")
         context["rel_op_num"] += 1
+
+    free_register(toks[0])
+    free_register(toks[2])
+    free_register(toks[4])
 
 
     return res, context

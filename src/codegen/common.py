@@ -39,6 +39,8 @@ def getCodeType(code):
         return "function-call"
     if  (len(toks)==5 and toks[1]==":=" and (toks[3][0] in binary_op_list or toks[3][0:2] in binary_op_list)):
         return "binary-op"
+    if (toks[0] == "if"):
+        return "ifstmt"
     return None
 
 def getTokType(tok):
