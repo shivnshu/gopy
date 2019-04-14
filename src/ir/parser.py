@@ -1884,7 +1884,7 @@ def p_short_var_decl(p):
 	p[0]['dict_code'] = {}
 	scope = symTableSt[-1]
 	table = symTableDict[scope]
-	p[0]['code'] = p[1]['code'] + p[3]['code']
+	p[0]['code'] += p[3]['code']
 	if (len(p[1]['idlist']) != len(p[3]['namelist'])):
 	   print("Left and right side not equal on line number", p.lexer.lineno)
 	   sys.exit(0)
@@ -2375,8 +2375,38 @@ def p_expression(p):
 		p[0]['code'] = p[3]['code']
 		p[0]['type'] = p[1]
 		p[0]['field_ass'] = p[3]['field_ass']
+		struct_name = p[1]
+		sym_table = symTableDict[symTableSt[-1]]
+		b = False
+		while (sym_table is not None):
+		    if struct_name in sym_table.getSymbols():
+		        d = True
+		        break
+		    sym_table = sym_table.getParent()
+		if not d:
+		    print("Error: Type " + type + " not found on line number", p.lexer.lineno)
+		    sys.exit(0)
+		struct_entry = sym_table.getSymbols()[struct_name]
+		struct_field_type_map = struct_entry.getFields()
 		for asgn in p[3]['field_ass']:
-		  p[0]['code'] += [p[0]['place'] + "." + asgn[0] + ": " + asgn[1]]
+		    p[0]['code'] += [p[0]['place'] + "." + asgn[0] + " " + struct_field_type_map[asgn[0]] + " := " + asgn[1]]
+		#code_so_far = p[0]['code'] # Following code is little optimization for saving registers
+		#i = 0
+		#j = 0
+		#res = []
+		#for asgn in p[3]['field_ass']:
+		#  tmp_name = asgn[1]
+		#  this_code = p[0]['place'] + "." + asgn[0] + ": " + asgn[1]
+		#  for j in range(i, len(code_so_far)):
+		#    if tmp_name in code_so_far[j]:
+		#      res += [code_so_far[j], this_code]
+		#      i = j + 1
+		#      break
+		#    else:
+		#      res += [code_so_far[j]]
+		#  if (j == len(code_so_far)):
+		#    res += [this_code]
+		#p[0]['code'] = res
 
 def p_object_param_list(p):
 	'''

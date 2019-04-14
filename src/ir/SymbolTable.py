@@ -12,19 +12,18 @@ type_to_size["*float"] = 4
 def give_type_size(type, symTable):
     if (type=="int" or type=="char" or type=="float" or type=="string" or type=="*int" or type=="*char" or type=="*float"):
         return type_to_size[type]
-    else:
-        print(symTable.getSymbols())
-        b = False
-        while (symTable is not None):
-            if type in symTable.getSymbols():
-                d = True
-                break
-            symTable = symTable.getParent()
-        if not d:
-            print("Error: Type "+type+" not found")
-            sys.exit(0)
-        struct_entry = symTable.getSymbols()[type]
-        return struct_entry.getSize()
+    print(symTable.getSymbols())
+    b = False
+    while (symTable is not None):
+        if type in symTable.getSymbols():
+            d = True
+            break
+        symTable = symTable.getParent()
+    if not d:
+        print("Error: Type " + type + " not found")
+        sys.exit(0)
+    struct_entry = symTable.getSymbols()[type]
+    return struct_entry.getSize()
 
 
 class SymbolTableEntry:
@@ -91,6 +90,8 @@ class SymbolTableStructEntry(SymbolTableEntry):
         self.fields = {}
     def addFields(self, fields):
         self.fields = fields
+    def getFields(self):
+        return self.fields
     def setSize(self):
         size = 0
         for key in self.fields.keys():

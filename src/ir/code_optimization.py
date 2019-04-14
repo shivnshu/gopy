@@ -57,6 +57,44 @@ def array_optimization(code_list):
             final_res += [res[i]]
     return final_res
 
+def struct_optimization(code_list):
+    res = []
+    del_list = []
+    for i in range(len(code_list)):
+        line = code_list[i]
+        toks = line.split()
+        if (len(toks) != 4 or "." not in toks[0]):
+            res += [line]
+            continue
+        struct_toks = toks[0].split(".")
+        struct_reg_name = struct_toks[0]
+        if struct_reg_name[0] != "_": # Not register
+            res += [line]
+            continue
+        # Search forward
+        found = False
+        var_name = ''
+        for j in range(i+1, len(code_list)):
+            ass_line = code_list[j]
+            ass_line_toks = ass_line.split()
+            if (len(ass_line_toks) != 3 or ":=" not in ass_line_toks):
+                continue
+            if struct_reg_name == ass_line_toks[2]:
+                found = True
+                del_list += [j]
+                var_name = ass_line_toks[0]
+                break
+        if not found:
+            print("Error: while optimizing structs. Try removing this optimization")
+            sys.exit(0)
+        line = re.sub(struct_reg_name, var_name, line)
+        res += [line]
+    final_res = []
+    for i in range(len(res)):
+        if i not in del_list:
+            final_res += [res[i]]
+    return final_res
+
 def code_optimization(code_list):
     # print()
     # for c in code_list:
@@ -92,6 +130,7 @@ def code_optimization(code_list):
         res += [first + " := " + last]
     res = unary_optimization(res)
     res = array_optimization(res)
+    res = struct_optimization(res)
     return res
 
 

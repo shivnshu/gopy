@@ -10,7 +10,6 @@ type person struct {
 const a = 5
 
 func main() {
-	//sahil := person{name:"Sahil", age:20}
-	var f float
-	f = 1.23
+	sahil := person{name:"Sahil", age:20}
+	don := person{name: "haha", age:12}
 }

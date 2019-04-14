@@ -79,7 +79,7 @@ def getCodeType(code):
         return "ifstmt"
     if (toks[0] == "goto"):
         return "gotostmt"
-    if (toks[0] == "_decl"):
+    if (toks[0] == "_decl" and toks[1] == "array"):
         return "arr_decl"
     return None
 
