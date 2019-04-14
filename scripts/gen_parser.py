@@ -82,6 +82,15 @@ output += "\t\treturn 'Unknown'\n"
 output += "\tentry = table.get(name)\n"
 output += "\treturn entry.getType()\n\n"
 
+output += "def flatten_list(l):\n"
+output += "\toutput = []\n"
+output += "\tfor i in l:\n"
+output += "\t\tif type(i) == list:\n"
+output += "\t\t\tflatten_list(i)\n"
+output += "\t\telse:\n"
+output += "\t\t\toutput.append(i)\n"
+output += "\treturn output"
+
 output += '''
 def p_empty(p):
 \t'empty :'

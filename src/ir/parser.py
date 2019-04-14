@@ -48,7 +48,14 @@ def verifyCalType(name, lineno):
 	entry = table.get(name)
 	return entry.getType()
 
-
+def flatten_list(l):
+	output = []
+	for i in l:
+		if type(i) == list:
+			flatten_list(i)
+		else:
+			output.append(i)
+	return output
 def p_empty(p):
 	'empty :'
 	pass
@@ -786,39 +793,6 @@ def p_identifier_bot_list1(p):
 	if len(p)==2 and p.slice[1].type=="empty":
 		p[0]['idlist'] = []
 
-def p_identifier_list2(p):
-	'''
-	IdentifierList2 : IDENTIFIER IdentifierBotList2
-	                | MULT IDENTIFIER IdentifierBotList2
-	'''
-	global symTableSt
-	global symTableDict
-	global actRecordSt
-	global actRecordDict
-	p[0] = {}
-	p[0]['code'] = []
-	p[0]['dict_code'] = {}
-	if len(p)==3 and p.slice[2].type=="IdentifierBotList2" and p.slice[1].type=="IDENTIFIER":
-		b = False
-		for scope in symTableSt:
-			if p[1] in symTableDict[scope].symbols:
-				b = True
-				break
-		if not b:
-		  print("Error:", p[1], "not defined on line number", p.lexer.lineno)
-		  sys.exit(0)
-		p[0]['idlist'] = [p[1]] + p[2]['idlist']
-	if len(p)==4 and p.slice[3].type=="IdentifierBotList2" and p.slice[2].type=="IDENTIFIER" and p.slice[1].type=="MULT":
-		b = False
-		for scope in symTableSt:
-		  if p[2] in symTableDict[scope].symbols:
-		    b = True
-		    break
-		if not b:
-		  print("Error:", p[1], "not defined on line number", p.lexer.lineno)
-		  sys.exit(0)
-		p[0]['idlist'] = [p[1]+p[2]] + p[3]['idlist']
-
 def p_identifier_list3(p):
 	'''
 	IdentifierList3 : IDENTIFIER IdentifierBotList3
@@ -834,7 +808,7 @@ def p_identifier_list3(p):
 	if len(p)==3 and p.slice[2].type=="IdentifierBotList3" and p.slice[1].type=="IDENTIFIER":
 		p[0]['idlist'] = [p[1]] + p[2]['idlist']
 	if len(p)==4 and p.slice[3].type=="IdentifierBotList3" and p.slice[2].type=="IDENTIFIER" and p.slice[1].type=="MULT":
-		p[0]['idlist'] = [p[1]+p[2]] + p[3]['idlist']
+		p[0]['idlist'] = [p[1] + p[2]] + p[3]['idlist']
 
 def p_identifier_bot_list3(p):
 	'''
@@ -850,45 +824,9 @@ def p_identifier_bot_list3(p):
 	p[0]['code'] = []
 	p[0]['dict_code'] = {}
 	if len(p)==4 and p.slice[3].type=="IDENTIFIER" and p.slice[2].type=="COMMA" and p.slice[1].type=="IdentifierBotList3":
-		p[0]['idlist'] = [p[3]] + p[1]['idlist']
+		p[0]['idlist'] = p[1]['idlist'] + [p[3]]
 	if len(p)==5 and p.slice[4].type=="IDENTIFIER" and p.slice[3].type=="MULT" and p.slice[2].type=="COMMA" and p.slice[1].type=="IdentifierBotList3":
-		p[0]['idlist'] = [p[3]+p[4]] + p[1]['idlist']
-	if len(p)==2 and p.slice[1].type=="empty":
-		p[0]['idlist'] = []
-
-def p_identifier_bot_list2(p):
-	'''
-	IdentifierBotList2 :  IdentifierBotList2 COMMA IDENTIFIER
-	                  |  IdentifierBotList2 COMMA MULT IDENTIFIER
-	                  | empty
-	'''
-	global symTableSt
-	global symTableDict
-	global actRecordSt
-	global actRecordDict
-	p[0] = {}
-	p[0]['code'] = []
-	p[0]['dict_code'] = {}
-	if len(p)==4 and p.slice[3].type=="IDENTIFIER" and p.slice[2].type=="COMMA" and p.slice[1].type=="IdentifierBotList2":
-		b = False
-		for scope in symTableSt:
-			if p[3] in symTableDict[scope].symbols:
-				b = True
-				break
-		if not b:
-		  print("Error:", p[3], "not defined on line number", p.lexer.lineno)
-		  sys.exit(0)
-		p[0]['idlist'] = [p[3]] + p[1]['idlist']
-	if len(p)==5 and p.slice[4].type=="IDENTIFIER" and p.slice[3].type=="MULT" and p.slice[2].type=="COMMA" and p.slice[1].type=="IdentifierBotList2":
-		b = False
-		for scope in symTableSt:
-		  if p[4] in symTableDict[scope].symbols:
-		    b = True
-		    break
-		if not b:
-		  print("Error:", p[4], "not defined on line number", p.lexer.lineno)
-		  sys.exit(0)
-		p[0]['idlist'] = [p[3]+p[4]] + p[1]['idlist']
+		p[0]['idlist'] = p[1]['idlist'] + [p[3] + p[4]]
 	if len(p)==2 and p.slice[1].type=="empty":
 		p[0]['idlist'] = []
 
@@ -1422,6 +1360,7 @@ def p_parameters(p):
 	    entry.setType(t)
 	    entry.setDim(dim)
 	    entry.setDimRanges(dimrange)
+	    entry.isNotLocal()
 	    table = symTableDict[scope]
 	    if (table.put(entry) == False):
 	        print("Error:", param, "redeclared on line number", p.lexer.lineno)
@@ -1711,6 +1650,7 @@ def p_function_decl(p):
 	#act_record.storeOldStPtr("%rbp")
 	act_record.setRetValues(entry)
 	p[0]['dict_code'] = { func_name: code_optimization(p[3]['code']) }
+	p[3]['ret_actual_types'] = flatten_list(p[3]['ret_actual_types'])
 	for ret_actual in p[3]['ret_actual_types']:
 	      if (len(ret_actual) > 0 and p[2]['ret_types'] != ret_actual):
 	           print("Error:", func_name, "return types mismatch on line number", p.lexer.lineno)
@@ -1947,7 +1887,7 @@ def p_short_var_decl(p):
 
 def p_assignment(p):
 	'''
-	Assignment : IdentifierList2 assign_op ExpressionList
+	Assignment : IdentifierList3 assign_op ExpressionList
 	'''
 	global symTableSt
 	global symTableDict
@@ -1956,17 +1896,40 @@ def p_assignment(p):
 	p[0] = {}
 	p[0]['code'] = []
 	p[0]['dict_code'] = {}
+	for id in p[1]['idlist']:
+	  b = False
+	  if id[0] in ['*']:
+	     id = id[1:]
+	  for scope in symTableSt:
+	    if id in symTableDict[scope].symbols:
+	      b = True
+	      break
+	  if not b:
+	    print("Error:", id, "not defined on line number", p.lexer.lineno)
+	    sys.exit(0)
 	p[0]['code'] = p[1]['code'] + p[3]['code']
 	if (p[2]['len'] == 1):
 	  for i, j, k in zip(p[1]['idlist'], p[3]['namelist'], p[3]['typelist']):
-	    if verifyCalType(i, p.lexer.lineno) != k:
-	      print("Error type mismatch in line " +str(p.lexer.lineno) +". Expected type " +verifyCalType(i, p.lexer.lineno)+", got type "+ k)
+	    q = i
+	    if q[0] in ['*']:
+	       q = q[1:]
+	    left_elem_type = verifyCalType(q, p.lexer.lineno)
+	    if i[0] in ['*']:
+	      left_elem_type = left_elem_type[1:]
+	    if left_elem_type != k:
+	      print("Error type mismatch in line " +str(p.lexer.lineno) +". Expected type " +left_elem_type+", got type "+ k)
 	      sys.exit(0)
 	    p[0]['code'] += [i + ' := ' + j] 
 	else:
 	  for i, j, k in zip(p[1]['idlist'], p[3]['namelist'], p[3]['typelist']):
-	    if verifyCalType(i, p.lexer.lineno) != k:
-	      print("Error type mismatch in line " +str(p.lexer.lineno) +". Expected type " +verifyCalType(i, p.lexer.lineno)+", got type "+ k)
+	    q = i
+	    if q[0] in ['*']:
+	       q = q[1:]
+	    left_elem_type = verifyCalType(q, p.lexer.lineno)
+	    if i[0] in ['*']:
+	      left_elem_type = left_elem_type[1:]
+	    if left_elem_type != k:
+	      print("Error type mismatch in line " +str(p.lexer.lineno) +". Expected type " +left_elem_type+", got type "+ k)
 	      sys.exit(0)
 	    var = newVar()
 	    var_dest = newVar()
@@ -1987,8 +1950,14 @@ def p_assignment_gen(p):
 	p[0]['dict_code'] = {}
 	p[0]['code'] = p[1]['code'] + p[3]['code']
 	for i, idx,  j, k in zip(p[1]['idlist'], p[1]['idxlists'],  p[3]['namelist'], p[3]['typelist']):
-	  if verifyCalType(i, p.lexer.lineno) != k:
-	    print("Error type mismatch in line " +str(p.lexer.lineno) +". Expected type " +verifyCalType(i, p.lexer.lineno)+", got type "+ k)
+	  q = i
+	  if q[0] in ['*']:
+	    q = q[1:]
+	  left_elem_type = verifyCalType(q, p.lexer.lineno)
+	  if i[0] in ['*']:
+	    left_elem_type = left_elem_type[1:]
+	  if left_elem_type != k:
+	    print("Error type mismatch in line " +str(p.lexer.lineno) +". Expected type " +left_elem_type+", got type "+ k)
 	    sys.exit(0)
 	  else:
 	    for n in symTableSt[::-1]:

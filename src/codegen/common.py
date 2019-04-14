@@ -3,7 +3,7 @@ import re
 
 # %esi store global starting address, that's why not part of usable registers
 usable_registers = ["%eax", "%ebx", "%ecx", "%edx", "%edi"]
-#free_registers = usable_registers.copy()
+free_registers = usable_registers.copy()
 
 reserved_words = {"true": "1", "false": "0"}
 

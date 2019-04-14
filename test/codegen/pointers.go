@@ -9,5 +9,5 @@ func main() {
   b = &a
   var c int
   *b = 11
-  fmt.Printf("%d\n", a)
+  fmt.printf("%d\n", a)
 }
