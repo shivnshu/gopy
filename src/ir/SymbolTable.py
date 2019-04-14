@@ -69,6 +69,9 @@ class SymbolTableInterfaceEntry(SymbolTableEntry):
 class SymbolTableStructEntry(SymbolTableEntry):
     def __init__(self, name):
         SymbolTableEntry.__init__(self, name, "StructType")
+        self.fields = {}
+    def addFields(self, fields):
+        self.fields = fields
     def prettyPrint(self):
         SymbolTableEntry.prettyPrint(self)
         print(",")

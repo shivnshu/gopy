@@ -2,10 +2,11 @@ package mypkg
 
 import "fmt"
 
+type person struct {
+	int age
+	string name
+}
+
 func main() {
-  var a [2][3]int
-  a[1][2] = 6
-  fmt.printf("%d\n", a[1][2])
-  a[1][1] = 5
-  fmt.printf("%d\n", a[1][1])
+	sahil := person{name:"Sahil", age:20}
 }

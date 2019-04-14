@@ -298,6 +298,7 @@ def p_struct_def(p):
 	scope = symTableSt[-1]
 	symTable = symTableDict[scope]
 	struc = StructEntry(p[2])
+	struc.addFields(p[5]['fields'])
 	if (symTable.put(struc) == False):
 	     print("Error:", p[2], "redeclared on line number", p.lexer.lineno)
 	     sys.exit(0)
@@ -314,6 +315,11 @@ def p_parameter_decl_list2(p):
 	p[0] = {}
 	p[0]['code'] = []
 	p[0]['dict_code'] = {}
+	if len(p)==3 and p.slice[2].type=="ParameterDeclList2" and p.slice[1].type=="ParameterDecl2":
+		p[0]['fields'] = p[1]['fields']
+		p[0]['fields'].update(p[2]['fields'])
+	if len(p)==2 and p.slice[1].type=="empty":
+		p[0]['fields'] = {}
 
 def p_parameter_decl2(p):
 	'''
@@ -326,31 +332,10 @@ def p_parameter_decl2(p):
 	p[0] = {}
 	p[0]['code'] = []
 	p[0]['dict_code'] = {}
-
-def p_parameter_dec_list2(p):
-	'''
-	ParameterDecList2 : ParameterDecl2 ParameterDecList2
-	                  | empty
-	'''
-	global symTableSt
-	global symTableDict
-	global actRecordSt
-	global actRecordDict
-	p[0] = {}
-	p[0]['code'] = []
-	p[0]['dict_code'] = {}
-
-def p_parameter_decl2(p):
-	'''
-	ParameterDecl2 : IdentifierList1 Type
-	'''
-	global symTableSt
-	global symTableDict
-	global actRecordSt
-	global actRecordDict
-	p[0] = {}
-	p[0]['code'] = []
-	p[0]['dict_code'] = {}
+	if len(p)==3 and p.slice[2].type=="Type" and p.slice[1].type=="IdentifierList1":
+		p[0]['fields'] = {}
+		for id in p[1]:
+		  p[0]['fields'][id] = p[2]
 
 def p_interface_decl(p):
 	'''
@@ -2405,6 +2390,14 @@ def p_expression(p):
 	if len(p)==4 and p.slice[3].type=="IDENTIFIER" and p.slice[2].type=="DOT" and p.slice[1].type=="IDENTIFIER":
 		p[0]['place'] = newVar()
 		p[0]['code'] = [p[0]['place'] + ' := ' + p[1]['place'] + '.' + p[2]['place']]
+	if len(p)==5 and p.slice[4].type=="keyword_rcurly" and p.slice[3].type=="ObjectParamList" and p.slice[2].type=="keyword_lcurly" and p.slice[1].type=="IDENTIFIER":
+		print("AAAAAAa")
+		p[0]['place'] = newVar()
+		p[0]['code'] = p[3]['code']
+		p[0]['type'] = p[1]
+		p[0]['field_ass'] = p[3]['field_ass']
+		for asgn in p[3]['field_ass']:
+		  p[0]['code'] += [asgn[0] + ": " + asgn[1]]
 
 def p_object_param_list(p):
 	'''
@@ -2417,6 +2410,9 @@ def p_object_param_list(p):
 	p[0] = {}
 	p[0]['code'] = []
 	p[0]['dict_code'] = {}
+	if len(p)==3 and p.slice[2].type=="ObjectParamTop" and p.slice[1].type=="ObjectParam":
+		p[0]['code'] = p[1]['code'] + p[2]['code']
+		p[0]['field_ass'] = p[1]['field_ass'] + p[2]['field_ass']
 
 def p_object_param_top(p):
 	'''
@@ -2431,6 +2427,15 @@ def p_object_param_top(p):
 	p[0] = {}
 	p[0]['code'] = []
 	p[0]['dict_code'] = {}
+	if len(p)==3 and p.slice[2].type=="ObjectParamTop" and p.slice[1].type=="COMMA":
+		p[0]['code'] = p[2]['code']
+		p[0]['field_ass'] = p[2]['field_ass']
+	if len(p)==3 and p.slice[2].type=="ObjectParam" and p.slice[1].type=="COMMA":
+		p[0]['code'] = p[2]['code']
+		p[0]['field_ass'] = p[2]['field_ass']
+	if len(p)==2 and p.slice[1].type=="empty":
+		p[0]['code'] = []
+		p[0]['field_ass'] = []
 
 def p_object_param(p):
 	'''
@@ -2443,6 +2448,9 @@ def p_object_param(p):
 	p[0] = {}
 	p[0]['code'] = []
 	p[0]['dict_code'] = {}
+	if len(p)==4 and p.slice[3].type=="Expression" and p.slice[2].type=="COLON" and p.slice[1].type=="IDENTIFIER":
+		p[0]['code'] = p[3]['code']
+		p[0]['field_ass'] = [(p[1], p[3]['place'])]
 
 def p_unary_expr(p):
 	'''
