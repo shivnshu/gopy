@@ -41,7 +41,7 @@ def asm_gen(line, activation_record, context):
 
     left_type = getTokType(toks[0])
     right_type = getTokType(toks[2])
-    # print(toks, right_type)
+    print(toks, left_type, right_type)
     if (left_type == "register"):
         dst_entry = get_register(toks[0])
     elif (left_type == "variable"):
@@ -111,7 +111,7 @@ def asm_gen(line, activation_record, context):
             src_entry = "$" + toks[2]
         else:
             src_entry = str(offset) + "(%ebp)"
-        if (left_type != "variable"):
+        if (left_type != "variable" and left_type != "dereference"):
             res.append("movl " + src_entry + ", " + dst_entry)
         else:
             reg = get_register("_tmp")
@@ -164,6 +164,19 @@ def asm_gen(line, activation_record, context):
         res += ["imul $" + context["array_decl"][arr_idx[0]] + ", " + reg]
         res += ["add " + str(offset) + "(%ebp), " + reg]
         res += ["movl 0(" + reg + "), " + dst_entry]
+    elif (right_type == "dereference"):
+        print("defe")
+        if (getTokType(toks[2][1:]) != "variable"):
+            print("Error: dereference of non variable", toks[2][1:])
+            sys.exit(0)
+        (offset, size), typ = activation_record.getVarTuple(toks[2][1:])
+        if (typ != "global" and typ != "const"):
+            pass
+        reg = get_register("_tmp")
+        res += ["movl " + str(offset) + "(%ebp), " + reg]
+        res += ["movl 0(" + reg + "), " + reg]
+        res += ["movl " + reg + ", " + dst_entry]
+        free_register("_tmp")
     else:
         print("Error: Unknown right hand type", toks[2])
         sys.exit(0)

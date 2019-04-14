@@ -978,10 +978,10 @@ if (len(p[1]['idlist']) != len(p[3]['namelist'])):
 for i, j, k in zip(p[1]['idlist'], p[3]['namelist'], p[3]['typelist']):
   p[0]['code'] += [i + ' := ' + j]
   entry = VarEntry(i)
+  entry.setType(k)
   if (table.put(entry) == False):
      print("Error:", i, "redeclared on line number", p.lexer.lineno)
      sys.exit(0)
-  entry.setType(k)
 >>
 
 Assignment : IdentifierList3 assign_op ExpressionList
@@ -1352,19 +1352,25 @@ p[0]['code'] = p[3]['code']
 p[0]['field_ass'] = [(p[1], p[3]['place'])]
 >>
 
-UnaryExpr  : PrimaryExpr
-           | unary_op UnaryExpr
+UnaryExpr  : unary_op UnaryExpr
+           | PrimaryExpr
+           | MULT IDENTIFIER
 <<1
-p[0]['place'] = p[1]['place']
-p[0]['type'] = p[1]['type']
-p[0]['code'] = p[1]['code']
->>
-<<2
 p[0]['place'] = newVar()
 p[0]['type'] = p[2]['type']
 if (p[1]['symbol'] == "&"):
   p[0]['type'] = "*" + p[0]['type']
 p[0]['code'] = p[2]['code'] + [p[0]['place'] + ' := ' + p[1]['symbol'] + p[2]['place']]
+>>
+<<2
+p[0]['place'] = p[1]['place']
+p[0]['type'] = p[1]['type']
+p[0]['code'] = p[1]['code']
+>>
+<<3
+p[0]['place'] = newVar()
+p[0]['type'] = verifyCalType(p[2], p.lexer.lineno)[1:]
+p[0]['code'] = [p[0]['place'] + " := " + "*" + p[2]]
 >>
 
 binary_op  : OR_OR

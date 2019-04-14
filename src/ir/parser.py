@@ -1880,10 +1880,10 @@ def p_short_var_decl(p):
 	for i, j, k in zip(p[1]['idlist'], p[3]['namelist'], p[3]['typelist']):
 	  p[0]['code'] += [i + ' := ' + j]
 	  entry = VarEntry(i)
+	  entry.setType(k)
 	  if (table.put(entry) == False):
 	     print("Error:", i, "redeclared on line number", p.lexer.lineno)
 	     sys.exit(0)
-	  entry.setType(k)
 
 def p_assignment(p):
 	'''
@@ -2423,8 +2423,9 @@ def p_object_param(p):
 
 def p_unary_expr(p):
 	'''
-	UnaryExpr  : PrimaryExpr
-	           | unary_op UnaryExpr
+	UnaryExpr  : unary_op UnaryExpr
+	           | PrimaryExpr
+	           | MULT IDENTIFIER
 	'''
 	global symTableSt
 	global symTableDict
@@ -2433,16 +2434,20 @@ def p_unary_expr(p):
 	p[0] = {}
 	p[0]['code'] = []
 	p[0]['dict_code'] = {}
-	if len(p)==2 and p.slice[1].type=="PrimaryExpr":
-		p[0]['place'] = p[1]['place']
-		p[0]['type'] = p[1]['type']
-		p[0]['code'] = p[1]['code']
 	if len(p)==3 and p.slice[2].type=="UnaryExpr" and p.slice[1].type=="unary_op":
 		p[0]['place'] = newVar()
 		p[0]['type'] = p[2]['type']
 		if (p[1]['symbol'] == "&"):
 		  p[0]['type'] = "*" + p[0]['type']
 		p[0]['code'] = p[2]['code'] + [p[0]['place'] + ' := ' + p[1]['symbol'] + p[2]['place']]
+	if len(p)==2 and p.slice[1].type=="PrimaryExpr":
+		p[0]['place'] = p[1]['place']
+		p[0]['type'] = p[1]['type']
+		p[0]['code'] = p[1]['code']
+	if len(p)==3 and p.slice[2].type=="IDENTIFIER" and p.slice[1].type=="MULT":
+		p[0]['place'] = newVar()
+		p[0]['type'] = verifyCalType(p[2], p.lexer.lineno)[1:]
+		p[0]['code'] = [p[0]['place'] + " := " + "*" + p[2]]
 
 def p_binary_op(p):
 	'''
