@@ -1357,12 +1357,12 @@ def p_parameters(p):
 	params = p[2]['idlist']
 	scope = symTableSt[-1]
 	for param,t,dim,dimrange in zip(params, p[0]['args_types'],p[2]['dims'], p[2]['dimranges']):
+	    table = symTableDict[scope]
 	    entry = VarEntry(param)
-	    entry.setType(t)
+	    entry.setType(t, table)
 	    entry.setDim(dim)
 	    entry.setDimRanges(dimrange)
 	    entry.isNotLocal()
-	    table = symTableDict[scope]
 	    if (table.put(entry) == False):
 	        print("Error:", param, "redeclared on line number", p.lexer.lineno)
 	        sys.exit(0)
@@ -1588,9 +1588,9 @@ def p_var_spec(p):
 	    if (index < len(mynamelist)):
 	      p[0]['code'] += [i + " := " + mynamelist[index]]
 	    if (p[2]['type_used'] == False):
-	      var.setType(mytypelist[index])
+	      var.setType(mytypelist[index], symTable)
 	    else:
-	      var.setType(p[2]['typelist'][0])
+	      var.setType(p[2]['typelist'][0], symTable)
 	    if (symTable.put(var) == False):
 	        print("Error:", i, "redeclared on line number", p.lexer.lineno)
 	        sys.exit(0)
@@ -1891,7 +1891,7 @@ def p_short_var_decl(p):
 	for i, j, k in zip(p[1]['idlist'], p[3]['namelist'], p[3]['typelist']):
 	  p[0]['code'] += [i + ' := ' + j]
 	  entry = VarEntry(i)
-	  entry.setType(k)
+	  entry.setType(k, table)
 	  if (table.put(entry) == False):
 	     print("Error:", i, "redeclared on line number", p.lexer.lineno)
 	     sys.exit(0)
@@ -1907,6 +1907,7 @@ def p_assignment(p):
 	p[0] = {}
 	p[0]['code'] = []
 	p[0]['dict_code'] = {}
+	print(p[3]['typelist'])
 	for id in p[1]['idlist']:
 	  b = False
 	  if id[0] in ['*']:
@@ -2369,7 +2370,16 @@ def p_expression(p):
 		  p[0]['type'] ='string'
 	if len(p)==4 and p.slice[3].type=="IDENTIFIER" and p.slice[2].type=="DOT" and p.slice[1].type=="IDENTIFIER":
 		p[0]['place'] = newVar()
-		p[0]['code'] = [p[0]['place'] + ' := ' + p[1]['place'] + '.' + p[2]['place']]
+		p[0]['code'] = [p[0]['place'] + ' := ' + p[1] + '.' + p[3]]
+		sym_table = symTableDict[symTableSt[-1]]
+		symbols = sym_table.getSymbols()
+		if p[1] not in symbols:
+		   print("Error: type of", p[1], "could not be found on line number", p.lexer.lineno)
+		   sys.exit(0)
+		var_entry = symbols[p[1]]
+		sign = var_entry.getSign()
+		typ = sign[p[3]][2]
+		p[0]['type'] = typ
 	if len(p)==5 and p.slice[4].type=="keyword_rcurly" and p.slice[3].type=="ObjectParamList" and p.slice[2].type=="keyword_lcurly" and p.slice[1].type=="IDENTIFIER":
 		p[0]['place'] = newVar()
 		p[0]['code'] = p[3]['code']
@@ -2389,7 +2399,7 @@ def p_expression(p):
 		struct_entry = sym_table.getSymbols()[struct_name]
 		struct_field_type_map = struct_entry.getFields()
 		for asgn in p[3]['field_ass']:
-		    p[0]['code'] += [p[0]['place'] + "." + asgn[0] + " " + struct_field_type_map[asgn[0]] + " := " + asgn[1]]
+		    p[0]['code'] += [p[0]['place'] + "." + asgn[0] + " := " + asgn[1]]
 		#code_so_far = p[0]['code'] # Following code is little optimization for saving registers
 		#i = 0
 		#j = 0

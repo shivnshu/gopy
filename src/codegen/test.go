@@ -10,6 +10,7 @@ type person struct {
 const a = 5
 
 func main() {
-	sahil := person{name:"Sahil", age:20}
-	don := person{name: "haha", age:12}
+	sahil := person{name: "Sahil", age: 20}
+  b := sahil.age
+  fmt.printf("Age: %d\n", b)
 }

@@ -63,7 +63,7 @@ def struct_optimization(code_list):
     for i in range(len(code_list)):
         line = code_list[i]
         toks = line.split()
-        if (len(toks) != 4 or "." not in toks[0]):
+        if (len(toks) != 3 or "." not in toks[0]):
             res += [line]
             continue
         struct_toks = toks[0].split(".")

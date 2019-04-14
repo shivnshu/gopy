@@ -69,6 +69,8 @@ binary_op_list = ["+", "-", "*", "/", "&&", "||", "==", "!=", "<", ">", "<=", ">
 def getCodeType(code):
     code = re.sub(r'".*"', 'string', code)
     toks = code.split()
+    if (len(toks) == 3 and ("." in toks[0] or "." in toks[2])):
+        return "structs"
     if (len(toks) == 3 and ":=" in code):
         return "assignments"
     if (len(toks) == 2 and ("call" in toks or "push_param" in toks or "ret_param" in toks or "ret" in toks or "ret_alloc" in toks)):

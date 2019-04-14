@@ -8,9 +8,11 @@ type_to_size["string"] = 4 # Since storing address
 type_to_size["*int"] = 4
 type_to_size["*char"] = 4
 type_to_size["*float"] = 4
+lang_datatypes = ["int", "char", "float", "string", "*int", "*char", "*float"]
 
-def give_type_size(type, symTable):
-    if (type=="int" or type=="char" or type=="float" or type=="string" or type=="*int" or type=="*char" or type=="*float"):
+def get_type_size(type, symTable):
+    global lang_datatypes
+    if type in lang_datatypes:
         return type_to_size[type]
     print(symTable.getSymbols())
     b = False
@@ -47,8 +49,32 @@ class SymbolTableVariableEntry(SymbolTableEntry):
         self.dimension = 0
         self.dim_ranges = []
         self.is_local = True
-    def setType(self, type):
-        self.variableType = type
+        self.signature = {}
+    def setType(self, typ, sym_table):
+        global lang_datatypes
+        self.variableType = typ
+        if sym_table == None or typ in lang_datatypes:
+            return
+        symTable = sym_table
+        while sym_table != None:
+            symbols = sym_table.getSymbols()
+            if typ not in symbols:
+                sym_table = sym_table.getParent()
+                continue
+            break
+        if sym_table == None:
+            print("Error: type", typ, "not found in SymbolTables")
+            sys.exit(0)
+        entry = symbols[typ]
+        assert(entry.getSymbolType() == "StructType")
+        fields = entry.getFields()
+        offset = 0
+        sign_dict = {}
+        for f in fields:
+            sz = get_type_size(fields[f], symTable)
+            sign_dict[f] = (offset, sz, fields[f])
+            offset += sz
+        self.setSign(sign_dict)
     def getType(self):
         return self.variableType
     def getDim(self):
@@ -63,9 +89,13 @@ class SymbolTableVariableEntry(SymbolTableEntry):
         self.is_local = False
     def getIsLocal(self):
         return self.is_local
+    def setSign(self, sign):
+        self.signature = sign
+    def getSign(self):
+        return self.signature
     def prettyPrint(self):
         SymbolTableEntry.prettyPrint(self)
-        print("VariableType:" + self.variableType + ", ", "Dimensions:", self.dimension, ", " +"DimRanges:", self.dim_ranges, ", ", "Local:", self.is_local, ", ")
+        print("VariableType:" + self.variableType + ", ", "Dimensions:", self.dimension, ", " +"DimRanges:", self.dim_ranges, ", ", "Local:", self.is_local, ", ", "Signature:", self.signature, ", ")
 
 class SymbolTableLitEntry(SymbolTableEntry):
     def __init__(self, name, typ):
@@ -127,7 +157,6 @@ class SymbolTableImportEntry(SymbolTableEntry):
     def prettyPrint(self):
         SymbolTableEntry.prettyPrint(self)
         print(",")
-
 
 
 class SymbolTable(object):
@@ -194,6 +223,7 @@ class ActivationRecord:
         self.local_vars = {}
         self.global_vars = {}
         self.const_vars = []
+        self.var_signs = {}
         self.access_links = {}
         self.pos_offset = 8 # 4 for saved ebp and 4 for return address
         self.offset = 0
@@ -223,13 +253,15 @@ class ActivationRecord:
             var_entry = varSymbols[symbol]
             var_type = var_entry.getType()
             if (var_entry.getIsLocal() == True):
-                size = (1 + var_entry.getDim()) * give_type_size(var_type, sym_table)
+                size = (1 + var_entry.getDim()) * get_type_size(var_type, sym_table)
                 self.offset -= size
                 self.local_vars[var_entry.getName()] = (self.offset, size)
+                self.var_signs[var_entry.getName()] = var_entry.getSign()
             else:
                 size = type_to_size[var_type]
                 self.input_args[var_entry.getName()] = (self.pos_offset, size)
                 self.pos_offset += size
+                self.var_signs[var_entry.getName()] = var_entry.getSign()
 
     def getLocalVars(self):
         return self.local_vars
@@ -249,6 +281,9 @@ class ActivationRecord:
     def getConstVars(self):
         return self.const_vars
 
+    def getSign(self, var_name):
+        return self.var_signs[var_name]
+
     def getVarTuple(self,var_name):
         if var_name in self.local_vars:
             return self.local_vars[var_name], ""
@@ -261,4 +296,4 @@ class ActivationRecord:
         return (None, None), ""
 
     def prettyPrint(self):
-        print("Name:", self.name, "Ret value:", self.ret_values, "Input Params:", self.input_args, "OldStPtrs:", self.old_st_ptrs, "SavedRegs:", self.saved_regs, "LocalVars:", self.local_vars, "GlobalVars:", self.global_vars, "ConstVars:", self.const_vars, "\n")
+        print("Name:", self.name, "Ret value:", self.ret_values, "Input Params:", self.input_args, "OldStPtrs:", self.old_st_ptrs, "SavedRegs:", self.saved_regs, "LocalVars:", self.local_vars, "GlobalVars:", self.global_vars, "ConstVars:", self.const_vars, "VarSigns:", self.var_signs, "\n")

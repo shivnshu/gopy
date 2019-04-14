@@ -11,6 +11,7 @@ import binaryop
 import ifstmt
 import gotostmt
 import arr_decl
+import structs
 
 arg_parser = argparse.ArgumentParser()
 arg_parser.add_argument("input", nargs="*")
@@ -54,6 +55,8 @@ def asm_gen(code_line, func_name, data_section):
     if (code_type == "arr_decl"):
         res, context = arr_decl.asm_gen(code_line, activation_records[func_name], context)
         return res
+    if (code_type == "structs"):
+        return structs.asm_gen(code_line, activation_records[func_name])
     # return None
     return [code_line]
 

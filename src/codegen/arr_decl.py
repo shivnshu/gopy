@@ -1,7 +1,7 @@
-import common
+import sys
 from common import get_register, free_register, getTokType
 
-size_of = {'int': '4', 'float': '4', 'char': '1'}
+size_of = {'int': '4', 'float': '4', 'char': '1', "*int": '4', "*float": '4', "*char": '4', "string": '4'}
 
 def asm_gen(line, activation_record, context):
     global size_of
