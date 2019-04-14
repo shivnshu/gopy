@@ -3,13 +3,7 @@ package mypkg
 import "fmt"
 
 func main() {
-	sum := 0
-	for i := 0; i <= 20; i += 1 {
-		sum += i
-		if sum < 100 {
-			fmt.Printf("%d\n", sum)
-			continue
-		}
-		fmt.Printf("aa\n")
-	}
+  var a [2][3]int
+  a[1][2] = 3
+  //fmt.printf("%d\n", a[1][2])
 }

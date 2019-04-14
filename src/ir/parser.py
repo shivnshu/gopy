@@ -2009,9 +2009,12 @@ def p_assignment_gen(p):
 	    if (entry.getDim() != len(idx)):
 	       print("Error: dimention mismatch at line number", p.lexer.lineno)
 	if (p[2]['len'] == 1):
-	    p[0]['code'] += [i +str(idx) + ' := ' + j]
+	    loc = ""
+	    for l in idx:
+	      loc += "[" + l + "]"
+	    p[0]['code'] += [i + loc + ' := ' + j]
 	else:
-	    p[0]['code'] += [i + ' := ' + i +str(idx)+p2['symbol'] + j]
+	    p[0]['code'] += [i + ' := ' + i + str(idx) + p2['symbol'] + j]
 
 def p_assign_op(p):
 	'''

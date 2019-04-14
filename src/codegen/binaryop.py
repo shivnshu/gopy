@@ -13,9 +13,9 @@ def asm_gen(line, activation_record, context):
     if (toks[3][0] == "+"):
         op = "add "
     elif (toks[3][0] == "-"):
-        op = "subl"
+        op = "subl "
     elif (toks[3][0] == "*"):
-        op = "imul"
+        op = "imul "
 
 
     r0 = get_register(toks[0])

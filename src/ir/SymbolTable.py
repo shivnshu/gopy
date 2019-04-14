@@ -200,7 +200,7 @@ class ActivationRecord:
             var_entry = varSymbols[symbol]
             var_type = var_entry.getType()
             if (var_entry.getIsLocal() == True):
-                size = type_to_size[var_type]
+                size = (1 + var_entry.getDim()) * type_to_size[var_type]
                 self.offset -= size
                 self.local_vars[var_entry.getName()] = (self.offset, size)
             else:

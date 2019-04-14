@@ -1,10 +1,27 @@
 import common
 import sys
+import re
 from common import get_register, set_register, free_register, getTokType
 from common import reserve_register, unreserve_register
 
 # Two sources of following truth. Another in common
 reserved_words = {"true": "1", "false": "0"}
+
+def cal_array_offset(arr_idx, offset, reg):
+    res = []
+    num_dims = len(arr_idx) - 1
+    dim_offset = offset + num_dims * 4
+    reg2 = get_register("_tmp2")
+    res += ["movl $1, " + reg2]
+    res += ["movl $0, " + reg]
+    for i in range(num_dims):
+        res += ["imul " + reg2 + ", " + get_register(arr_idx[num_dims - i])]
+        res += ["add " + get_register(arr_idx[num_dims - i]) + ", "  + reg]
+        free_register(arr_idx[num_dims - i])
+        res += ["imul " + str(dim_offset) + "(%ebp), " + reg2]
+        dim_offset -= 4
+    free_register("_tmp2")
+    return res
 
 def asm_gen(line, activation_record, context):
     global reserved_words
@@ -13,6 +30,7 @@ def asm_gen(line, activation_record, context):
 
     left_type = getTokType(toks[0])
     right_type = getTokType(toks[2])
+    # print(toks, right_type)
     if (left_type == "register"):
         dst_entry = get_register(toks[0])
     elif (left_type == "variable"):
@@ -39,6 +57,25 @@ def asm_gen(line, activation_record, context):
         reg = get_register("_tmp2")
         res += ["movl " + dst_entry + ", " + reg]
         dst_entry = "(" + reg + ")"
+    elif (left_type == "array"):
+        arr_idx = re.split("\[|\]", toks[0])
+        arr_idx = list(filter(None, arr_idx))
+        # print(arr_idx)
+        (offset, size), typ = activation_record.getVarTuple(arr_idx[0])
+        if (size != 4 * len(arr_idx)):
+            print("Error: dimension mismatch for array", arr_idx[0])
+            sys.exit(0)
+        idx_offset = offset + 4
+        if (typ != "global" and typ != "const"):
+            # Dim ranges check
+            pass
+        reg = get_register("_tmp")
+        res += cal_array_offset(arr_idx, offset, reg)
+        res += ["imul $" + context["array_decl"][arr_idx[0]] + ", " + reg]
+        res += ["add " + str(offset) + "(%ebp), " + reg]
+        dst_entry = "0(" + reg + ")"
+        # free_register("_tmp")
+        pass
     else:
         print("Error: unknown type of", toks[0])
         sys.exit(0)
@@ -96,13 +133,16 @@ def asm_gen(line, activation_record, context):
                 res.append("movl " + reg + ", " + dst_entry)
                 free_register("_tmp")
     elif (right_type == "float"):
-        reg = get_register("_tmp")
         res.append("mov $" + toks[2] + " ," + reg)
         res.append("fld " + "$" + toks[2] + "")
         res.append("fstp " + dst_entry)
-        free_register("_tmp")
+    else:
+        print("Error: Unknown right hand type", toks[2])
+        sys.exit(0)
 
     if (left_type == "dereference"):
         free_register("_tmp2")
+    if (left_type == "array"):
+        free_register("_tmp")
     # print(toks, left_type, right_type, res)
     return res, context

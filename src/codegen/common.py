@@ -59,10 +59,7 @@ def unreserve_register(reg):
         free_registers += [reg]
 
 binary_op_list = ["+", "-", "*", "/", "&&", "||", "==", "!=", "<", ">", "<=", ">=", "|", "^"]
-# assignments
-# function call
-# binary ops
-# return from function
+
 def getCodeType(code):
     code = re.sub(r'".*"', 'string', code)
     toks = code.split()
@@ -82,14 +79,16 @@ def getCodeType(code):
 
 def getTokType(tok):
     global reserved_words
+    if (tok[0] == "'" or tok[0] == '"'):
+        return "string"
+    if ("[" in tok):
+        return "array"
     if (tok[0] == "_"):
         return "register"
     if (tok.isdigit()):
         return "positive-integer"
     if (tok[1:].isdigit() and tok[0] == "-"):
         return "negative-integer"
-    if (tok[0] == "'" or tok[0] == '"'):
-        return "string"
     if (tok[0] == "&"):
         return "address"
     if (tok[0] == "*"):
@@ -100,7 +99,8 @@ def getTokType(tok):
         float(tok)
         return "float"
     except:
-         return "variable"
+        pass
+    return "variable"
 
 def getLitType(lit):
     try:

@@ -22,7 +22,7 @@ ir_info = ir_gen(input_file)
 dict_code = ir_info['dict_code']
 activation_records = ir_info['activationRecords']
 
-context = {"last_func_call_ret": [], "func_ret": [], "rel_op_num": 0}
+context = {"last_func_call_ret": [], "func_ret": [], "rel_op_num": 0, "counter": 0, "array_decl": {}}
 
 def get_data_section(const_decl):
     res = [".section .data"]
@@ -50,7 +50,8 @@ def asm_gen(code_line, func_name):
     if (code_type == "gotostmt"):
         return gotostmt.asm_gen(code_line)
     if (code_type == "arr_decl"):
-        return arr_decl.asm_gen(code_line, context)
+        res, context = arr_decl.asm_gen(code_line, activation_records[func_name], context)
+        return res
     # return None
     return [code_line]
 
@@ -83,8 +84,6 @@ def main():
         res += alloc_st_code(func_name)
         code_list = dict_code[func_name]
         for code_line in code_list:
-            if (code_line == "call fmt.Printf"):
-                code_line = "call printf"
             gen_code = asm_gen(code_line, func_name)
             if (gen_code != None):
                 res += gen_code
