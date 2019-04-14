@@ -26,6 +26,37 @@ def unary_optimization(code_list):
             res += [code_list[i]]
     return res
 
+# Specifically handle array
+def array_optimization(code_list):
+    my_dict = {}
+    mapping = {}
+    del_list = []
+    res = []
+    for i in range(len(code_list)):
+        code = code_list[i]
+        toks = code.split()
+        if (len(toks) != 3 or not ":=" in code):
+            res += [code]
+            continue
+        mapping[toks[0]] = (toks[2], i)
+        if not "[" in toks[2]:
+            res += [code]
+        else:
+            arr_idx = re.split("\[|\]", toks[2])
+            arr_idx = list(filter(None, arr_idx))
+            this_code = toks[0] + " := " + mapping[arr_idx[0]][0]
+            del_list += [mapping[arr_idx[0]][1]]
+            for dim in range(1, len(arr_idx)):
+                this_code += '[' + mapping[arr_idx[dim]][0] + ']'
+                del_list += [mapping[arr_idx[dim]][1]]
+            res += [this_code]
+            mapping[toks[0]] = (this_code.split()[2], i)
+    final_res = []
+    for i in range(len(res)):
+        if not i in del_list:
+            final_res += [res[i]]
+    return final_res
+
 def code_optimization(code_list):
     res = []
     first = ""
@@ -56,6 +87,7 @@ def code_optimization(code_list):
     if (first != ""):
         res += [first + " := " + last]
     res = unary_optimization(res)
+    res = array_optimization(res)
     return res
 
 

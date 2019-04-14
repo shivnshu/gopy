@@ -15,9 +15,20 @@ def cal_array_offset(arr_idx, offset, reg):
     res += ["movl $1, " + reg2]
     res += ["movl $0, " + reg]
     for i in range(num_dims):
-        res += ["imul " + reg2 + ", " + get_register(arr_idx[num_dims - i])]
-        res += ["add " + get_register(arr_idx[num_dims - i]) + ", "  + reg]
-        free_register(arr_idx[num_dims - i])
+        idx_name = arr_idx[num_dims - i]
+        if (getTokType(idx_name) == "register"):
+            res += ["imul " + reg2 + ", " + get_register(idx_name)]
+            res += ["add " + get_register(idx_name) + ", "  + reg]
+            free_register(idx_name)
+        elif (getTokType(idx_name) == "positive-integer"):
+            reg3 = get_register("_tmp3")
+            res += ["movl $" + idx_name + ", " + reg3]
+            res += ["imul " + reg2 + ", " + reg3]
+            res += ["add " + reg3 + ", "  + reg]
+            free_register("_tmp3")
+        else:
+            print("Error: unknown type of index", idx_name)
+            sys.exit(0)
         res += ["imul " + str(dim_offset) + "(%ebp), " + reg2]
         dim_offset -= 4
     free_register("_tmp2")
@@ -69,16 +80,16 @@ def asm_gen(line, activation_record, context):
         if (typ != "global" and typ != "const"):
             # Dim ranges check
             pass
-        reg = get_register("_tmp")
+        reg = get_register("_tmp_left")
         res += cal_array_offset(arr_idx, offset, reg)
         res += ["imul $" + context["array_decl"][arr_idx[0]] + ", " + reg]
         res += ["add " + str(offset) + "(%ebp), " + reg]
         dst_entry = "0(" + reg + ")"
-        # free_register("_tmp")
         pass
     else:
         print("Error: unknown type of", toks[0])
         sys.exit(0)
+
 
     if (right_type == "register"):
         src_entry = get_register(toks[2])
@@ -136,6 +147,17 @@ def asm_gen(line, activation_record, context):
         res.append("mov $" + toks[2] + " ," + reg)
         res.append("fld " + "$" + toks[2] + "")
         res.append("fstp " + dst_entry)
+    elif (right_type == "array"):
+        arr_idx = re.split("\[|\]", toks[2])
+        arr_idx = list(filter(None, arr_idx))
+        (offset, size), typ = activation_record.getVarTuple(arr_idx[0])
+        if (typ != "global" and typ != "const"):
+            pass
+        reg = get_register("_tmp_right")
+        res += cal_array_offset(arr_idx, offset, reg)
+        res += ["imul $" + context["array_decl"][arr_idx[0]] + ", " + reg]
+        res += ["add " + str(offset) + "(%ebp), " + reg]
+        res += ["movl 0(" + reg + "), " + dst_entry]
     else:
         print("Error: Unknown right hand type", toks[2])
         sys.exit(0)
@@ -143,6 +165,8 @@ def asm_gen(line, activation_record, context):
     if (left_type == "dereference"):
         free_register("_tmp2")
     if (left_type == "array"):
-        free_register("_tmp")
+        free_register("_tmp_left")
+    if (right_type == "array"):
+        free_register("_tmp_right")
     # print(toks, left_type, right_type, res)
     return res, context
