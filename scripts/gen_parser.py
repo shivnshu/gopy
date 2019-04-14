@@ -55,6 +55,8 @@ output += "actRecordSt = ['root']\n"
 
 output += "counter = 0\n"
 output += "label_counter = 0\n\n"
+output += "beglabel = ''\n"
+output += "endlabel = ''\n"
 
 output += "def newVar():\n"
 output += "\tglobal counter\n"

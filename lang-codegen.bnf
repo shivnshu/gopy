@@ -189,6 +189,8 @@ Statement : Declaration
           | ForStmt
           | FuncCallStmt
           | GoFunc
+          | BreakStmt
+          | ContinueStmt
 <<0
 p[0]['code'] = p[1]['code']
 p[0]['typelist'] = []
@@ -210,6 +212,20 @@ for typ in p[1]['ret_typelist']:
 >>
 <<8
 actRecordSt = actRecordSt[:-1]
+>>
+
+ContinueStmt : CONTINUE
+             | CONTINUE IDENTIFIER
+<<1
+p[0]['code'] = ["goto beglabel"]
+>>
+<<2
+p[0]['code'] = ["goto " + p[2]]
+>>
+
+BreakStmt : BREAK
+<<0
+p[0]['code'] = ["goto endlabel"]
 >>
 
 GoFunc    : GO FUNC Parameters FunctionBody LPAREN ExpressionList RPAREN
@@ -1163,7 +1179,14 @@ endlabel = newLabel()
 if (p[4]['place'] != ""):
   p[0]['code'] += ["if " + p[4]['place'] + " goto " + beglabel + " else goto " + endlabel]
 p[0]['code'] += [beglabel + ":"]
-p[0]['code'] += p[7]['code']
+for line in p[7]['code']:
+  if (line == "goto endlabel"):
+    p[0]['code'] += ["goto " + endlabel]
+  elif (line == "goto beglabel"):
+    p[0]['code'] += p[6]['code']
+    p[0]['code'] += ["goto " + beglabel]
+  else:
+    p[0]['code'] += [line]
 p[0]['code'] += p[6]['code']
 p[0]['code'] += p[4]['code']
 if (p[4]['place'] != ""):

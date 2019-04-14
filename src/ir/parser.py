@@ -22,6 +22,8 @@ actRecordSt = ['root']
 counter = 0
 label_counter = 0
 
+beglabel = ''
+endlabel = ''
 def newVar():
 	global counter
 	res = '_t' + str(counter)
@@ -467,6 +469,8 @@ def p_statement(p):
 	          | ForStmt
 	          | FuncCallStmt
 	          | GoFunc
+	          | BreakStmt
+	          | ContinueStmt
 	'''
 	global symTableSt
 	global symTableDict
@@ -490,6 +494,36 @@ def p_statement(p):
 		    p[0]['typelist'] += typ
 	if len(p)==2 and p.slice[1].type=="FuncCallStmt":
 		actRecordSt = actRecordSt[:-1]
+
+def p_continue_stmt(p):
+	'''
+	ContinueStmt : CONTINUE
+	             | CONTINUE IDENTIFIER
+	'''
+	global symTableSt
+	global symTableDict
+	global actRecordSt
+	global actRecordDict
+	p[0] = {}
+	p[0]['code'] = []
+	p[0]['dict_code'] = {}
+	if len(p)==2 and p.slice[1].type=="CONTINUE":
+		p[0]['code'] = ["goto beglabel"]
+	if len(p)==3 and p.slice[2].type=="IDENTIFIER" and p.slice[1].type=="CONTINUE":
+		p[0]['code'] = ["goto " + p[2]]
+
+def p_break_stmt(p):
+	'''
+	BreakStmt : BREAK
+	'''
+	global symTableSt
+	global symTableDict
+	global actRecordSt
+	global actRecordDict
+	p[0] = {}
+	p[0]['code'] = []
+	p[0]['dict_code'] = {}
+	p[0]['code'] = ["goto endlabel"]
 
 def p_go_func(p):
 	'''
@@ -2195,7 +2229,14 @@ def p_for_stmt(p):
 		if (p[4]['place'] != ""):
 		  p[0]['code'] += ["if " + p[4]['place'] + " goto " + beglabel + " else goto " + endlabel]
 		p[0]['code'] += [beglabel + ":"]
-		p[0]['code'] += p[7]['code']
+		for line in p[7]['code']:
+		  if (line == "goto endlabel"):
+		    p[0]['code'] += ["goto " + endlabel]
+		  elif (line == "goto beglabel"):
+		    p[0]['code'] += p[6]['code']
+		    p[0]['code'] += ["goto " + beglabel]
+		  else:
+		    p[0]['code'] += [line]
 		p[0]['code'] += p[6]['code']
 		p[0]['code'] += p[4]['code']
 		if (p[4]['place'] != ""):
