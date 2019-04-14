@@ -111,8 +111,14 @@ def asm_gen(line, activation_record, context):
             src_entry = "$" + toks[2]
         else:
             src_entry = str(offset) + "(%ebp)"
-        res.append("movl " + src_entry + ", " + dst_entry)
-        if (left_type == "register" and typ == "const"): # Why
+        if (left_type != "variable"):
+            res.append("movl " + src_entry + ", " + dst_entry)
+        else:
+            reg = get_register("_tmp")
+            res.append("movl " + src_entry + ", " + reg)
+            res.append("movl " + reg + ", " + dst_entry)
+            free_register("_tmp")
+        if (left_type == "register" and typ == "const" and context["const_decl"][toks[2]] != "string"): # Why
             res.append("movl (" + dst_entry + "), " + dst_entry)
     elif (right_type == "string"):
         string_lit = toks[2][1:-1].encode().decode('unicode_escape') # Allow newline etc.

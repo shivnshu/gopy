@@ -1,11 +1,10 @@
 import ply.yacc as yacc
-
+import sys
 from tokrules import tokens
 
 from SymbolTable import SymbolTable
 from SymbolTable import SymbolTableLitEntry as LitEntry
 from SymbolTable import SymbolTableVariableEntry as VarEntry
-from SymbolTable import SymbolTablePackageEntry as PackageEntry
 from SymbolTable import SymbolTableInterfaceEntry as InterfaceEntry
 from SymbolTable import SymbolTableStructEntry as StructEntry
 from SymbolTable import SymbolTableFunctionEntry as FuncEntry
@@ -132,11 +131,6 @@ def p_package_clause(p):
 	p[0] = {}
 	p[0]['code'] = []
 	p[0]['dict_code'] = {}
-	scope = symTableSt[-1]
-	symTable = symTableDict[scope]
-	pkg = PackageEntry(p[2])
-	if (symTable.put(pkg) == False):
-	     print("Error:", p[2], "redeclared on line number", p.lexer.lineno)
 
 def p_import_decl_list(p):
 	'''
@@ -232,6 +226,7 @@ def p_import_path(p):
 	entry = ImportEntry(name)
 	if (symTable.put(entry) == False):
 	     print("Error:", name, "redeclared on line number", p.lexer.lineno)
+	     sys.exit(0)
 
 def p_top_level_decl_list(p):
 	'''
@@ -305,6 +300,7 @@ def p_struct_def(p):
 	struc = StructEntry(p[2])
 	if (symTable.put(struc) == False):
 	     print("Error:", p[2], "redeclared on line number", p.lexer.lineno)
+	     sys.exit(0)
 
 def p_parameter_decl_list2(p):
 	'''
@@ -372,6 +368,7 @@ def p_interface_decl(p):
 	interfc = InterfaceEntry(p[2])
 	if (symTable.put(interfc) == False):
 	    print("Error:", p[2], "redeclared on line number", p.lexer.lineno)
+	    sys.exit(0)
 
 def p_interface_block(p):
 	'''
@@ -414,6 +411,7 @@ def p_i_func_dec(p):
 	fn = FuncEntry(p[1])
 	if (symTable.put(fn) == False):
 	    print("Error:", p[1], "redeclared on line number", p.lexer.lineno)
+	    sys.exit(0)
 
 def p_i_func_def(p):
 	'''
@@ -549,6 +547,7 @@ def p_go_func(p):
 		fn = FuncEntry(p[2])
 		if (symTable.put(fn) == False):
 		    print("Error:", p[2], "redeclared on line number", p.lexer.lineno)
+		    sys.exit(0)
 
 def p_func_call_stmt(p):
 	'''
@@ -574,7 +573,8 @@ def p_func_call_stmt(p):
 				b = True
 				break
 		if not b:
-			print("Function", p[1], "not defined on line number", p.lexer.lineno)
+		  print("Function", p[1], "not defined on line number", p.lexer.lineno)
+		  sys.exit(0)
 		p[0]['ret_types'] = p[3]['ret_types']
 		p[0]['code'] = p[3]['code']
 	if len(p)==7 and p.slice[6].type=="RPAREN" and p.slice[5].type=="ExpressionListBot" and p.slice[4].type=="LPAREN" and p.slice[3].type=="IDENTIFIER" and p.slice[2].type=="DOT" and p.slice[1].type=="IDENTIFIER":
@@ -584,7 +584,8 @@ def p_func_call_stmt(p):
 				b = True
 				break
 		if not b:
-			print("Function", p[1], "not defined on line number", p.lexer.lineno)
+		  print("Function", p[1], "not defined on line number", p.lexer.lineno)
+		  sys.exit(0)
 		p[0]['code'] = p[5]['code']
 		for name in p[0]['namelist']:
 		  p[0]['code'] += ["ret_alloc 4"] # 4 for now
@@ -600,7 +601,8 @@ def p_func_call_stmt(p):
 				b = True
 				break
 		if not b:
-			print("Function", p[1], "not defined on line number", p.lexer.lineno)
+		  print("Function", p[1], "not defined on line number", p.lexer.lineno)
+		  sys.exit(0)
 	if len(p)==5 and p.slice[4].type=="RPAREN" and p.slice[3].type=="ExpressionListBot" and p.slice[2].type=="LPAREN" and p.slice[1].type=="IDENTIFIER":
 		b = False
 		for scope in symTableSt:
@@ -609,7 +611,8 @@ def p_func_call_stmt(p):
 		    table = symTableDict[scope]
 		    break
 		if not b:
-			print("Function", p[1], "not defined on line number", p.lexer.lineno)
+		  print("Function", p[1], "not defined on line number", p.lexer.lineno)
+		  sys.exit(0)
 		entry = table.get(p[1])
 		p[0]['ret_types'] = entry.getReturnTypes()
 		actRecordSt[-1] = entry.getName()
@@ -625,6 +628,7 @@ def p_func_call_stmt(p):
 		  p[0]['code'] += ["ret_param " + name]
 		if entry.getInputArgs() != p[3]['typelist']:
 		   print("Function", p[1], "arguments mismatch at line num", p.lexer.lineno)
+		   sys.exit(0)
 
 def p_object_method(p):
 	'''
@@ -719,8 +723,8 @@ def p_const_spec(p):
 	symTable = symTableDict[scope]
 	actRecord = actRecordDict[actRecordSt[-1]]
 	if (len(p[1]['idlist']) != len(p[2]['namelist'])):
-		print("Length mismatch on line number", p.lexer.lineno)
-		return
+	  print("Length mismatch on line number", p.lexer.lineno)
+	  sys.exit(0)
 	p[0]['code'] = p[1]['code'] + p[2]['code']
 	for i,j,k in zip(p[1]['idlist'], p[2]['namelist'], p[2]['typelist']):
 	    p[0]['code'] += [i + ' := ' + j]
@@ -728,6 +732,7 @@ def p_const_spec(p):
 	    lit = LitEntry(i, k)
 	    if (symTable.put(lit) == False):
 	      print("Error:", i, "redeclared on line number", p.lexer.lineno)
+	      sys.exit(0)
 
 def p_const_spec_tail(p):
 	'''
@@ -815,7 +820,8 @@ def p_identifier_list2(p):
 				b = True
 				break
 		if not b:
-			print("Error:", p[1], "not defined on line number", p.lexer.lineno)
+		  print("Error:", p[1], "not defined on line number", p.lexer.lineno)
+		  sys.exit(0)
 		p[0]['idlist'] = [p[1]] + p[2]['idlist']
 	if len(p)==4 and p.slice[3].type=="IdentifierBotList2" and p.slice[2].type=="IDENTIFIER" and p.slice[1].type=="MULT":
 		b = False
@@ -825,6 +831,7 @@ def p_identifier_list2(p):
 		    break
 		if not b:
 		  print("Error:", p[1], "not defined on line number", p.lexer.lineno)
+		  sys.exit(0)
 		p[0]['idlist'] = [p[1]+p[2]] + p[3]['idlist']
 
 def p_identifier_list3(p):
@@ -884,7 +891,8 @@ def p_identifier_bot_list2(p):
 				b = True
 				break
 		if not b:
-			print("Error:", p[3], "not defined on line number", p.lexer.lineno)
+		  print("Error:", p[3], "not defined on line number", p.lexer.lineno)
+		  sys.exit(0)
 		p[0]['idlist'] = [p[3]] + p[1]['idlist']
 	if len(p)==5 and p.slice[4].type=="IDENTIFIER" and p.slice[3].type=="MULT" and p.slice[2].type=="COMMA" and p.slice[1].type=="IdentifierBotList2":
 		b = False
@@ -894,6 +902,7 @@ def p_identifier_bot_list2(p):
 		    break
 		if not b:
 		  print("Error:", p[4], "not defined on line number", p.lexer.lineno)
+		  sys.exit(0)
 		p[0]['idlist'] = [p[3]+p[4]] + p[1]['idlist']
 	if len(p)==2 and p.slice[1].type=="empty":
 		p[0]['idlist'] = []
@@ -1088,6 +1097,7 @@ def p_type_def(p):
 	var.setDimRanges(p[2]['dimrange'])
 	if (symTable.put(var) == False):
 	    print("Error:", p[1], "redeclared on line number", p.lexer.lineno)
+	    sys.exit(0)
 
 def p_type(p):
 	'''
@@ -1102,13 +1112,13 @@ def p_type(p):
 	p[0] = {}
 	p[0]['code'] = []
 	p[0]['dict_code'] = {}
-	p[0]['dims'] = 0
+	p[0]['dim'] = 0
 	p[0]['dimrange'] = []
 	if len(p)==2 and p.slice[1].type=="TypeName":
 		p[0]['type'] = p[1]['type']
 	if len(p)==2 and p.slice[1].type=="TypeLit":
 		p[0]['type'] = p[1]['type']
-		p[0]['dims'] = p[1]['dims']
+		p[0]['dim'] = p[1]['dims']
 		p[0]['dimrange'] = p[1]['dimrange']
 	if len(p)==4 and p.slice[3].type=="RPAREN" and p.slice[2].type=="Type" and p.slice[1].type=="LPAREN":
 		p[0]['type'] = p[2]['type']
@@ -1176,7 +1186,8 @@ def p_array_type(p):
 	p[0]['code'] = []
 	p[0]['dict_code'] = {}
 	if p[2]['type'] != "int" and p[2]['type'] != '':
-		print("Array index error on line number", p.lexer.lineno)
+	  print("Array index error on line number", p.lexer.lineno)
+	  sys.exit(0)
 	p[0]['type'] = p[4]['type']
 	p[0]['dims'] = 1 + p[4]['dims']
 	p[0]['dimrange'] = [p[2]] + p[4]['dimrange']
@@ -1429,6 +1440,7 @@ def p_parameters(p):
 	    table = symTableDict[scope]
 	    if (table.put(entry) == False):
 	        print("Error:", param, "redeclared on line number", p.lexer.lineno)
+	        sys.exit(0)
 
 def p_parameter_list_top(p):
 	'''
@@ -1614,8 +1626,7 @@ def p_var_spec_list(p):
 
 def p_var_spec(p):
 	'''
-	VarSpec  : IdentifierList1 VarSpecTail
-	         | IdOrArrayElemList VarSpecTail
+	VarSpec  : IdOrArrayElemList VarSpecTail
 	'''
 	global symTableSt
 	global symTableDict
@@ -1624,45 +1635,30 @@ def p_var_spec(p):
 	p[0] = {}
 	p[0]['code'] = []
 	p[0]['dict_code'] = {}
-	if len(p)==3 and p.slice[2].type=="VarSpecTail" and p.slice[1].type=="IdentifierList1":
-		scope = symTableSt[-1]
-		symTable = symTableDict[scope]
-		if ((p[2]['type_used'] == False) and  len(p[1]['idlist']) != len(p[2]['namelist'])):
-			print("Length mismatch on line number", p.lexer.lineno)
-			return
-		p[0]['code'] = p[1]['code'] + p[2]['code']
-		mylist = p[1]['idlist']
-		mytypelist = p[2]['typelist']
-		for index in range(len(mylist)):
-		    i = mylist[index]
-		    var = VarEntry(i)
-		    if (p[2]['type_used'] == False):
-		      var.setType(mytypelist[index])
-		    else:
-		      var.setType(p[2]['typelist'][0])
-		    if (symTable.put(var) == False):
-		        print("Error:", i, "redeclared on line number", p.lexer.lineno)
-	if len(p)==3 and p.slice[2].type=="VarSpecTail" and p.slice[1].type=="IdOrArrayElemList":
-		scope = symTableSt[-1]
-		symTable = symTableDict[scope]
-		if ((p[2]['type_used'] == False) and  len(p[1]['idlist']) != len(p[2]['namelist'])):
-			print("Length mismatch on line number", p.lexer.lineno)
-			return
-		p[0]['code'] = p[1]['code'] + p[2]['code']
-		mylist = p[1]['idlist']
-		mytypelist = p[2]['typelist']
-		myidxlists = p[1]['idxlists']
-		for index in range(len(mylist)):
-		    i = mylist[index]
-		    var = VarEntry(i)
-		    var.setDim(len(myidxlists[index]))
-		    var.setDimRanges(myidxlists[index])
-		    if (p[2]['type_used'] == False):
-		      var.setType(mytypelist[index])
-		    else:
-		      var.setType(p[2]['typelist'][0])
-		    if (symTable.put(var) == False):
-		        print("Error:", i, "redeclared on line number", p.lexer.lineno)
+	scope = symTableSt[-1]
+	symTable = symTableDict[scope]
+	if ((p[2]['type_used'] == False) and  len(p[1]['idlist']) != len(p[2]['namelist'])):
+	  print("Length mismatch on line number", p.lexer.lineno)
+	  sys.exit(0)
+	p[0]['code'] = p[1]['code'] + p[2]['code']
+	mylist = p[1]['idlist']
+	mytypelist = p[2]['typelist']
+	myidxlists = p[1]['idxlists']
+	mynamelist = p[2]['namelist']
+	for index in range(len(mylist)):
+	    i = mylist[index]
+	    var = VarEntry(i)
+	    var.setDim(len(myidxlists[index]))
+	    var.setDimRanges(myidxlists[index])
+	    if (index < len(mynamelist)):
+	      p[0]['code'] += [i + " := " + mynamelist[index]]
+	    if (p[2]['type_used'] == False):
+	      var.setType(mytypelist[index])
+	    else:
+	      var.setType(p[2]['typelist'][0])
+	    if (symTable.put(var) == False):
+	        print("Error:", i, "redeclared on line number", p.lexer.lineno)
+	        sys.exit(0)
 
 def p_var_spec_tail(p):
 	'''
@@ -1733,6 +1729,7 @@ def p_function_decl(p):
 	for ret_actual in p[3]['ret_actual_types']:
 	      if (len(ret_actual) > 0 and p[2]['ret_types'] != ret_actual):
 	           print("Error:", func_name, "return types mismatch on line number", p.lexer.lineno)
+	           sys.exit(0)
 
 def p_signature(p):
 	'''
@@ -1804,6 +1801,7 @@ def p_function_name(p):
 	entry = FuncEntry(p[1])
 	if (table.put(entry) == False):
 	    print("Error:", p[1], "redeclared on line number", p.lexer.lineno)
+	    sys.exit(0)
 	p[0]['func_name'] = p[1]
 	key = "sym#" + str(p.lexer.lineno) + "#" + str(p.lexer.lexpos)
 	symtab = SymbolTable(symTableDict[symTableSt[-1]], key)
@@ -1872,6 +1870,7 @@ def p_method_name(p):
 	fn = FuncEntry(p[1])
 	if (symTable.put(fn) == False):
 	    print("Error:", p[1], "redeclared on line number", p.lexer.lineno)
+	    sys.exit(0)
 
 def p_receiver(p):
 	'''
@@ -1952,11 +1951,13 @@ def p_short_var_decl(p):
 	p[0]['code'] = p[1]['code'] + p[3]['code']
 	if (len(p[1]['idlist']) != len(p[3]['namelist'])):
 	   print("Left and right side not equal on line number", p.lexer.lineno)
+	   sys.exit(0)
 	for i, j, k in zip(p[1]['idlist'], p[3]['namelist'], p[3]['typelist']):
 	  p[0]['code'] += [i + ' := ' + j]
 	  entry = VarEntry(i)
 	  if (table.put(entry) == False):
 	     print("Error:", i, "redeclared on line number", p.lexer.lineno)
+	     sys.exit(0)
 	  entry.setType(k)
 
 def p_assignment(p):
@@ -1975,11 +1976,13 @@ def p_assignment(p):
 	  for i, j, k in zip(p[1]['idlist'], p[3]['namelist'], p[3]['typelist']):
 	    if verifyCalType(i, p.lexer.lineno) != k:
 	      print("Error type mismatch in line " +str(p.lexer.lineno) +". Expected type " +verifyCalType(i, p.lexer.lineno)+", got type "+ k)
+	      sys.exit(0)
 	    p[0]['code'] += [i + ' := ' + j] 
 	else:
 	  for i, j, k in zip(p[1]['idlist'], p[3]['namelist'], p[3]['typelist']):
 	    if verifyCalType(i, p.lexer.lineno) != k:
 	      print("Error type mismatch in line " +str(p.lexer.lineno) +". Expected type " +verifyCalType(i, p.lexer.lineno)+", got type "+ k)
+	      sys.exit(0)
 	    var = newVar()
 	    var_dest = newVar()
 	    p[0]['code'] += [var + " := " + i]
@@ -2001,13 +2004,15 @@ def p_assignment_gen(p):
 	for i, idx,  j, k in zip(p[1]['idlist'], p[1]['idxlists'],  p[3]['namelist'], p[3]['typelist']):
 	  if verifyCalType(i, p.lexer.lineno) != k:
 	    print("Error type mismatch in line " +str(p.lexer.lineno) +". Expected type " +verifyCalType(i, p.lexer.lineno)+", got type "+ k)
+	    sys.exit(0)
 	  else:
 	    for n in symTableSt[::-1]:
 	      if i in symTableDict[n].symbols:
 	        table = symTableDict[n]
 	    entry = table.get(i)
 	    if (entry.getDim() != len(idx)):
-	       print("Error: dimention mismatch at line number", p.lexer.lineno)
+	      print("Error: dimention mismatch at line number", p.lexer.lineno)
+	      sys.exit(0)
 	if (p[2]['len'] == 1):
 	    loc = ""
 	    for l in idx:
@@ -2068,6 +2073,7 @@ def p_if_stmt(p):
 	p[4]['label'] = newLabel()
 	if (p[2]['place'] == ''):
 	   print("Inadequate condition at line num", p.lexer.lineno)
+	   sys.exit(0)
 	if (p[5]['symbol'] != ""):
 	   p[0]['code'] = p[2]['code'] + ['if '+ p[2]['place'] + p[3]['symbol'] + ' goto ' + p[4]['label'] + " " +p[5]['symbol']]
 	else:
@@ -2092,6 +2098,7 @@ def p_if_stmt2(p):
 	p[4]['label'] = newLabel()
 	if (p[2]['place'] == ''):
 	   print("Inadequate condition at line num", p.lexer.lineno)
+	   sys.exit(0)
 	if (p[5]['symbol'] != ""):
 	   p[0]['code'] = p[2]['code'] + ['if '+ p[2]['place'] + p[3]['symbol'] + ' goto ' + p[4]['label'] + " " +p[5]['symbol']]
 	else:
@@ -2100,7 +2107,6 @@ def p_if_stmt2(p):
 	p[0]['code'] += [p[4]['label'] + ':'] + p[4]['code'] + ["goto " + p[0]['lastlabel']]
 	p[0]['code'] += p[5]['code']
 	p[0]['ret_typelist'] = p[4]['ret_typelist']
-	print(p[0]['code'])
 
 def p_simple_stmt_bot(p):
 	'''
@@ -2198,7 +2204,8 @@ def p_expr_switch_stmt(p):
 			b = True
 			break
 	if not b:
-		print("Switch variable", p[2], "not declared on line number", p.lexer.lineno)
+	  print("Switch variable", p[2], "not declared on line number", p.lexer.lineno)
+	  sys.exit(0)
 	p[0]['code'] = p[4]['expcodelist']
 	for exp, label in zip(p[4]['explist'], p[4]['labellist'][:-1]):
 	  exp_var = newVar()
@@ -2334,6 +2341,8 @@ def p_return_stmt(p):
 	p[0]['dict_code'] = {}
 	p[0]['typelist'] = p[2]['typelist']
 	p[0]['code'] = p[2]['code']
+	#if len(p[2]['typelist']) == 0:
+	#   p[0]['code'] += ["ret"]
 	for name in p[2]['namelist']:
 	      p[0]['code'] += ["ret " + name]
 

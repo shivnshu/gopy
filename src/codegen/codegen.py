@@ -22,13 +22,15 @@ ir_info = ir_gen(input_file)
 dict_code = ir_info['dict_code']
 activation_records = ir_info['activationRecords']
 
-context = {"last_func_call_ret": [], "func_ret": [], "rel_op_num": 0, "counter": 0, "array_decl": {}}
+context = {"last_func_call_ret": [], "func_ret": [], "rel_op_num": 0, "counter": 0, "array_decl": {}, "const_decl": {}}
 
 def get_data_section(const_decl):
+    global context
     res = [".section .data"]
     for line in const_decl:
         toks = line.split(" ", 2)
         lit_type = getLitType(toks[2])
+        context["const_decl"][toks[0]] = lit_type
         res += [toks[0] + ": ." + lit_type + " " + toks[2]]
     return res
 
@@ -64,14 +66,28 @@ def alloc_st_code(func_name):
         min_offset = min(min_offset, offset)
     return ["subl $" + str(abs(min_offset)) + ", %esp"]
 
-def main():
+def main(dict_code):
     res = [".section .text", ".globl main", ""]
     res += ["main:", "push %ebp", "movl %esp, %ebp", "movl %ebp, %esi"]
     res += alloc_st_code("root")
+
+    if 'global_decl' in dict_code:
+        code_list = dict_code['global_decl']
+        for code_line in code_list:
+            gen_code = asm_gen(code_line, "root")
+            if (gen_code != None):
+                res += gen_code
+            else:
+                print("Code generation error for line: ", code_line)
+
     res += ["call func_main", "push $0", "call exit", ""]
-    # res += ["_init:", "push %ebp", "movl %esp, %ebp", "movl %ebp, %esp", "pop %ebp", "ret", ""]
     func_init = ["push %ebp", "mov %esp, %ebp"]
     func_end = ["mov %ebp, %esp", "pop %ebp", "ret", ""]
+    data_section = []
+
+    if 'const_decl' in dict_code:
+        data_section = get_data_section(dict_code['const_decl'])
+
     for func_name in dict_code:
         free_all_regs() # Free if new function comes
         if (func_name == "global_decl" or func_name == "const_decl"):
@@ -81,8 +97,8 @@ def main():
         else:
             res += [func_name + ":"]
         res += func_init
-        res += alloc_st_code(func_name)
         code_list = dict_code[func_name]
+        res += alloc_st_code(func_name)
         for code_line in code_list:
             gen_code = asm_gen(code_line, func_name)
             if (gen_code != None):
@@ -90,14 +106,17 @@ def main():
             else:
                 print("Code generation error for line: ", code_line)
         res += func_end
-    if 'const_decl' in dict_code:
-        res += get_data_section(dict_code['const_decl'])
+    res += data_section
     return res
 
-code_lines = main()
+code_lines = main(dict_code)
 print("+++++++++++++++++++++++++++++++++++++++++++++++++")
 for code_line in code_lines:
     print(code_line)
-f = open("tmp.S", "w")
+
+output_file = "tmp.S"
+if len(args.input) > 1:
+    output_file = args.input[1] + ".S"
+f = open(output_file, "w")
 for code_line in code_lines:
     f.write(code_line + "\n")

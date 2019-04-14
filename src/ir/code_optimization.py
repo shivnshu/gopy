@@ -58,6 +58,10 @@ def array_optimization(code_list):
     return final_res
 
 def code_optimization(code_list):
+    # print()
+    # for c in code_list:
+    #     print(c)
+    # print()
     res = []
     first = ""
     last = ""

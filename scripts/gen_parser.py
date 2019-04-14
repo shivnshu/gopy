@@ -32,12 +32,11 @@ def insertActionsHelper(prod_num, grammer_list, i, tabs_num):
 output = ''
 counter = 0
 
-output += "import ply.yacc as yacc\n\n"
+output += "import ply.yacc as yacc\nimport sys\n"
 output += "from tokrules import tokens\n\n"
 output += "from SymbolTable import SymbolTable\n"
 output += "from SymbolTable import SymbolTableLitEntry as LitEntry\n"
 output += "from SymbolTable import SymbolTableVariableEntry as VarEntry\n"
-output += "from SymbolTable import SymbolTablePackageEntry as PackageEntry\n"
 output += "from SymbolTable import SymbolTableInterfaceEntry as InterfaceEntry\n"
 output += "from SymbolTable import SymbolTableStructEntry as StructEntry\n"
 output += "from SymbolTable import SymbolTableFunctionEntry as FuncEntry\n"

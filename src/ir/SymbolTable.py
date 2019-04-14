@@ -59,13 +59,6 @@ class SymbolTableLitEntry(SymbolTableEntry):
         SymbolTableEntry.prettyPrint(self)
         print("VariableType:", self.variableType, ",")
 
-class SymbolTablePackageEntry(SymbolTableEntry):
-    def __init__(self, name):
-        SymbolTableEntry.__init__(self, name, "PackageType")
-    def prettyPrint(self):
-        SymbolTableEntry.prettyPrint(self)
-        print(",")
-
 class SymbolTableInterfaceEntry(SymbolTableEntry):
     def __init__(self, name):
         SymbolTableEntry.__init__(self, name, "InterfaceType")
