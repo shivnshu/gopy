@@ -154,7 +154,8 @@ for grammer in grammers:
 
 output += '''
 def p_error(p):
-\tprint("Error encountered at line number", p.lineno)
+\tprint("Parsing error encountered at line number", p.lineno)
+\tsys.exit(0)
 
 go_parser = yacc.yacc(start="SourceFile")
 '''

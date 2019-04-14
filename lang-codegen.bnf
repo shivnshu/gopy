@@ -754,8 +754,12 @@ VarDecl : VAR VarSpecTopList
 p[0]['code'] = p[2]['code']
 sym_table = symTableDict[symTableSt[-1]]
 var_symbols = sym_table.getVarSymbols()
-for sym in var_symbols:
-  var_entry = var_symbols[sym]
+var_names = p[2]['idlist']
+for var_name in var_names:
+  if var_name not in var_symbols:
+     print("Error:", var_name, "not found on symbol table at linenum", p.lexer.lineno)
+     sys.exit(0)
+  var_entry = var_symbols[var_name]
   if (var_entry.getDim() <= 0):
     continue
   dim_ranges = var_entry.getDimRanges()
@@ -770,15 +774,21 @@ VarSpecTopList : VarSpec
                | LPAREN VarSpecList RPAREN
 <<1
 p[0]['code'] = p[1]['code']
+p[0]['idlist'] = p[1]['idlist']
 >>
 <<2
 p[0]['code'] = p[2]['code']
+p[0]['idlist'] = p[2]['idlist']
 >>
 
 VarSpecList : VarSpec VarSpecList SEMICOLON
             | empty
 <<1
 p[0]['code'] = p[1]['code'] + p[2]['code']
+p[0]['idlist'] = p[1]['idlist'] + p[2]['idlist']
+>>
+<<2
+p[0]['idlist'] = []
 >>
 
 VarSpec  : IdOrArrayElemList VarSpecTail
@@ -789,6 +799,7 @@ if ((p[2]['type_used'] == False) and  len(p[1]['idlist']) != len(p[2]['namelist'
   print("Length mismatch on line number", p.lexer.lineno)
   sys.exit(0)
 p[0]['code'] = p[1]['code'] + p[2]['code']
+p[0]['idlist'] = p[1]['idlist']
 mylist = p[1]['idlist']
 mytypelist = p[2]['typelist']
 myidxlists = p[1]['idxlists']
@@ -1378,6 +1389,7 @@ binary_op  : OR_OR
            | rel_op
            | add_op
            | mul_op
+           | MOD
 <<1
 p[0]['symbol'] = p[1]
 >>
@@ -1392,6 +1404,9 @@ p[0]['symbol'] = p[1]['symbol']
 >>
 <<5
 p[0]['symbol'] = p[1]['symbol']
+>>
+<<6
+p[0]['symbol'] = p[1]
 >>
 
 rel_op  : EQ_EQ
@@ -1416,7 +1431,7 @@ mul_op  : MULT
         | DIV
         | LSHIFT
         | RSHIFT
-        		        | AND
+        | AND
         | AND_POW
 <<0
 p[0]['symbol'] = p[1]

@@ -4,6 +4,7 @@ import re
 # %esi store global starting address, that's why not part of usable registers
 usable_registers = ["%eax", "%ebx", "%ecx", "%edx", "%edi"]
 free_registers = usable_registers.copy()
+reserved_registers = []
 
 reserved_words = {"true": "1", "false": "0"}
 
@@ -16,15 +17,21 @@ def free_all_regs():
 def get_register(name):
     global free_registers
     global register_mapping
+    global reserved_registers
     if (name in register_mapping):
         return register_mapping[name]
     if (len(free_registers) == 0):
+        print("Debug: mapping", register_mapping)
         print("Error: out of registers")
         sys.exit(0)
     # print("Debug: get", name)
-    register_mapping[name] = free_registers[0]
-    free_registers = free_registers[1:]
-    return register_mapping[name]
+    for reg in free_registers:
+        if reg not in reserved_registers:
+            register_mapping[name] = reg
+            free_registers.remove(reg)
+            return reg
+    print("Error: could not find free unreserved register")
+    sys.exit(0)
 
 def set_register(name, value):
     if (name in register_mapping):
@@ -45,20 +52,19 @@ def free_register(name):
     del register_mapping[name]
 
 def reserve_register(reg):
-    global free_registers
-    if not reg in free_registers:
-        print("Error: " + reg + " could not be reserved")
-        sys.exit(0)
-    free_registers.remove(reg)
+    global reserved_registers
+    if reg in reserved_registers:
+        return
+    reserved_registers += [reg]
 
 def unreserve_register(reg):
-    global free_registers
-    if reg in free_registers:
-        print("Warning: " + reg + " is already unreserved")
+    global reserved_registers
+    if not reg in reserved_registers:
+        print("Warning: " + reg + " not reserved")
     else:
-        free_registers += [reg]
+        reserved_registers.remove(reg)
 
-binary_op_list = ["+", "-", "*", "/", "&&", "||", "==", "!=", "<", ">", "<=", ">=", "|", "^"]
+binary_op_list = ["+", "-", "*", "/", "&&", "||", "==", "!=", "<", ">", "<=", ">=", "|", "^", "%"]
 
 def getCodeType(code):
     code = re.sub(r'".*"', 'string', code)

@@ -11,7 +11,7 @@ type_to_size["*float"] = 4
 
 def give_type_size(type, symTable):
     if (type=="int" or type=="char" or type=="float" or type=="string" or type=="*int" or type=="*char" or type=="*float"):
-        return type_to_size[var]
+        return type_to_size[type]
     else:
         print(symTable.getSymbols())
         b = False

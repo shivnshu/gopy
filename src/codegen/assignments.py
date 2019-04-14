@@ -7,7 +7,7 @@ from common import reserve_register, unreserve_register
 # Two sources of following truth. Another in common
 reserved_words = {"true": "1", "false": "0"}
 
-def cal_array_offset(arr_idx, offset, reg):
+def cal_array_offset(arr_idx, offset, reg, activation_record):
     res = []
     num_dims = len(arr_idx) - 1
     dim_offset = offset + num_dims * 4
@@ -26,22 +26,31 @@ def cal_array_offset(arr_idx, offset, reg):
             res += ["imul " + reg2 + ", " + reg3]
             res += ["add " + reg3 + ", "  + reg]
             free_register("_tmp3")
+        elif (getTokType(idx_name) == "variable"):
+            (offset, size), typ = activation_record.getVarTuple(idx_name)
+            if typ in ["global", "const"]:
+                print("Error: type", typ, "for", idx_name, "is not yet supported")
+                sys.exit(0)
+            reg3 = get_register("_tmp3")
+            res += ["movl " + str(offset) + "(%ebp), " + reg3]
+            res += ["imul " + reg2 + ", " + reg3]
+            res += ["add " + reg3 + ", " + reg]
+            free_register("_tmp3")
         else:
-            print("Error: unknown type of index", idx_name)
+            print("Error: unknown type", getTokType(idx_name), "of index", idx_name)
             sys.exit(0)
         res += ["imul " + str(dim_offset) + "(%ebp), " + reg2]
         dim_offset -= 4
     free_register("_tmp2")
     return res
 
-def asm_gen(line, activation_record, context):
+def asm_gen(line, activation_record, context, data_section):
     global reserved_words
     res = []
     toks = line.split(" ", 2) # string support
 
     left_type = getTokType(toks[0])
     right_type = getTokType(toks[2])
-    print(toks, left_type, right_type)
     if (left_type == "register"):
         dst_entry = get_register(toks[0])
     elif (left_type == "variable"):
@@ -77,11 +86,11 @@ def asm_gen(line, activation_record, context):
             print("Error: dimension mismatch for array", arr_idx[0])
             sys.exit(0)
         idx_offset = offset + 4
-        if (typ != "global" and typ != "const"):
-            # Dim ranges check
-            pass
+        if (typ == "global" or typ == "const"):
+            print("Error: unsupported code", line)
+            sys.exit(0)
         reg = get_register("_tmp_left")
-        res += cal_array_offset(arr_idx, offset, reg)
+        res += cal_array_offset(arr_idx, offset, reg, activation_record)
         res += ["imul $" + context["array_decl"][arr_idx[0]] + ", " + reg]
         res += ["add " + str(offset) + "(%ebp), " + reg]
         dst_entry = "0(" + reg + ")"
@@ -111,7 +120,7 @@ def asm_gen(line, activation_record, context):
             src_entry = "$" + toks[2]
         else:
             src_entry = str(offset) + "(%ebp)"
-        if (left_type != "variable" and left_type != "dereference"):
+        if (left_type != "variable" and left_type != "dereference" and left_type != "array"):
             res.append("movl " + src_entry + ", " + dst_entry)
         else:
             reg = get_register("_tmp")
@@ -150,9 +159,12 @@ def asm_gen(line, activation_record, context):
                 res.append("movl " + reg + ", " + dst_entry)
                 free_register("_tmp")
     elif (right_type == "float"):
-        res.append("mov $" + toks[2] + " ," + reg)
-        res.append("fld " + "$" + toks[2] + "")
-        res.append("fstp " + dst_entry)
+        # res.append("mov $" + toks[2] + " ," + reg)
+        # res.append("fld " + "$" + toks[2] + "")
+        # res.append("fstp " + dst_entry)
+        float_name = "float_" + str(context["counter"])
+        context["counter"] += 1
+        data_section += [float_name + ": .float " + toks[2]]
     elif (right_type == "array"):
         arr_idx = re.split("\[|\]", toks[2])
         arr_idx = list(filter(None, arr_idx))
@@ -160,18 +172,18 @@ def asm_gen(line, activation_record, context):
         if (typ != "global" and typ != "const"):
             pass
         reg = get_register("_tmp_right")
-        res += cal_array_offset(arr_idx, offset, reg)
+        res += cal_array_offset(arr_idx, offset, reg, activation_record)
         res += ["imul $" + context["array_decl"][arr_idx[0]] + ", " + reg]
         res += ["add " + str(offset) + "(%ebp), " + reg]
         res += ["movl 0(" + reg + "), " + dst_entry]
     elif (right_type == "dereference"):
-        print("defe")
         if (getTokType(toks[2][1:]) != "variable"):
             print("Error: dereference of non variable", toks[2][1:])
             sys.exit(0)
         (offset, size), typ = activation_record.getVarTuple(toks[2][1:])
-        if (typ != "global" and typ != "const"):
-            pass
+        if (typ == "global" or typ == "const"):
+            print("Error: unsupported code", line)
+            sys.exit(0)
         reg = get_register("_tmp")
         res += ["movl " + str(offset) + "(%ebp), " + reg]
         res += ["movl 0(" + reg + "), " + reg]

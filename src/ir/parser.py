@@ -1506,8 +1506,12 @@ def p_var_decl(p):
 	p[0]['code'] = p[2]['code']
 	sym_table = symTableDict[symTableSt[-1]]
 	var_symbols = sym_table.getVarSymbols()
-	for sym in var_symbols:
-	  var_entry = var_symbols[sym]
+	var_names = p[2]['idlist']
+	for var_name in var_names:
+	  if var_name not in var_symbols:
+	     print("Error:", var_name, "not found on symbol table at linenum", p.lexer.lineno)
+	     sys.exit(0)
+	  var_entry = var_symbols[var_name]
 	  if (var_entry.getDim() <= 0):
 	    continue
 	  dim_ranges = var_entry.getDimRanges()
@@ -1531,8 +1535,10 @@ def p_var_spec_top_list(p):
 	p[0]['dict_code'] = {}
 	if len(p)==2 and p.slice[1].type=="VarSpec":
 		p[0]['code'] = p[1]['code']
+		p[0]['idlist'] = p[1]['idlist']
 	if len(p)==4 and p.slice[3].type=="RPAREN" and p.slice[2].type=="VarSpecList" and p.slice[1].type=="LPAREN":
 		p[0]['code'] = p[2]['code']
+		p[0]['idlist'] = p[2]['idlist']
 
 def p_var_spec_list(p):
 	'''
@@ -1548,6 +1554,9 @@ def p_var_spec_list(p):
 	p[0]['dict_code'] = {}
 	if len(p)==4 and p.slice[3].type=="SEMICOLON" and p.slice[2].type=="VarSpecList" and p.slice[1].type=="VarSpec":
 		p[0]['code'] = p[1]['code'] + p[2]['code']
+		p[0]['idlist'] = p[1]['idlist'] + p[2]['idlist']
+	if len(p)==2 and p.slice[1].type=="empty":
+		p[0]['idlist'] = []
 
 def p_var_spec(p):
 	'''
@@ -1566,6 +1575,7 @@ def p_var_spec(p):
 	  print("Length mismatch on line number", p.lexer.lineno)
 	  sys.exit(0)
 	p[0]['code'] = p[1]['code'] + p[2]['code']
+	p[0]['idlist'] = p[1]['idlist']
 	mylist = p[1]['idlist']
 	mytypelist = p[2]['typelist']
 	myidxlists = p[1]['idxlists']
@@ -2456,6 +2466,7 @@ def p_binary_op(p):
 	           | rel_op
 	           | add_op
 	           | mul_op
+	           | MOD
 	'''
 	global symTableSt
 	global symTableDict
@@ -2474,6 +2485,8 @@ def p_binary_op(p):
 		p[0]['symbol'] = p[1]['symbol']
 	if len(p)==2 and p.slice[1].type=="mul_op":
 		p[0]['symbol'] = p[1]['symbol']
+	if len(p)==2 and p.slice[1].type=="MOD":
+		p[0]['symbol'] = p[1]
 
 def p_rel_op(p):
 	'''
@@ -2515,7 +2528,7 @@ def p_mul_op(p):
 	        | DIV
 	        | LSHIFT
 	        | RSHIFT
-	        		        | AND
+	        | AND
 	        | AND_POW
 	'''
 	global symTableSt
@@ -2796,7 +2809,8 @@ def p_arguments_head_mid(p):
 
 
 def p_error(p):
-	print("Error encountered at line number", p.lineno)
+	print("Parsing error encountered at line number", p.lineno)
+	sys.exit(0)
 
 go_parser = yacc.yacc(start="SourceFile")
 

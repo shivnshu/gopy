@@ -1,5 +1,5 @@
 import common
-from common import get_register, free_register, getTokType
+from common import get_register, free_register, getTokType, reserve_register, unreserve_register
 
 def asm_gen(line, activation_record, context):
     res = []
@@ -17,7 +17,6 @@ def asm_gen(line, activation_record, context):
     elif (toks[3][0] == "*"):
         op = "imul "
 
-
     r0 = get_register(toks[0])
     r1 = get_register(toks[2])
     r2 = get_register(toks[4])
@@ -26,17 +25,58 @@ def asm_gen(line, activation_record, context):
         res.append(op + r2 + ", " + r1)
         res.append("movl "+ r1 + ", " + r0)
     elif (toks[3][0] == "/"):
+        reserve_register("%edx")
+        reserve_register("%eax")
+        free_register(toks[0])
+        free_register(toks[2])
+        free_register(toks[4])
+        r0_0 = get_register(toks[0])
+        r1_0 = get_register(toks[2])
+        r2_0 = get_register(toks[4])
+        res.append("movl " + r0 + ", " + r0_0)
+        res.append("movl " + r1 + ", " + r1_0)
+        res.append("movl " + r2 + ", " + r2_0)
+        r0 = r0_0
+        r1 = r1_0
+        r2 = r2_0
         res.append("push %edx")
         res.append("push %eax")
-        res.append("movl " + r1 + ", %edx")
-        res.append("movl " + r2 + ", %eax")
-        res.append("movl $0, %ebx")
-        res.append("movl %edx, %ebx")
-        res.append("cltd")
-        res.append("idiv %ebx")
+        res.append("movl $0, %edx")
+        res.append("movl " + r1 + ", %eax")
+        res.append("cdq")
+        res.append("idiv " + r2)
         res.append("movl %eax, " + r0)
-        res.append("push %eax")
+        res.append("pop %eax")
+        res.append("pop %edx")
+        unreserve_register("%edx")
+        unreserve_register("%eax")
+    elif (toks[3][0] == '%'):
+        reserve_register("%edx")
+        reserve_register("%eax")
+        free_register(toks[0])
+        free_register(toks[2])
+        free_register(toks[4])
+        r0_0 = get_register(toks[0])
+        r1_0 = get_register(toks[2])
+        r2_0 = get_register(toks[4])
+        res.append("movl " + r0 + ", " + r0_0)
+        res.append("movl " + r1 + ", " + r1_0)
+        res.append("movl " + r2 + ", " + r2_0)
+        r0 = r0_0
+        r1 = r1_0
+        r2 = r2_0
         res.append("push %edx")
+        res.append("push %eax")
+        res.append("movl $0, %edx")
+        res.append("movl " + r1 + ", %eax")
+        res.append("cdq")
+        res.append("idiv " + r2)
+        res.append("movl %edx, " + r0)
+        res.append("pop %eax")
+        res.append("pop %edx")
+        unreserve_register("%edx")
+        unreserve_register("%eax")
+        pass
     elif (toks[3][0:2] == "||"):
         res.append("cmpl $1, " + r1)
         res.append("je _rel_op_" + str(context["rel_op_num"]) + "_true")
@@ -63,7 +103,7 @@ def asm_gen(line, activation_record, context):
         jmp_instr = {"==": "je", "<": "jg", ">": "jl", "<=": "jge", ">=": "jle", "!=": "jne"}
         if (toks[3][0] in jmp_instr):
             jmp_stmt = jmp_instr[toks[3][0]]
-        else:
+        if (toks[3][0:2] in jmp_instr):
             jmp_stmt = jmp_instr[toks[3][0:2]]
         res.append("cmpl " + r1 + ", " + r2)
         res.append(jmp_stmt + " _rel_op_" + str(context["rel_op_num"]) + "_true")

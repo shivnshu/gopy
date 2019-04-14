@@ -26,7 +26,7 @@ context = {"last_func_call_ret": [], "func_ret": [], "rel_op_num": 0, "counter":
 
 def get_data_section(const_decl):
     global context
-    res = [".section .data"]
+    res = []
     for line in const_decl:
         toks = line.split(" ", 2)
         lit_type = getLitType(toks[2])
@@ -34,11 +34,11 @@ def get_data_section(const_decl):
         res += [toks[0] + ": ." + lit_type + " " + toks[2]]
     return res
 
-def asm_gen(code_line, func_name):
+def asm_gen(code_line, func_name, data_section):
     global context
     code_type = getCodeType(code_line)
     if (code_type == "assignments"):
-        res, context = assignments.asm_gen(code_line, activation_records[func_name], context)
+        res, context = assignments.asm_gen(code_line, activation_records[func_name], context, data_section)
         return res
     if (code_type == "function-call"):
         res, context = func_calls.asm_gen(code_line, activation_records, func_name, context)
@@ -83,10 +83,10 @@ def main(dict_code):
     res += ["call func_main", "push $0", "call exit", ""]
     func_init = ["push %ebp", "mov %esp, %ebp"]
     func_end = ["mov %ebp, %esp", "pop %ebp", "ret", ""]
-    data_section = []
+    data_section = [".section .data"]
 
     if 'const_decl' in dict_code:
-        data_section = get_data_section(dict_code['const_decl'])
+        data_section += get_data_section(dict_code['const_decl'])
 
     for func_name in dict_code:
         free_all_regs() # Free if new function comes
@@ -100,7 +100,7 @@ def main(dict_code):
         code_list = dict_code[func_name]
         res += alloc_st_code(func_name)
         for code_line in code_list:
-            gen_code = asm_gen(code_line, func_name)
+            gen_code = asm_gen(code_line, func_name, data_section)
             if (gen_code != None):
                 res += gen_code
             else:
