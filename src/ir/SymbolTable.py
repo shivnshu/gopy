@@ -260,6 +260,7 @@ class ActivationRecord:
             var_type = var_entry.getType()
             if (var_entry.getIsLocal() == True):
                 size = (1 + var_entry.getDim()) * get_type_size(var_type, sym_table)
+                # size = get_type_size(var_type, sym_table)
                 self.offset -= size
                 self.local_vars[var_entry.getName()] = (self.offset, size)
                 self.var_signs[var_entry.getName()] = var_entry.getSign()

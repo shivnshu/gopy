@@ -83,6 +83,7 @@ def asm_gen(line, activation_record, context, data_section):
         arr_idx = list(filter(None, arr_idx))
         # print(arr_idx)
         (offset, size), typ = activation_record.getVarTuple(arr_idx[0])
+        print(size, arr_idx)
         if (size != 4 * len(arr_idx)):
             print("Error: dimension mismatch for array", arr_idx[0])
             sys.exit(0)

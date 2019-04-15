@@ -95,6 +95,36 @@ def struct_optimization(code_list):
             final_res += [res[i]]
     return final_res
 
+def func_optimization(code_list):
+    res = []
+    del_list = []
+    mapping = {}
+    for i in range(len(code_list)):
+        line = code_list[i]
+        toks = line.split()
+        if (len(toks) != 3 and len(toks) != 2):
+            res += [line]
+            continue
+        if (len(toks) == 3 and toks[1] == ":="):
+            if (toks[0][0] != "_"):
+                res += [line]
+                continue
+            mapping[toks[0]] = (toks[2], i)
+            res += [line]
+        elif (len(toks) == 2 and toks[0] == "push_param"):
+            if (toks[1][0] == "_" and toks[1] in mapping):
+                res += ["push_param " + mapping[toks[1]][0]]
+                del_list += [mapping[toks[1]][1]]
+                continue
+        else:
+            res += [line]
+    final_res = []
+    for i in range(len(res)):
+        if i not in del_list:
+            final_res += [res[i]]
+        pass
+    return final_res
+
 def code_optimization(code_list):
     # print()
     # for c in code_list:
@@ -131,6 +161,7 @@ def code_optimization(code_list):
     res = unary_optimization(res)
     res = array_optimization(res)
     res = struct_optimization(res)
+    # res = func_optimization(res)
     return res
 
 

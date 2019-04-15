@@ -64,7 +64,7 @@ def asm_gen(code_line, func_name, data_section):
     if (code_type == "unary-op"):
         res, context = unaryop.asm_gen(code_line, activation_records[func_name], context)
         return res
-    return None
+    return [code_line]
 
 def alloc_st_code(func_name):
     act_record = activation_records[func_name]

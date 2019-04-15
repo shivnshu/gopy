@@ -27,7 +27,7 @@ def asm_gen(line, activation_records, func_name, context):
             else:
                 res += ["push " + str(offset) + "(%ebp)"]
         elif (param_type == "positive-integer"):
-            res += ["push ", "$" + toks[1]]
+            res += ["push " + "$" + toks[1]]
         else:
             print("Error")
             sys.exit(0)
@@ -56,7 +56,7 @@ def asm_gen(line, activation_records, func_name, context):
             res += ["movl " + get_register(toks[1]) + ", " + str(ret_offset) + "(%ebp)"]
             # res += ["movl %ebp, %esp", "pop %ebp", "ret"]
         else:
-            print("Error")
+            print("Error:", toks[0], "type not known")
             sys.exit(0)
     elif (toks[0] == "ret_alloc"):
         res += ["subl $" + toks[1] + ", %esp"]

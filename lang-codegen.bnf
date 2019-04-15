@@ -273,7 +273,6 @@ p[0]['ret_types'] = p[3]['ret_types']
 p[0]['code'] = p[3]['code']
 >>
 <<2
-print("lol")
 b = False
 for scope in symTableSt:
 	if p[1] in symTableDict[scope].symbols:
@@ -515,6 +514,7 @@ AliasDecl : IDENTIFIER EQ Type
 
 TypeDef : IDENTIFIER Type
 <<0
+print(p[2])
 scope = symTableSt[-1]
 symTable = symTableDict[scope]
 var = VarEntry(p[1])
@@ -534,14 +534,17 @@ p[0]['dimrange'] = []
 >>
 <<1
 p[0]['type'] = p[1]['type']
+p[0]['code'] = p[1]['code']
 >>
 <<2
 p[0]['type'] = p[1]['type']
 p[0]['dim'] = p[1]['dims']
 p[0]['dimrange'] = p[1]['dimrange']
+p[0]['code'] = p[1]['code']
 >>
 <<3
 p[0]['type'] = p[2]['type']
+p[0]['code'] = p[2]['code']
 >>
 
 TypeName  : IDENTIFIER
@@ -567,6 +570,8 @@ TypeLit  : ArrayType
          | FunctionType
 <<0
 p[0]['type'] = p[1]['type']
+p[0]['dimrange'] = []
+p[0]['code'] = p[1]['code']
 >>
 <<1
 p[0]['dims'] = p[1]['dims']
@@ -580,22 +585,26 @@ if p[2]['type'] != "int" and p[2]['type'] != '':
   sys.exit(0)
 p[0]['type'] = p[4]['type']
 p[0]['dims'] = 1 + p[4]['dims']
-p[0]['dimrange'] = [p[2]] + p[4]['dimrange']
+p[0]['dimrange'] = [p[2]['place']] + p[4]['dimrange']
+p[0]['code'] = p[2]['code'] + p[4]['code']
 >>
 
 ArrayLength : Expression
             | empty
 <<1
 p[0]['type'] = p[1]['type']
+p[0]['place'] = p[1]['place']
+p[0]['code'] = p[1]['code']
 >>
 <<2
 p[0]['type'] = ''
+p[0]['place'] = ''
 >>
 
 ElementType : Type
 <<0
 p[0]['type'] = p[1]['type']
-p[0]['dims'] = p[1]['dims']
+p[0]['dims'] = p[1]['dim']
 p[0]['dimrange'] = p[1]['dimrange']
 >>
 
@@ -664,6 +673,7 @@ p[0]['types'] = []
 
 Parameters  : LPAREN ParameterListTop RPAREN
 <<0
+p[0]['code'] = p[2]['code']
 p[0]['args_types'] = p[2]['args_types']
 p[0]['idlist'] = p[2]['idlist']
 params = p[2]['idlist']
@@ -675,6 +685,12 @@ for param,t,dim,dimrange in zip(params, p[0]['args_types'],p[2]['dims'], p[2]['d
     entry.setDim(dim)
     entry.setDimRanges(dimrange)
     entry.isNotLocal()
+    decl  = "_decl array " + t + " " + param
+    decl_tail = ""
+    for dr in dimrange:
+        decl_tail += " " + dr
+    decl += decl_tail
+    p[0]['code'] += [decl]
     if (table.put(entry) == False):
         print("Error:", param, "redeclared on line number", p.lexer.lineno)
         sys.exit(0)
@@ -687,6 +703,7 @@ p[0]['args_types'] = p[1]['args_types']
 p[0]['idlist'] = p[1]['idlist']
 p[0]['dims'] = p[1]['dims']
 p[0]['dimranges'] = p[1]['dimranges']
+p[0]['code'] = p[1]['code']
 >>
 <<2
 p[0]['args_types'] = []
@@ -704,6 +721,7 @@ p[0]['args_types'] = [p[1]['type']] + p[2]['args_types']
 p[0]['idlist'] = p[1]['idlist'] + p[2]['idlist']
 p[0]['dims'] = [p[1]['dim']] + p[2]['dims']
 p[0]['dimranges'] = [p[1]['dimrange']] + p[2]['dimranges']
+p[0]['code'] = p[1]['code'] + p[2]['code']
 >>
 
 ParameterDeclList : COMMA ParameterDecl ParameterDeclList
@@ -713,6 +731,7 @@ p[0]['args_types'] = [p[2]['type']] + p[3]['args_types']
 p[0]['idlist'] = p[2]['idlist'] + p[3]['idlist']
 p[0]['dims'] = [p[2]['dim']] + p[3]['dims']
 p[0]['dimranges'] = [p[2]['dimrange']] + p[3]['dimranges']
+p[0]['code'] = p[2]['code'] + p[3]['code']
 >>
 <<2
 p[0]['args_types'] = []
@@ -727,6 +746,7 @@ p[0]['type'] = p[3]['type']
 p[0]['idlist'] = p[1]['idlist']
 p[0]['dim'] = p[3]['dim']
 p[0]['dimrange'] = p[3]['dimrange']
+p[0]['code'] = p[1]['code'] + p[3]['code']
 >>
 
 tripledotTop : DOT_DOT_DOT
@@ -758,13 +778,15 @@ for var_name in var_names:
      print("Error:", var_name, "not found on symbol table at linenum", p.lexer.lineno)
      sys.exit(0)
   var_entry = var_symbols[var_name]
+  type = var_entry.getType()
   if (var_entry.getDim() <= 0):
     continue
   dim_ranges = var_entry.getDimRanges()
-  type = var_entry.getType()
-  decl = "_decl array " + type + " " + var_entry.getName() 
+  decl_tail = " "
   for d in range(var_entry.getDim()):
-    decl += " " + dim_ranges[d]
+    decl_tail += " " + dim_ranges[d]
+  decl = "_decl array " + type + " " + var_entry.getName() + decl_tail
+  var_entry.setType(type, sym_table)
   p[0]['code'] += [decl]
 >>
 
@@ -802,6 +824,8 @@ mylist = p[1]['idlist']
 mytypelist = p[2]['typelist']
 myidxlists = p[1]['idxlists']
 mynamelist = p[2]['namelist']
+#for name, typ in zip(p[1]['idlist'], p[2]['typelist']):
+#    p[0]['code'] += ["_decl " + typ + " " + name]
 for index in range(len(mylist)):
     i = mylist[index]
     var = VarEntry(i)
@@ -860,7 +884,7 @@ entry = symTableDict[symTableSt[-1]].get(func_name)
 act_record.setLocalVarsInputArgs(this_func_sym_table)
 #act_record.storeOldStPtr("%rbp")
 act_record.setRetValues(entry)
-p[0]['dict_code'] = { func_name: code_optimization(p[3]['code']) }
+p[0]['dict_code'] = { func_name: code_optimization(p[2]['code'] + p[3]['code']) }
 p[3]['ret_actual_types'] = flatten_list(p[3]['ret_actual_types'])
 for ret_actual in p[3]['ret_actual_types']:
       if (len(ret_actual) > 0 and p[2]['ret_types'] != ret_actual):
@@ -874,6 +898,7 @@ func_name = p[1]['func_name']
 p[0]['input_args'] = p[2]['args_types']
 p[0]['ret_types'] = p[3]['ret_types']
 p[0]['func_name'] = func_name
+p[0]['code'] = p[2]['code']
 entry = symTableDict[symTableSt[-2]].get(func_name)
 entry.setInputArgs(p[0]['input_args'])
 entry.setReturnTypes(p[0]['ret_types'])
@@ -980,7 +1005,7 @@ p[0]['place'] = p[1]['place']
 ShortVarDecl : IdentifierList3 SHORT_ASSIGN ExpressionList
 <<0
 for name, typ in zip(p[1]['idlist'], p[3]['typelist']):
-    p[0]['code'] = ["_decl " + typ + " " + name]
+    p[0]['code'] += ["_decl " + typ + " " + name]
 scope = symTableSt[-1]
 table = symTableDict[scope]
 p[0]['code'] += p[3]['code']
@@ -1017,8 +1042,6 @@ if (p[2]['len'] == 1):
     if q[0] in ['*']:
        q = q[1:]
     left_elem_type = verifyCalType(q, p.lexer.lineno)
-    if i[0] in ['*']:
-      left_elem_type = left_elem_type[1:]
     if left_elem_type != k:
       print("Error type mismatch in line " +str(p.lexer.lineno) +". Expected type " +left_elem_type+", got type "+ k)
       sys.exit(0)
@@ -1054,14 +1077,13 @@ for i, idx,  j, k in zip(p[1]['idlist'], p[1]['idxlists'],  p[3]['namelist'], p[
   if left_elem_type != k:
     print("Error type mismatch in line " +str(p.lexer.lineno) +". Expected type " +left_elem_type+", got type "+ k)
     sys.exit(0)
-  else:
-    for n in symTableSt[::-1]:
-      if i in symTableDict[n].symbols:
-        table = symTableDict[n]
-    entry = table.get(i)
-    if (entry.getDim() != len(idx)):
-      print("Error: dimention mismatch at line number", p.lexer.lineno)
-      sys.exit(0)
+  for n in symTableSt[::-1]:
+    if i in symTableDict[n].symbols:
+      table = symTableDict[n]
+  entry = table.get(i)
+  if (entry.getDim() != len(idx)):
+    print("Error: dimention mismatch at line number", p.lexer.lineno)
+    sys.exit(0)
 if (p[2]['len'] == 1):
     loc = ""
     for l in idx:

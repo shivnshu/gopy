@@ -578,7 +578,6 @@ def p_func_call_stmt(p):
 		p[0]['ret_types'] = p[3]['ret_types']
 		p[0]['code'] = p[3]['code']
 	if len(p)==7 and p.slice[6].type=="RPAREN" and p.slice[5].type=="ExpressionListBot" and p.slice[4].type=="LPAREN" and p.slice[3].type=="IDENTIFIER" and p.slice[2].type=="DOT" and p.slice[1].type=="IDENTIFIER":
-		print("lol")
 		b = False
 		for scope in symTableSt:
 			if p[1] in symTableDict[scope].symbols:
@@ -1019,6 +1018,7 @@ def p_type_def(p):
 	p[0] = {}
 	p[0]['code'] = []
 	p[0]['dict_code'] = {}
+	print(p[2])
 	scope = symTableSt[-1]
 	symTable = symTableDict[scope]
 	var = VarEntry(p[1])
@@ -1045,12 +1045,15 @@ def p_type(p):
 	p[0]['dimrange'] = []
 	if len(p)==2 and p.slice[1].type=="TypeName":
 		p[0]['type'] = p[1]['type']
+		p[0]['code'] = p[1]['code']
 	if len(p)==2 and p.slice[1].type=="TypeLit":
 		p[0]['type'] = p[1]['type']
 		p[0]['dim'] = p[1]['dims']
 		p[0]['dimrange'] = p[1]['dimrange']
+		p[0]['code'] = p[1]['code']
 	if len(p)==4 and p.slice[3].type=="RPAREN" and p.slice[2].type=="Type" and p.slice[1].type=="LPAREN":
 		p[0]['type'] = p[2]['type']
+		p[0]['code'] = p[2]['code']
 
 def p_type_name(p):
 	'''
@@ -1099,6 +1102,8 @@ def p_type_lit(p):
 	p[0]['code'] = []
 	p[0]['dict_code'] = {}
 	p[0]['type'] = p[1]['type']
+	p[0]['dimrange'] = []
+	p[0]['code'] = p[1]['code']
 	if len(p)==2 and p.slice[1].type=="ArrayType":
 		p[0]['dims'] = p[1]['dims']
 		p[0]['dimrange'] = p[1]['dimrange']
@@ -1119,7 +1124,8 @@ def p_array_type(p):
 	  sys.exit(0)
 	p[0]['type'] = p[4]['type']
 	p[0]['dims'] = 1 + p[4]['dims']
-	p[0]['dimrange'] = [p[2]] + p[4]['dimrange']
+	p[0]['dimrange'] = [p[2]['place']] + p[4]['dimrange']
+	p[0]['code'] = p[2]['code'] + p[4]['code']
 
 def p_array_length(p):
 	'''
@@ -1135,8 +1141,11 @@ def p_array_length(p):
 	p[0]['dict_code'] = {}
 	if len(p)==2 and p.slice[1].type=="Expression":
 		p[0]['type'] = p[1]['type']
+		p[0]['place'] = p[1]['place']
+		p[0]['code'] = p[1]['code']
 	if len(p)==2 and p.slice[1].type=="empty":
 		p[0]['type'] = ''
+		p[0]['place'] = ''
 
 def p_element_type(p):
 	'''
@@ -1150,7 +1159,7 @@ def p_element_type(p):
 	p[0]['code'] = []
 	p[0]['dict_code'] = {}
 	p[0]['type'] = p[1]['type']
-	p[0]['dims'] = p[1]['dims']
+	p[0]['dims'] = p[1]['dim']
 	p[0]['dimrange'] = p[1]['dimrange']
 
 def p_struct_type(p):
@@ -1357,6 +1366,7 @@ def p_parameters(p):
 	p[0] = {}
 	p[0]['code'] = []
 	p[0]['dict_code'] = {}
+	p[0]['code'] = p[2]['code']
 	p[0]['args_types'] = p[2]['args_types']
 	p[0]['idlist'] = p[2]['idlist']
 	params = p[2]['idlist']
@@ -1368,6 +1378,12 @@ def p_parameters(p):
 	    entry.setDim(dim)
 	    entry.setDimRanges(dimrange)
 	    entry.isNotLocal()
+	    decl  = "_decl array " + t + " " + param
+	    decl_tail = ""
+	    for dr in dimrange:
+	        decl_tail += " " + dr
+	    decl += decl_tail
+	    p[0]['code'] += [decl]
 	    if (table.put(entry) == False):
 	        print("Error:", param, "redeclared on line number", p.lexer.lineno)
 	        sys.exit(0)
@@ -1389,6 +1405,7 @@ def p_parameter_list_top(p):
 		p[0]['idlist'] = p[1]['idlist']
 		p[0]['dims'] = p[1]['dims']
 		p[0]['dimranges'] = p[1]['dimranges']
+		p[0]['code'] = p[1]['code']
 	if len(p)==2 and p.slice[1].type=="empty":
 		p[0]['args_types'] = []
 		p[0]['idlist'] = []
@@ -1423,6 +1440,7 @@ def p_parameter_list(p):
 	p[0]['idlist'] = p[1]['idlist'] + p[2]['idlist']
 	p[0]['dims'] = [p[1]['dim']] + p[2]['dims']
 	p[0]['dimranges'] = [p[1]['dimrange']] + p[2]['dimranges']
+	p[0]['code'] = p[1]['code'] + p[2]['code']
 
 def p_parameter_decl_list(p):
 	'''
@@ -1441,6 +1459,7 @@ def p_parameter_decl_list(p):
 		p[0]['idlist'] = p[2]['idlist'] + p[3]['idlist']
 		p[0]['dims'] = [p[2]['dim']] + p[3]['dims']
 		p[0]['dimranges'] = [p[2]['dimrange']] + p[3]['dimranges']
+		p[0]['code'] = p[2]['code'] + p[3]['code']
 	if len(p)==2 and p.slice[1].type=="empty":
 		p[0]['args_types'] = []
 		p[0]['idlist'] = []
@@ -1462,6 +1481,7 @@ def p_parameter_decl(p):
 	p[0]['idlist'] = p[1]['idlist']
 	p[0]['dim'] = p[3]['dim']
 	p[0]['dimrange'] = p[3]['dimrange']
+	p[0]['code'] = p[1]['code'] + p[3]['code']
 
 def p_tripledot_top(p):
 	'''
@@ -1517,13 +1537,15 @@ def p_var_decl(p):
 	     print("Error:", var_name, "not found on symbol table at linenum", p.lexer.lineno)
 	     sys.exit(0)
 	  var_entry = var_symbols[var_name]
+	  type = var_entry.getType()
 	  if (var_entry.getDim() <= 0):
 	    continue
 	  dim_ranges = var_entry.getDimRanges()
-	  type = var_entry.getType()
-	  decl = "_decl array " + type + " " + var_entry.getName() 
+	  decl_tail = " "
 	  for d in range(var_entry.getDim()):
-	    decl += " " + dim_ranges[d]
+	    decl_tail += " " + dim_ranges[d]
+	  decl = "_decl array " + type + " " + var_entry.getName() + decl_tail
+	  var_entry.setType(type, sym_table)
 	  p[0]['code'] += [decl]
 
 def p_var_spec_top_list(p):
@@ -1585,6 +1607,8 @@ def p_var_spec(p):
 	mytypelist = p[2]['typelist']
 	myidxlists = p[1]['idxlists']
 	mynamelist = p[2]['namelist']
+	#for name, typ in zip(p[1]['idlist'], p[2]['typelist']):
+	#    p[0]['code'] += ["_decl " + typ + " " + name]
 	for index in range(len(mylist)):
 	    i = mylist[index]
 	    var = VarEntry(i)
@@ -1665,7 +1689,7 @@ def p_function_decl(p):
 	act_record.setLocalVarsInputArgs(this_func_sym_table)
 	#act_record.storeOldStPtr("%rbp")
 	act_record.setRetValues(entry)
-	p[0]['dict_code'] = { func_name: code_optimization(p[3]['code']) }
+	p[0]['dict_code'] = { func_name: code_optimization(p[2]['code'] + p[3]['code']) }
 	p[3]['ret_actual_types'] = flatten_list(p[3]['ret_actual_types'])
 	for ret_actual in p[3]['ret_actual_types']:
 	      if (len(ret_actual) > 0 and p[2]['ret_types'] != ret_actual):
@@ -1687,6 +1711,7 @@ def p_signature(p):
 	p[0]['input_args'] = p[2]['args_types']
 	p[0]['ret_types'] = p[3]['ret_types']
 	p[0]['func_name'] = func_name
+	p[0]['code'] = p[2]['code']
 	entry = symTableDict[symTableSt[-2]].get(func_name)
 	entry.setInputArgs(p[0]['input_args'])
 	entry.setReturnTypes(p[0]['ret_types'])
@@ -1888,7 +1913,7 @@ def p_short_var_decl(p):
 	p[0]['code'] = []
 	p[0]['dict_code'] = {}
 	for name, typ in zip(p[1]['idlist'], p[3]['typelist']):
-	    p[0]['code'] = ["_decl " + typ + " " + name]
+	    p[0]['code'] += ["_decl " + typ + " " + name]
 	scope = symTableSt[-1]
 	table = symTableDict[scope]
 	p[0]['code'] += p[3]['code']
@@ -1933,8 +1958,6 @@ def p_assignment(p):
 	    if q[0] in ['*']:
 	       q = q[1:]
 	    left_elem_type = verifyCalType(q, p.lexer.lineno)
-	    if i[0] in ['*']:
-	      left_elem_type = left_elem_type[1:]
 	    if left_elem_type != k:
 	      print("Error type mismatch in line " +str(p.lexer.lineno) +". Expected type " +left_elem_type+", got type "+ k)
 	      sys.exit(0)
@@ -1978,14 +2001,13 @@ def p_assignment_gen(p):
 	  if left_elem_type != k:
 	    print("Error type mismatch in line " +str(p.lexer.lineno) +". Expected type " +left_elem_type+", got type "+ k)
 	    sys.exit(0)
-	  else:
-	    for n in symTableSt[::-1]:
-	      if i in symTableDict[n].symbols:
-	        table = symTableDict[n]
-	    entry = table.get(i)
-	    if (entry.getDim() != len(idx)):
-	      print("Error: dimention mismatch at line number", p.lexer.lineno)
-	      sys.exit(0)
+	  for n in symTableSt[::-1]:
+	    if i in symTableDict[n].symbols:
+	      table = symTableDict[n]
+	  entry = table.get(i)
+	  if (entry.getDim() != len(idx)):
+	    print("Error: dimention mismatch at line number", p.lexer.lineno)
+	    sys.exit(0)
 	if (p[2]['len'] == 1):
 	    loc = ""
 	    for l in idx:

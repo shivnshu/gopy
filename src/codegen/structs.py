@@ -38,6 +38,7 @@ def asm_gen(line, activation_record):
             res += ["negl (" + reg + ")"]
             free_register("_tmp")
         elif (right_type == "string"):
+            string_lit = right_param[1:-1].encode().decode('unicode_escape') # Allow newline etc.
             reserve_register("%eax")
             reg = get_register("_tmp")
             res += ["movl " + str(offset) + "(%ebp)" + ", " + reg]
@@ -46,7 +47,7 @@ def asm_gen(line, activation_record):
             res += ["push $" + str(len(right_param) + 1)]
             res += ["call malloc"]
             index = 0
-            for ch_lit in right_param:
+            for ch_lit in string_lit:
                 res += ["movb $" + hex(ord(ch_lit)) + ", " + str(index) + "(%eax)"]
                 index += 1
             res += ["movl %eax, " + "0(" + reg + ")"]
