@@ -11,6 +11,7 @@ import binaryop
 import ifstmt
 import gotostmt
 import arr_decl
+import struct_decl
 import structs
 import unaryop
 
@@ -56,6 +57,8 @@ def asm_gen(code_line, func_name, data_section):
     if (code_type == "arr_decl"):
         res, context = arr_decl.asm_gen(code_line, activation_records[func_name], context)
         return res
+    if (code_type == "struct_decl"):
+        return struct_decl.asm_gen(code_line, activation_records[func_name])
     if (code_type == "structs"):
         return structs.asm_gen(code_line, activation_records[func_name])
     if (code_type == "unary-op"):

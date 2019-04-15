@@ -86,6 +86,8 @@ def getCodeType(code):
         return "arr_decl"
     if (len(toks)==3 and toks[1]==":=" and (toks[2][0] in unary_op_list) and getTokType(toks[2][1:]) == "variable"):
         return "unary-op"
+    if (toks[0] == "_decl"):
+        return "struct_decl"
     return None
 
 def getTokType(tok):

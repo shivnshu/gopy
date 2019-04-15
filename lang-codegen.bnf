@@ -419,16 +419,21 @@ p[0]['idlist'] = []
 
 IdentifierList3 : IDENTIFIER IdentifierBotList3
                 | MULT IDENTIFIER IdentifierBotList3
+                | IDENTIFIER DOT IDENTIFIER IdentifierBotList3
 <<1
 p[0]['idlist'] = [p[1]] + p[2]['idlist']
 >>
 <<2
 p[0]['idlist'] = [p[1] + p[2]] + p[3]['idlist']
 >>
+<<3
+p[0]['idlist'] = [p[1] + p[2] + p[3]] + p[4]['idlist']
+>>
 
-IdentifierBotList3 :  IdentifierBotList3 COMMA IDENTIFIER
-                  |  IdentifierBotList3 COMMA MULT IDENTIFIER
-                  | empty
+IdentifierBotList3 : IdentifierBotList3 COMMA IDENTIFIER
+                   | IdentifierBotList3 COMMA MULT IDENTIFIER
+                   | IdentifierBotList3 COMMA IDENTIFIER DOT IDENTIFIER 
+                   | empty
 <<1
 p[0]['idlist'] = p[1]['idlist'] + [p[3]]
 >>
@@ -436,6 +441,9 @@ p[0]['idlist'] = p[1]['idlist'] + [p[3]]
 p[0]['idlist'] = p[1]['idlist'] + [p[3] + p[4]]
 >>
 <<3
+p[0]['idlist'] = p[1]['idlist'] + [p[3] + p[4] + p[5]]
+>>
+<<4
 p[0]['idlist'] = []
 >>
 
@@ -981,6 +989,8 @@ p[0]['place'] = p[1]['place']
 
 ShortVarDecl : IdentifierList3 SHORT_ASSIGN ExpressionList
 <<0
+for name, typ in zip(p[1]['idlist'], p[3]['typelist']):
+    p[0]['code'] = ["_decl " + typ + " " + name]
 scope = symTableSt[-1]
 table = symTableDict[scope]
 p[0]['code'] += p[3]['code']
@@ -998,8 +1008,8 @@ for i, j, k in zip(p[1]['idlist'], p[3]['namelist'], p[3]['typelist']):
 
 Assignment : IdentifierList3 assign_op ExpressionList
 <<0
-print(p[3]['typelist'])
 for id in p[1]['idlist']:
+  id = id.split(".")[0]
   b = False
   if id[0] in ['*']:
      id = id[1:]
@@ -1341,21 +1351,23 @@ p[0]['place'] = newVar()
 p[0]['code'] = p[3]['code']
 p[0]['type'] = p[1]
 p[0]['field_ass'] = p[3]['field_ass']
-struct_name = p[1]
-sym_table = symTableDict[symTableSt[-1]]
-b = False
-while (sym_table is not None):
-    if struct_name in sym_table.getSymbols():
-        d = True
-        break
-    sym_table = sym_table.getParent()
-if not d:
-    print("Error: Type " + type + " not found on line number", p.lexer.lineno)
-    sys.exit(0)
-struct_entry = sym_table.getSymbols()[struct_name]
-struct_field_type_map = struct_entry.getFields()
+code_so_far = p[0]['code'] # Following code is little optimization for saving registers
+i = 0
+j = 0
+res = []
 for asgn in p[3]['field_ass']:
-    p[0]['code'] += [p[0]['place'] + "." + asgn[0] + " := " + asgn[1]]
+  tmp_name = asgn[1]
+  this_code = p[0]['place'] + "." + asgn[0] + " := " + asgn[1]
+  for j in range(i, len(code_so_far)):
+    if tmp_name in code_so_far[j]:
+      res += [code_so_far[j], this_code]
+      i = j + 1
+      break
+    else:
+      res += [code_so_far[j]]
+  if (j == len(code_so_far)):
+    res += [this_code]
+p[0]['code'] = res
 >>
 
 ObjectParamList : ObjectParam ObjectParamTop
@@ -1515,6 +1527,9 @@ p[0]['type'] = p[1]['type']
 <<2
 p[0]['code'] = p[1]['code'] + [p[0]['place'] + ' := ' + p[1]['place']]
 p[0]['type'] = p[1]['type']
+>>
+<<3
+p[0]['type'] = 'Unknown'
 >>
 <<4
 p[0]['type'] = p[2]['type']

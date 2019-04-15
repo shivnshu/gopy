@@ -15,6 +15,8 @@ def get_type_size(type, symTable):
     global lang_datatypes
     if type in lang_datatypes:
         return type_to_size[type]
+    if (type[0] == "*"):
+        return 4
     print(symTable.getSymbols())
     b = False
     while (symTable is not None):
@@ -26,7 +28,8 @@ def get_type_size(type, symTable):
         print("Error: Type " + type + " not found")
         sys.exit(0)
     struct_entry = symTable.getSymbols()[type]
-    return struct_entry.getSize()
+    return 4 # storing ptr
+    # return struct_entry.getSize()
 
 
 class SymbolTableEntry:
@@ -54,6 +57,8 @@ class SymbolTableVariableEntry(SymbolTableEntry):
     def setType(self, typ, sym_table):
         global lang_datatypes
         self.variableType = typ
+        if (typ[0] == "*"):
+            typ = typ[1:]
         if sym_table == None or typ in lang_datatypes:
             return
         symTable = sym_table
@@ -259,7 +264,7 @@ class ActivationRecord:
                 self.local_vars[var_entry.getName()] = (self.offset, size)
                 self.var_signs[var_entry.getName()] = var_entry.getSign()
             else:
-                size = type_to_size[var_type]
+                size = get_type_size(var_type, sym_table)
                 self.input_args[var_entry.getName()] = (self.pos_offset, size)
                 self.pos_offset += size
                 self.var_signs[var_entry.getName()] = var_entry.getSign()

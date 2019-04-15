@@ -36,6 +36,8 @@ def newLabel():
 	return res
 
 def verifyCalType(name, lineno):
+	toks = name.split('.')
+	name = toks[0]
 	flag = False
 	for n in symTableSt[::-1]:
 		if name in symTableDict[n].symbols:
@@ -46,7 +48,13 @@ def verifyCalType(name, lineno):
 		print('Type of', name, 'not found on line number', lineno)
 		return 'Unknown'
 	entry = table.get(name)
-	return entry.getType()
+	if len(toks) == 1:
+		return entry.getType()
+	fields = entry.getSign()
+	field = toks[1]
+	if field not in fields:
+		return 'Unknown'
+	return fields[field][2]
 
 def flatten_list(l):
 	output = []
@@ -798,6 +806,7 @@ def p_identifier_list3(p):
 	'''
 	IdentifierList3 : IDENTIFIER IdentifierBotList3
 	                | MULT IDENTIFIER IdentifierBotList3
+	                | IDENTIFIER DOT IDENTIFIER IdentifierBotList3
 	'''
 	global symTableSt
 	global symTableDict
@@ -810,12 +819,15 @@ def p_identifier_list3(p):
 		p[0]['idlist'] = [p[1]] + p[2]['idlist']
 	if len(p)==4 and p.slice[3].type=="IdentifierBotList3" and p.slice[2].type=="IDENTIFIER" and p.slice[1].type=="MULT":
 		p[0]['idlist'] = [p[1] + p[2]] + p[3]['idlist']
+	if len(p)==5 and p.slice[4].type=="IdentifierBotList3" and p.slice[3].type=="IDENTIFIER" and p.slice[2].type=="DOT" and p.slice[1].type=="IDENTIFIER":
+		p[0]['idlist'] = [p[1] + p[2] + p[3]] + p[4]['idlist']
 
 def p_identifier_bot_list3(p):
 	'''
-	IdentifierBotList3 :  IdentifierBotList3 COMMA IDENTIFIER
-	                  |  IdentifierBotList3 COMMA MULT IDENTIFIER
-	                  | empty
+	IdentifierBotList3 : IdentifierBotList3 COMMA IDENTIFIER
+	                   | IdentifierBotList3 COMMA MULT IDENTIFIER
+	                   | IdentifierBotList3 COMMA IDENTIFIER DOT IDENTIFIER 
+	                   | empty
 	'''
 	global symTableSt
 	global symTableDict
@@ -828,6 +840,8 @@ def p_identifier_bot_list3(p):
 		p[0]['idlist'] = p[1]['idlist'] + [p[3]]
 	if len(p)==5 and p.slice[4].type=="IDENTIFIER" and p.slice[3].type=="MULT" and p.slice[2].type=="COMMA" and p.slice[1].type=="IdentifierBotList3":
 		p[0]['idlist'] = p[1]['idlist'] + [p[3] + p[4]]
+	if len(p)==6 and p.slice[5].type=="IDENTIFIER" and p.slice[4].type=="DOT" and p.slice[3].type=="IDENTIFIER" and p.slice[2].type=="COMMA" and p.slice[1].type=="IdentifierBotList3":
+		p[0]['idlist'] = p[1]['idlist'] + [p[3] + p[4] + p[5]]
 	if len(p)==2 and p.slice[1].type=="empty":
 		p[0]['idlist'] = []
 
@@ -1882,6 +1896,8 @@ def p_short_var_decl(p):
 	p[0] = {}
 	p[0]['code'] = []
 	p[0]['dict_code'] = {}
+	for name, typ in zip(p[1]['idlist'], p[3]['typelist']):
+	    p[0]['code'] = ["_decl " + typ + " " + name]
 	scope = symTableSt[-1]
 	table = symTableDict[scope]
 	p[0]['code'] += p[3]['code']
@@ -1907,8 +1923,8 @@ def p_assignment(p):
 	p[0] = {}
 	p[0]['code'] = []
 	p[0]['dict_code'] = {}
-	print(p[3]['typelist'])
 	for id in p[1]['idlist']:
+	  id = id.split(".")[0]
 	  b = False
 	  if id[0] in ['*']:
 	     id = id[1:]
@@ -2385,38 +2401,23 @@ def p_expression(p):
 		p[0]['code'] = p[3]['code']
 		p[0]['type'] = p[1]
 		p[0]['field_ass'] = p[3]['field_ass']
-		struct_name = p[1]
-		sym_table = symTableDict[symTableSt[-1]]
-		b = False
-		while (sym_table is not None):
-		    if struct_name in sym_table.getSymbols():
-		        d = True
-		        break
-		    sym_table = sym_table.getParent()
-		if not d:
-		    print("Error: Type " + type + " not found on line number", p.lexer.lineno)
-		    sys.exit(0)
-		struct_entry = sym_table.getSymbols()[struct_name]
-		struct_field_type_map = struct_entry.getFields()
+		code_so_far = p[0]['code'] # Following code is little optimization for saving registers
+		i = 0
+		j = 0
+		res = []
 		for asgn in p[3]['field_ass']:
-		    p[0]['code'] += [p[0]['place'] + "." + asgn[0] + " := " + asgn[1]]
-		#code_so_far = p[0]['code'] # Following code is little optimization for saving registers
-		#i = 0
-		#j = 0
-		#res = []
-		#for asgn in p[3]['field_ass']:
-		#  tmp_name = asgn[1]
-		#  this_code = p[0]['place'] + "." + asgn[0] + ": " + asgn[1]
-		#  for j in range(i, len(code_so_far)):
-		#    if tmp_name in code_so_far[j]:
-		#      res += [code_so_far[j], this_code]
-		#      i = j + 1
-		#      break
-		#    else:
-		#      res += [code_so_far[j]]
-		#  if (j == len(code_so_far)):
-		#    res += [this_code]
-		#p[0]['code'] = res
+		  tmp_name = asgn[1]
+		  this_code = p[0]['place'] + "." + asgn[0] + " := " + asgn[1]
+		  for j in range(i, len(code_so_far)):
+		    if tmp_name in code_so_far[j]:
+		      res += [code_so_far[j], this_code]
+		      i = j + 1
+		      break
+		    else:
+		      res += [code_so_far[j]]
+		  if (j == len(code_so_far)):
+		    res += [this_code]
+		p[0]['code'] = res
 
 def p_object_param_list(p):
 	'''
@@ -2654,6 +2655,8 @@ def p_operand(p):
 	if len(p)==2 and p.slice[1].type=="OperandName":
 		p[0]['code'] = p[1]['code'] + [p[0]['place'] + ' := ' + p[1]['place']]
 		p[0]['type'] = p[1]['type']
+	if len(p)==2 and p.slice[1].type=="MethodExpr":
+		p[0]['type'] = 'Unknown'
 	if len(p)==4 and p.slice[3].type=="RPAREN" and p.slice[2].type=="Expression" and p.slice[1].type=="LPAREN":
 		p[0]['type'] = p[2]['type']
 		p[0]['code'] = p[2]['code']
