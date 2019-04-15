@@ -254,7 +254,6 @@ if (symTable.put(fn) == False):
 
 FuncCallStmt : IDENTIFIER DOT FuncCallStmt
              | IDENTIFIER DOT IDENTIFIER LPAREN ExpressionListBot RPAREN
-             | IDENTIFIER DOT IDENTIFIER LPAREN ObjectMethod RPAREN
              | IDENTIFIER LPAREN ExpressionListBot RPAREN
 <<0
 p[0]['ret_types'] = []
@@ -274,6 +273,7 @@ p[0]['ret_types'] = p[3]['ret_types']
 p[0]['code'] = p[3]['code']
 >>
 <<2
+print("lol")
 b = False
 for scope in symTableSt:
 	if p[1] in symTableDict[scope].symbols:
@@ -292,16 +292,6 @@ for name in p[0]['namelist']:
   p[0]['code'] += ["ret_param " + name]
 >>
 <<3
-b = False
-for scope in symTableSt:
-	if p[1] in symTableDict[scope].symbols:
-		b = True
-		break
-if not b:
-  print("Function", p[1], "not defined on line number", p.lexer.lineno)
-  sys.exit(0)
->>
-<<4
 b = False
 for scope in symTableSt:
   if p[1] in symTableDict[scope].symbols:
@@ -1289,6 +1279,7 @@ p[0]['code'] = p[2]['code']
 #   p[0]['code'] += ["ret"]
 for name in p[2]['namelist']:
       p[0]['code'] += ["ret " + name]
+p[0]['code'] += ['func_end']
 >>
 
 ExpressionListBot : ExpressionList

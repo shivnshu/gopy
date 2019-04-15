@@ -51,7 +51,7 @@ def asm_gen(line, activation_record, context, data_section):
 
     left_type = getTokType(toks[0])
     right_type = getTokType(toks[2])
-    print(toks, left_type, right_type)
+    # print(toks, left_type, right_type)
     if (left_type == "register"):
         dst_entry = get_register(toks[0])
     elif (left_type == "variable"):

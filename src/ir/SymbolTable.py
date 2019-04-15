@@ -299,7 +299,8 @@ class ActivationRecord:
             return self.global_vars[var_name], "global"
         if var_name in self.const_vars:
             return (None, None), "const"
-        return (None, None), ""
+        print("Error(actRecord):", var_name, "could not be found in activation record")
+        sys.exit(0)
 
     def prettyPrint(self):
         print("Name:", self.name, "Ret value:", self.ret_values, "Input Params:", self.input_args, "OldStPtrs:", self.old_st_ptrs, "SavedRegs:", self.saved_regs, "LocalVars:", self.local_vars, "GlobalVars:", self.global_vars, "ConstVars:", self.const_vars, "VarSigns:", self.var_signs, "\n")

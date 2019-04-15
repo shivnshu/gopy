@@ -64,8 +64,7 @@ def asm_gen(code_line, func_name, data_section):
     if (code_type == "unary-op"):
         res, context = unaryop.asm_gen(code_line, activation_records[func_name], context)
         return res
-    # return None
-    return [code_line]
+    return None
 
 def alloc_st_code(func_name):
     act_record = activation_records[func_name]
@@ -111,13 +110,19 @@ def main(dict_code):
         res += func_init
         code_list = dict_code[func_name]
         res += alloc_st_code(func_name)
+        ret_added = False
         for code_line in code_list:
             gen_code = asm_gen(code_line, func_name, data_section)
-            if (gen_code != None):
+            if (code_line == "func_end"):
+                res += func_end
+                ret_added = True
+                break
+            elif (gen_code != None):
                 res += gen_code
             else:
                 print("Code generation error for line: ", code_line)
-        res += func_end
+        if not ret_added:
+            res += func_end
     res += data_section
     return res
 

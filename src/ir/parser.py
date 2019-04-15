@@ -554,7 +554,6 @@ def p_func_call_stmt(p):
 	'''
 	FuncCallStmt : IDENTIFIER DOT FuncCallStmt
 	             | IDENTIFIER DOT IDENTIFIER LPAREN ExpressionListBot RPAREN
-	             | IDENTIFIER DOT IDENTIFIER LPAREN ObjectMethod RPAREN
 	             | IDENTIFIER LPAREN ExpressionListBot RPAREN
 	'''
 	global symTableSt
@@ -579,6 +578,7 @@ def p_func_call_stmt(p):
 		p[0]['ret_types'] = p[3]['ret_types']
 		p[0]['code'] = p[3]['code']
 	if len(p)==7 and p.slice[6].type=="RPAREN" and p.slice[5].type=="ExpressionListBot" and p.slice[4].type=="LPAREN" and p.slice[3].type=="IDENTIFIER" and p.slice[2].type=="DOT" and p.slice[1].type=="IDENTIFIER":
+		print("lol")
 		b = False
 		for scope in symTableSt:
 			if p[1] in symTableDict[scope].symbols:
@@ -595,15 +595,6 @@ def p_func_call_stmt(p):
 		p[0]['code'] += ["call " + p[1] + "." + p[3]]
 		for name in p[0]['namelist']:
 		  p[0]['code'] += ["ret_param " + name]
-	if len(p)==7 and p.slice[6].type=="RPAREN" and p.slice[5].type=="ObjectMethod" and p.slice[4].type=="LPAREN" and p.slice[3].type=="IDENTIFIER" and p.slice[2].type=="DOT" and p.slice[1].type=="IDENTIFIER":
-		b = False
-		for scope in symTableSt:
-			if p[1] in symTableDict[scope].symbols:
-				b = True
-				break
-		if not b:
-		  print("Function", p[1], "not defined on line number", p.lexer.lineno)
-		  sys.exit(0)
 	if len(p)==5 and p.slice[4].type=="RPAREN" and p.slice[3].type=="ExpressionListBot" and p.slice[2].type=="LPAREN" and p.slice[1].type=="IDENTIFIER":
 		b = False
 		for scope in symTableSt:
@@ -2327,6 +2318,7 @@ def p_return_stmt(p):
 	#   p[0]['code'] += ["ret"]
 	for name in p[2]['namelist']:
 	      p[0]['code'] += ["ret " + name]
+	p[0]['code'] += ['func_end']
 
 def p_expression_list_bot(p):
 	'''
