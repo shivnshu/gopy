@@ -8,7 +8,8 @@ type_to_size["string"] = 4 # Since storing address
 type_to_size["*int"] = 4
 type_to_size["*char"] = 4
 type_to_size["*float"] = 4
-lang_datatypes = ["int", "char", "float", "string", "*int", "*char", "*float"]
+type_to_size["bool"] = 4
+lang_datatypes = ["int", "bool", "char", "float", "string", "*int", "*char", "*float"]
 
 def get_type_size(type, symTable):
     global lang_datatypes

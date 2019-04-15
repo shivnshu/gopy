@@ -12,6 +12,7 @@ import ifstmt
 import gotostmt
 import arr_decl
 import structs
+import unaryop
 
 arg_parser = argparse.ArgumentParser()
 arg_parser.add_argument("input", nargs="*")
@@ -57,6 +58,9 @@ def asm_gen(code_line, func_name, data_section):
         return res
     if (code_type == "structs"):
         return structs.asm_gen(code_line, activation_records[func_name])
+    if (code_type == "unary-op"):
+        res, context = unaryop.asm_gen(code_line, activation_records[func_name], context)
+        return res
     # return None
     return [code_line]
 
