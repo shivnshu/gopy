@@ -177,6 +177,7 @@ IFuncDef      : FUNC LPAREN IDENTIFIER IDENTIFIER RPAREN IFuncDec Block
 Block : keyword_lcurly StatementList keyword_rcurly
 <<0
 p[0]['code'] = p[2]['code']
+p[0]['scopelist'] = p[2]['scopelist']
 p[0]['ret_typelist'] = p[2]['ret_typelist']
 >>
 
@@ -187,6 +188,7 @@ p[0]['ret_typelist'] = []
 >>
 <<1
 p[0]['code'] = p[1]['code'] + p[2]['code']
+p[0]['scopelist'] = p[1]['scopelist'] + p[2]['scopelist']
 p[0]['ret_typelist'] = [p[1]['typelist']] + p[2]['ret_typelist']
 >>
 
@@ -203,6 +205,7 @@ Statement : Declaration
           | ContinueStmt
 <<0
 p[0]['code'] = p[1]['code']
+p[0]['scopelist'] = p[1]['scopelist']
 p[0]['typelist'] = []
 >>
 <<3
@@ -228,24 +231,31 @@ ContinueStmt : CONTINUE
              | CONTINUE IDENTIFIER
 <<1
 p[0]['code'] = ["goto beglabel"]
+p[0]['scopelist'] =[None]
 >>
 <<2
 p[0]['code'] = ["goto " + p[2]]
+p[0]['scopelist'] = [None]
 >>
 
 BreakStmt : BREAK
 <<0
 p[0]['code'] = ["goto endlabel"]
+p[0]['scopelist'] = [None]
 >>
 
 GoFunc    : GO FUNC Parameters FunctionBody LPAREN ExpressionList RPAREN
           | GO IDENTIFIER LPAREN ExpressionListBot RPAREN
 <<1
 code = ["start_go_func:"] + p[6]['code']
+scope = [None] + p[6]['scopelist']
 for id, value in zip(p[3]['idlist'], p[6]['namelist']):
     code += [id + " := " + value]
+    scope += [actRecordSt[-1]]
 code += p[4]['code']
+p[0]['scopelist'] = scope + p[4]['scopelist']
 p[0]['code'] = code + ["end_go_func"]
+p[0]['scopelist'] += [None]
 >>
 <<2
 scope = symTableSt[-1]
@@ -275,6 +285,7 @@ if not b:
   sys.exit(0)
 p[0]['ret_types'] = p[3]['ret_types']
 p[0]['code'] = p[3]['code']
+p[0]['scopelist'] = p[3]['scopelist']
 >>
 <<2
 b = False
@@ -286,13 +297,18 @@ if not b:
   print("Function", p[1], "not defined on line number", p.lexer.lineno)
   sys.exit(0)
 p[0]['code'] = p[5]['code']
+p[0]['scopelist'] = p[5]['scopelist']
 for name in p[0]['namelist']:
   p[0]['code'] += ["ret_alloc 4"] # 4 for now
+  p[0]['scopelist'] += [None]
 for param in p[5]['namelist'][::-1]:
     p[0]['code'] += ["push_param " + param]
+    p[0]['scopelist'] += [None]
 p[0]['code'] += ["call " + p[1] + "." + p[3]]
+p[0]['scopelist'] += [actRecordSt[-1]]
 for name in p[0]['namelist']:
   p[0]['code'] += ["ret_param " + name]
+  p['scopelist'] += [None]
 >>
 <<3
 b = False
@@ -310,13 +326,18 @@ actRecordSt[-1] = entry.getName()
 for typ in p[0]['ret_types']:
   p[0]['namelist'] += [newVar()]
 p[0]['code'] = p[3]['code']
+p[0]['scopelist'] = p[3]['scopelist']
 for name in p[0]['namelist']:
   p[0]['code'] += ["ret_alloc 4"] # 4 for now
+  p[0]['scopelist'] += [None]
 for param in p[3]['namelist'][::-1]:
     p[0]['code'] += ["push_param " + param]
+    p[0]['scopelist'] += [None]
 p[0]['code'] += ["call " + p[1]]
+p[0]['scopelist'] += [actRecordSt[-1]]
 for name in p[0]['namelist']:
   p[0]['code'] += ["ret_param " + name]
+  p[0]['scopelist'] += [actRecordSt[-1]]
 if entry.getInputArgs() != p[3]['typelist']:
    print("Function", p[1], "arguments mismatch at line num", p.lexer.lineno)
    sys.exit(0)
@@ -329,6 +350,7 @@ Declaration : ConstDecl
             | VarDecl
 <<0
 p[0]['code'] = p[1]['code']
+p[0]['scopelist'] = p[1]['scopelist']
 p[0]['const_decl'] = []
 p[0]['global_decl'] = []
 >>
@@ -342,21 +364,25 @@ p[0]['global_decl'] = p[1]['code']
 ConstDecl  : CONST ConstSpecTopList
 <<0
 p[0]['code'] = p[2]['code']
+p[0]['scopelist'] = p[2]['scopelist']
 >>
 
 ConstSpecTopList : ConstSpec
                  | LPAREN ConstSpecList RPAREN
 <<1
 p[0]['code'] = p[1]['code']
+p[0]['scopelist'] = p[1]['scopelist']
 >>
 <<2
 p[0]['code'] = p[2]['code']
+p[0]['scopelist'] = p[2]['scopelist']
 >>
 
 ConstSpecList : ConstSpec ConstSpecList
               | empty
 <<1
 p[0]['code'] = p[1]['code'] + p[2]['code']
+p[0]['scopelist'] = p[1]['scopelist'] + p[2]['scopelist']
 >>
 
 ConstSpec : IdentifierList1 ConstSpecTail
@@ -368,8 +394,10 @@ if (len(p[1]['idlist']) != len(p[2]['namelist'])):
   print("Length mismatch on line number", p.lexer.lineno)
   sys.exit(0)
 p[0]['code'] = p[1]['code'] + p[2]['code']
+p[0]['scopelist'] = p[1]['scopelist'] + p[2]['scopelist']
 for i,j,k in zip(p[1]['idlist'], p[2]['namelist'], p[2]['typelist']):
     p[0]['code'] += [i + ' := ' + j]
+    p[0]['scopelist'] += [actRecordSt[-1]]
     actRecord.putConstVar(i)
     lit = LitEntry(i, k)
     if (symTable.put(lit) == False):
@@ -383,6 +411,7 @@ ConstSpecTail : TypeTop EQ ExpressionList
 p[0]['namelist'] = p[3]['namelist']
 p[0]['typelist'] = p[3]['typelist']
 p[0]['code'] = p[3]['code']
+p[0]['scopelist'] = p[3]['scopelist']
 >>
 
 TypeTop : Type
@@ -445,6 +474,7 @@ IdOrArrayElemList : IdOrArrayElem IdOrArrayElemBotList
 p[0]['idlist'] = [p[1]['id']] + p[2]['idlist']
 p[0]['idxlists'] = [p[1]['idxlist']] + p[2]['idxlists']
 p[0]['code'] = p[1]['code'] + p[2]['code']
+p[0]['scopelist'] = p[1]['scopelist'] + p[2]['scopelist']
 >>
 
 IdOrArrayElemBotList : IdOrArrayElemBotList COMMA IdOrArrayElem
@@ -453,6 +483,7 @@ IdOrArrayElemBotList : IdOrArrayElemBotList COMMA IdOrArrayElem
 p[0]['idlist'] = p[1]['idlist'] + [p[3]['id']]
 p[0]['idxlists'] = p[1]['idxlists'] + [p[3]['idxlist']]
 p[0]['code'] = p[1]['code'] + p[3]['code']
+p[0]['scopelist'] = p[1]['scopelist'] + p[3]['scopelist']
 >>
 <<2
 p[0]['idlist'] = []
@@ -464,6 +495,7 @@ IdOrArrayElem : IDENTIFIER MoreDims
 p[0]['id'] = p[1]
 p[0]['idxlist'] = p[2]['idxlist']
 p[0]['code'] = p[2]['code']
+p[0]['scopelist'] = p[2]['scopelist']
 >>
 
 MoreDims : LSQUARE Expression RSQUARE MoreDims
@@ -471,6 +503,7 @@ MoreDims : LSQUARE Expression RSQUARE MoreDims
 <<1
 p[0]['idxlist'] = [p[2]['place']] + p[4]['idxlist']
 p[0]['code'] = p[2]['code'] + p[4]['code']
+p[0]['scopelist'] = p[2]['scopelist'] + p[4]['scopelist']
 >>
 <<2
 p[0]['idxlist']  = []
@@ -480,6 +513,7 @@ ExpressionList :  Expression ExpressionBotList
                |  FuncCallStmt ExpressionBotList
 <<0
 p[0]['code'] = p[1]['code'] + p[2]['code']
+p[0]['scopelist'] = p[1]['scopelist'] + p[2]['scopelist']
 >>
 <<1
 p[0]['namelist'] = [p[1]['place']] + p[2]['namelist']
@@ -497,6 +531,7 @@ ExpressionBotList : ExpressionBotList COMMA Expression
 p[0]['namelist'] = p[1]['namelist'] + [p[3]['place']]
 p[0]['typelist'] = p[1]['typelist'] + [p[3]['type']]
 p[0]['code'] = p[1]['code'] + p[3]['code']
+p[0]['scopelist'] = p[1]['scopelist'] + p[3]['scopelist']
 >>
 <<2
 p[0]['namelist'] = []
@@ -539,16 +574,19 @@ p[0]['dimrange'] = []
 <<1
 p[0]['type'] = p[1]['type']
 p[0]['code'] = p[1]['code']
+p[0]['scopelist'] = p[1]['scopelist']
 >>
 <<2
 p[0]['type'] = p[1]['type']
 p[0]['dim'] = p[1]['dims']
 p[0]['dimrange'] = p[1]['dimrange']
 p[0]['code'] = p[1]['code']
+p[0]['scopelist'] = p[1]['scopelist']
 >>
 <<3
 p[0]['type'] = p[2]['type']
 p[0]['code'] = p[2]['code']
+p[0]['scopelist'] = p[2]['scopelist'] 
 >>
 
 TypeName  : IDENTIFIER
@@ -576,6 +614,7 @@ TypeLit  : ArrayType
 p[0]['type'] = p[1]['type']
 p[0]['dimrange'] = []
 p[0]['code'] = p[1]['code']
+p[0]['scopelist'] = p[1]['scopelist']
 >>
 <<1
 p[0]['dims'] = p[1]['dims']
@@ -591,6 +630,7 @@ p[0]['type'] = p[4]['type']
 p[0]['dims'] = 1 + p[4]['dims']
 p[0]['dimrange'] = [p[2]['place']] + p[4]['dimrange']
 p[0]['code'] = p[2]['code'] + p[4]['code']
+p[0]['scopelist'] = p[2]['scopelist'] + p[4]['scopelist']
 >>
 
 ArrayLength : Expression
@@ -599,6 +639,7 @@ ArrayLength : Expression
 p[0]['type'] = p[1]['type']
 p[0]['place'] = p[1]['place']
 p[0]['code'] = p[1]['code']
+p[0]['scopelist'] = p[1]['scopelist']
 >>
 <<2
 p[0]['type'] = ''
@@ -678,6 +719,7 @@ p[0]['types'] = []
 Parameters  : LPAREN ParameterListTop RPAREN
 <<0
 p[0]['code'] = p[2]['code']
+p[0]['scopelist'] = p[2]['scopelist']
 p[0]['args_types'] = p[2]['args_types']
 p[0]['idlist'] = p[2]['idlist']
 params = p[2]['idlist']
@@ -695,6 +737,7 @@ for param,t,dim,dimrange in zip(params, p[0]['args_types'],p[2]['dims'], p[2]['d
         decl_tail += " " + dr
     decl += decl_tail
     p[0]['code'] += [decl]
+    p[0]['scopelist'] += [actRecordSt[-1]]
     if (table.put(entry) == False):
         print("Error:", param, "redeclared on line number", p.lexer.lineno)
         sys.exit(0)
@@ -708,6 +751,7 @@ p[0]['idlist'] = p[1]['idlist']
 p[0]['dims'] = p[1]['dims']
 p[0]['dimranges'] = p[1]['dimranges']
 p[0]['code'] = p[1]['code']
+p[0]['scopelist'] = p[1]['scopelist']
 >>
 <<2
 p[0]['args_types'] = []
@@ -726,6 +770,7 @@ p[0]['idlist'] = p[1]['idlist'] + p[2]['idlist']
 p[0]['dims'] = [p[1]['dim']] + p[2]['dims']
 p[0]['dimranges'] = [p[1]['dimrange']] + p[2]['dimranges']
 p[0]['code'] = p[1]['code'] + p[2]['code']
+p[0]['scopelist'] = p[1]['scopelist'] + p[2]['scopelist']
 >>
 
 ParameterDeclList : COMMA ParameterDecl ParameterDeclList
@@ -736,6 +781,7 @@ p[0]['idlist'] = p[2]['idlist'] + p[3]['idlist']
 p[0]['dims'] = [p[2]['dim']] + p[3]['dims']
 p[0]['dimranges'] = [p[2]['dimrange']] + p[3]['dimranges']
 p[0]['code'] = p[2]['code'] + p[3]['code']
+p[0]['scopelist'] = p[2]['scopelist'] + p[3]['scopelist']
 >>
 <<2
 p[0]['args_types'] = []
@@ -751,6 +797,7 @@ p[0]['idlist'] = p[1]['idlist']
 p[0]['dim'] = p[3]['dim']
 p[0]['dimrange'] = p[3]['dimrange']
 p[0]['code'] = p[1]['code'] + p[3]['code']
+p[0]['scopelist'] = p[1]['scopelist'] + p[3]['scopelist']
 >>
 
 tripledotTop : DOT_DOT_DOT
@@ -774,6 +821,7 @@ p[0]['idlist'] = []
 VarDecl : VAR VarSpecTopList
 <<0
 p[0]['code'] = p[2]['code']
+p[0]['scopelist'] = p[2]['scopelist']
 sym_table = symTableDict[symTableSt[-1]]
 var_symbols = sym_table.getVarSymbols()
 var_names = p[2]['idlist']
@@ -792,16 +840,19 @@ for var_name in var_names:
   decl = "_decl array " + type + " " + var_entry.getName() + decl_tail
   var_entry.setType(type, sym_table)
   p[0]['code'] += [decl]
+  p[0]['scopelist'] += [actRecordSt[-1]]
 >>
 
 VarSpecTopList : VarSpec
                | LPAREN VarSpecList RPAREN
 <<1
 p[0]['code'] = p[1]['code']
+p[0]['scopelist'] = p[1]['scopelist']
 p[0]['idlist'] = p[1]['idlist']
 >>
 <<2
 p[0]['code'] = p[2]['code']
+p[0]['scopelist'] = p[2]['scopelist']
 p[0]['idlist'] = p[2]['idlist']
 >>
 
@@ -809,6 +860,7 @@ VarSpecList : VarSpec VarSpecList SEMICOLON
             | empty
 <<1
 p[0]['code'] = p[1]['code'] + p[2]['code']
+p[0]['scopelist'] = p[1]['scopelist'] + p[2]['scopelist']
 p[0]['idlist'] = p[1]['idlist'] + p[2]['idlist']
 >>
 <<2
@@ -823,6 +875,7 @@ if ((p[2]['type_used'] == False) and  len(p[1]['idlist']) != len(p[2]['namelist'
   print("Length mismatch on line number", p.lexer.lineno)
   sys.exit(0)
 p[0]['code'] = p[1]['code'] + p[2]['code']
+p[0]['scopelist'] = p[1]['scopelist'] + p[2]['scopelist']
 p[0]['idlist'] = p[1]['idlist']
 mylist = p[1]['idlist']
 mytypelist = p[2]['typelist']
@@ -830,6 +883,7 @@ myidxlists = p[1]['idxlists']
 mynamelist = p[2]['namelist']
 #for name, typ in zip(p[1]['idlist'], p[2]['typelist']):
 #    p[0]['code'] += ["_decl " + typ + " " + name]
+
 for index in range(len(mylist)):
     i = mylist[index]
     var = VarEntry(i)
@@ -837,6 +891,7 @@ for index in range(len(mylist)):
     var.setDimRanges(myidxlists[index])
     if (index < len(mynamelist)):
       p[0]['code'] += [i + " := " + mynamelist[index]]
+      p[0]['scopelist'] += [actRecordSt[-1]]
     if (p[2]['type_used'] == False):
       var.setType(mytypelist[index], symTable)
     else:
@@ -851,6 +906,7 @@ VarSpecTail : Type VarSpecMid
 <<0
 p[0]['namelist'] = p[2]['namelist']
 p[0]['code'] = p[2]['code']
+p[0]['scopelist'] = p[2]['scopelist']
 >>
 <<1
 p[0]['typelist'] = [p[1]['type']]
@@ -867,6 +923,7 @@ VarSpecMid : EQ ExpressionList
 p[0]['namelist'] = p[2]['namelist']
 p[0]['typelist'] = p[2]['typelist']
 p[0]['code'] = p[2]['code']
+p[0]['scopelist'] = p[2]['scopelist']
 >>
 <<2
 p[0]['namelist'] = []
@@ -903,6 +960,7 @@ p[0]['input_args'] = p[2]['args_types']
 p[0]['ret_types'] = p[3]['ret_types']
 p[0]['func_name'] = func_name
 p[0]['code'] = p[2]['code']
+p[0]['scopelist'] = p[2]['scopelist']
 entry = symTableDict[symTableSt[-2]].get(func_name)
 entry.setInputArgs(p[0]['input_args'])
 entry.setReturnTypes(p[0]['ret_types'])
@@ -915,6 +973,7 @@ p[0]['ret_actual_types'] = []
 >>
 <<1
 p[0]['code'] = p[1]['code']
+p[0]['scopelist'] = p[1]['scopelist']
 p[0]['ret_actual_types'] = p[1]['ret_typelist']
 >>
 
@@ -922,6 +981,7 @@ FunctionDeclTail : Function
                  | Signature
 <<0
 p[0]['code'] = p[1]['code']
+p[0]['scopelist'] = p[1]['scopelist']
 p[0]['input_args'] = p[1]['input_args']
 p[0]['ret_types'] = p[1]['ret_types']
 p[0]['ret_actual_types'] = []
@@ -954,6 +1014,7 @@ actRecordSt += [actRecord.getName()]
 Function  : Signature FunctionBody
 <<0
 p[0]['code'] = p[2]['code']
+p[0]['scopelist'] = p[2]['scopelist']
 p[0]['input_args'] = p[1]['input_args']
 p[0]['ret_types'] = p[1]['ret_types']
 p[0]['ret_actual_types'] = p[2]['ret_typelist']
@@ -962,6 +1023,7 @@ p[0]['ret_actual_types'] = p[2]['ret_typelist']
 FunctionBody : LCURLY StatementList RCURLY
 <<0
 p[0]['code'] = p[2]['code']
+p[0]['scopelist'] = p[2]['scopelist']
 p[0]['ret_typelist'] = p[2]['ret_typelist']
 >>
 
@@ -988,6 +1050,7 @@ SimpleStmt : ExpressionStmt
            | ShortVarDecl
 <<0
 p[0]['code'] = p[1]['code']
+p[0]['scopelist'] = p[1]['scopelist']
 p[0]['place'] = ''
 >>
 <<1
@@ -998,6 +1061,7 @@ SimpleStmtBot : SimpleStmt
            | empty
 <<1
 p[0]['code'] = p[1]['code']
+p[0]['scopelist'] = p[1]['scopelist']
 p[0]['place'] = p[1]['place']
 >>
 <<2
@@ -1007,6 +1071,7 @@ p[0]['place'] = ""
 ExpressionStmt : Expression
 <<0
 p[0]['code'] = p[1]['code']
+p[0]['scopelist'] = p[1]['scopelist']
 p[0]['place'] = p[1]['place']
 >>
 
@@ -1014,14 +1079,17 @@ ShortVarDecl : IdentifierList3 SHORT_ASSIGN ExpressionList
 <<0
 for name, typ in zip(p[1]['idlist'], p[3]['typelist']):
     p[0]['code'] += ["_decl " + typ + " " + name]
+    p[0]['scopelist'] += [actRecordSt[-1]]
 scope = symTableSt[-1]
 table = symTableDict[scope]
 p[0]['code'] += p[3]['code']
+p[0]['scopelist'] += p[3]['scopelist']
 if (len(p[1]['idlist']) != len(p[3]['namelist'])):
    print("Left and right side not equal on line number", p.lexer.lineno)
    sys.exit(0)
 for i, j, k in zip(p[1]['idlist'], p[3]['namelist'], p[3]['typelist']):
   p[0]['code'] += [i + ' := ' + j]
+  p[0]['scopelist'] += [actRecordSt[-1]]
   entry = VarEntry(i)
   entry.setType(k, table)
   if (table.put(entry) == False):
@@ -1044,6 +1112,7 @@ for id in p[1]['idlist']:
     print("Error:", id, "not defined on line number", p.lexer.lineno)
     sys.exit(0)
 p[0]['code'] = p[1]['code'] + p[3]['code']
+p[0]['scopelist'] = p[1]['scopelist'] + p[3]['scopelist']
 if (p[2]['len'] == 1):
   for i, j, k in zip(p[1]['idlist'], p[3]['namelist'], p[3]['typelist']):
     q = i
@@ -1054,6 +1123,7 @@ if (p[2]['len'] == 1):
       print("Error type mismatch in line " +str(p.lexer.lineno) +". Expected type " +left_elem_type+", got type "+ k)
       sys.exit(0)
     p[0]['code'] += [i + ' := ' + j] 
+    p[0]['scopelist'] += [actRecordSt[-1]]
 else:
   for i, j, k in zip(p[1]['idlist'], p[3]['namelist'], p[3]['typelist']):
     q = i
@@ -1070,11 +1140,14 @@ else:
     p[0]['code'] += [var + " := " + i]
     p[0]['code'] += [var_dest + ' :=  '+ var + " " + p[2]['symbol'] + k + " " + j]
     p[0]['code'] += [i + " := " + var_dest]
+    p[0]['scopelist'] += [actRecordSt[-1], actRecordSt[-1], actRecordSt[-1]]
 >>
 
 AssignmentGen : IdOrArrayElemList assign_op ExpressionList
 <<0
 p[0]['code'] = p[1]['code'] + p[3]['code']
+p[0]['scopelist'] = p[1]['scopelist'] + p[3]['scopelist']
+
 for i, idx,  j, k in zip(p[1]['idlist'], p[1]['idxlists'],  p[3]['namelist'], p[3]['typelist']):
   q = i
   if q[0] in ['*']:
@@ -1097,8 +1170,10 @@ if (p[2]['len'] == 1):
     for l in idx:
       loc += "[" + l + "]"
     p[0]['code'] += [i + loc + ' := ' + j]
+    p[0]['scopelist'] += [actRecordSt[-1]]
 else:
     p[0]['code'] += [i + ' := ' + i + str(idx) + p2['symbol'] + j]
+    p[0]['scopelist'] += [actRecordSt[-1]]
 >>
 
 assign_op : addmul_op EQ
@@ -1132,11 +1207,15 @@ if (p[2]['place'] == ''):
    sys.exit(0)
 if (p[5]['symbol'] != ""):
    p[0]['code'] = p[2]['code'] + ['if '+ p[2]['place'] + p[3]['symbol'] + ' goto ' + p[4]['label'] + " " +p[5]['symbol']]
+   p[0]['scopelist'] = p[2]['scopelist'] + [actRecordSt[-1]]
 else:
    p[0]['code'] = p[2]['code'] + ['if '+ p[2]['place'] + p[3]['symbol'] + ' goto ' + p[4]['label'] + " else goto " +p[0]['lastlabel']]
+   p[0]['scopelist'] = p[2]['scopelist'] + [actRecordSt[-1]]
    
 p[0]['code'] += [p[4]['label'] + ':'] + p[4]['code'] + ["goto " + p[0]['lastlabel']]
+p[0]['scopelist'] += [actRecordSt[-1]] + p[4]['scopelist'] + [actRecordSt[-1]]
 p[0]['code'] += p[5]['code'] + [p[0]['lastlabel'] +": "]
+p[0]['scopelist'] = p[5]['scopelist'] + [actRecordSt[-1]]
 p[0]['ret_typelist'] = p[4]['ret_typelist']
 >>
 
@@ -1149,11 +1228,15 @@ if (p[2]['place'] == ''):
    sys.exit(0)
 if (p[5]['symbol'] != ""):
    p[0]['code'] = p[2]['code'] + ['if '+ p[2]['place'] + p[3]['symbol'] + ' goto ' + p[4]['label'] + " " +p[5]['symbol']]
+   p[0]['scopelist'] = p[2]['scopelist'] + [actRecordSt[-1]]
 else:
    p[0]['code'] = p[2]['code'] + ['if '+ p[2]['place'] + p[3]['symbol'] + ' goto ' + p[4]['label'] + " else goto " +p[0]['lastlabel']]
+   p[0]['scopelist'] = p[2]['scopelist'] + [actRecordSt[-1]]
    
 p[0]['code'] += [p[4]['label'] + ':'] + p[4]['code'] + ["goto " + p[0]['lastlabel']]
+p[0]['scopelist'] += [actRecordSt[-1]] + p[4]['scopelist'] + [actRecordSt[-1]]
 p[0]['code'] += p[5]['code']
+p[0]['scopelist'] += p[5]['scopelist']
 p[0]['ret_typelist'] = p[4]['ret_typelist']
 >>
 
@@ -1163,9 +1246,11 @@ SimpleStmtBot : SimpleStmt
               | empty
 <<0
 p[0]['code'] = []
+p[0]['scopelist'] = []
 >>
 <<1
 p[0]['code'] = p[1]['code']
+p[0]['scopelist'] = p[1]['scopelist']
 p[0]['place'] = p[1]['place']
 >>
 <<2
@@ -1184,11 +1269,13 @@ elseBot : ELSE elseTail
 p[2]['label'] = newLabel()
 p[0]['symbol'] = 'else goto ' + p[2]['label']
 p[0]['code'] = [p[2]['label'] + ' : '] + p[2]['code']
+p[0]['scopelist'] = [None] + p[2]['scopelist']
 p[0]['lastlabel'] = p[2]['lastlabel']
 >>
 <<2
 p[0]['symbol'] = ''
 p[0]['code'] = []
+p[0]['scopelist'] = []
 p[0]['lastlabel'] = newLabel()
 >>
 
@@ -1196,6 +1283,7 @@ elseTail : IfStmt2
          | Block
 <<0
 p[0]['code'] = p[1]['code']
+p[0]['scopelist'] = p[1]['scopelist']
 >>
 <<1
 p[0]['lastlabel'] = p[1]['lastlabel']
@@ -1207,6 +1295,7 @@ p[0]['lastlabel'] = newLabel()
 SwitchStmt : ExprSwitchStmt
 <<0
 p[0]['code'] = p[1]['code']
+p[0]['scopelist'] = p[1]['scopelist']
 p[0]['ret_typelist'] = p[1]['ret_typelist']
 >>
 
@@ -1221,18 +1310,26 @@ if not b:
   print("Switch variable", p[2], "not declared on line number", p.lexer.lineno)
   sys.exit(0)
 p[0]['code'] = p[4]['expcodelist']
+p[0]['scopelist'] = p[4]['scopelist']
 for exp, label in zip(p[4]['explist'], p[4]['labellist'][:-1]):
   exp_var = newVar()
   var = newVar()
   var2 = newVar()
   p[0]['code'] += [exp_var + " := " + exp]
+  p[0]['scopelist'] += [actRecordSt[-1]]
   p[0]['code'] += [var2 + " := " + p[2]]
+  p[0]['scopelist'] += [actRecordSt[-1]]
   p[0]['code'] += [var + " := " + var2 + ' == ' + exp_var]
+  p[0]['scopelist'] += [actRecordSt[-1]]
   p[0]['code'] += ['if ' + var + ' goto ' + label]
+  p[0]['scopelist'] += [actRecordSt[-1]]
 for label, codeblock in zip(p[4]['labellist'][:-1], p[4]['code']):
 	p[0]['code'] += codeblock
+  p[0]['scopelist'] += [None]
 	p[0]['code'] += ['goto ' + p[4]['labellist'][-1]]
+  p[0]['scopelist'] += [None]
 p[0]['code'] += [p[4]['labellist'][-1] + ':']
+p[0]['scopelist'] += [None]
 p[0]['ret_typelist'] = p[4]['ret_typelist']
 >>
 
@@ -1243,6 +1340,7 @@ p[0]['explist'] = [p[1]['exp']] + p[2]['explist']
 p[0]['expcodelist'] = p[1]['expcode'] + p[2]['expcodelist']
 p[0]['labellist'] = [p[1]['label']] + p[2]['labellist']
 p[0]['code'] = [p[1]['code']] + p[2]['code']
+p[0]['scopelist'] = p[1]['scopelist'] + p[2]['scopelist']
 p[0]['ret_typelist'] = [p[1]['ret_typelist']] + p[2]['ret_typelist']
 >>
 <<2
@@ -1250,6 +1348,7 @@ p[0]['explist'] = []
 p[0]['expcodelist'] = []
 p[0]['labellist'] = [newLabel()]
 p[0]['code'] = []
+p[0]['scopelist'] = []
 p[0]['ret_typelist'] = []
 >>
 
@@ -1259,6 +1358,7 @@ p[0]['exp'] = p[1]['exp']
 p[0]['expcode'] = p[1]['code']
 p[0]['label'] = newLabel()
 p[0]['code'] = [p[0]['label'] + ' : '] + p[4]['code']
+p[0]['scopelist'] = [None] + p[4]['scopelist']
 p[0]['ret_typelist'] = p[4]['ret_typelist']
 >>
 
@@ -1267,29 +1367,41 @@ ExprSwitchCase : CASE Expression
 <<1
 p[0]['exp'] = p[2]['place']
 p[0]['code'] = p[2]['code']
+p[0]['scopelist'] = p[2]['scopelist']
 >>
 
 ForStmt : FOR SimpleStmtBot SEMICOLON SimpleStmtBot SEMICOLON SimpleStmtBot Block
 <<1
 p[0]['code'] = p[2]['code'] + p[4]['code']
+p[0]['scopelist'] = p[2]['scopelist'] + p[4]['scopelist']
 beglabel = newLabel()
 endlabel = newLabel()
 if (p[4]['place'] != ""):
   p[0]['code'] += ["if " + p[4]['place'] + " goto " + beglabel + " else goto " + endlabel]
+  p[0]['scopelist'] += [actRecordSt[-1]]
 p[0]['code'] += [beglabel + ":"]
+p[0]['scopelist'] += None
 for line in p[7]['code']:
   if (line == "goto endlabel"):
     p[0]['code'] += ["goto " + endlabel]
+    p[0]['scopelist'] += None
   elif (line == "goto beglabel"):
     p[0]['code'] += p[6]['code']
+    p[0]['scopelist'] += p[6]['scopelist']
     p[0]['code'] += ["goto " + beglabel]
+    p[0]['scopelist'] += [None]
   else:
     p[0]['code'] += [line]
+    p[0]['scopelist'] += [actRecordSt[-1]]
 p[0]['code'] += p[6]['code']
+p[0]['scopelist'] += p[6]['scopelist']
 p[0]['code'] += p[4]['code']
+p[0]['scopelist'] += p[4]['scopelist']
 if (p[4]['place'] != ""):
   p[0]['code'] += ["if " + p[4]['place'] + " goto " + beglabel + " else goto " + endlabel]
+  p[0]['scopelist'] += [actRecordSt[-1]]
 p[0]['code'] += [endlabel + ":"]
+p[0]['scopelist'] += [None]
 >>
 
 ExpressionBot : Expression
@@ -1305,17 +1417,21 @@ ReturnStmt : RETURN ExpressionListBot
 <<0
 p[0]['typelist'] = p[2]['typelist']
 p[0]['code'] = p[2]['code']
+p[0]['scopelist'] = p[2]['scopelist']
 #if len(p[2]['typelist']) == 0:
 #   p[0]['code'] += ["ret"]
 for name in p[2]['namelist']:
       p[0]['code'] += ["ret " + name]
+      p[0]['code'] += [actRecordSt[-1]]
 p[0]['code'] += ['func_end']
+p[0]['code'] += [None]
 >>
 
 ExpressionListBot : ExpressionList
                   | empty
 <<1
 p[0]['code'] = p[1]['code']
+p[0]['scopelist'] = p[1]['scopelist']
 p[0]['typelist'] = p[1]['typelist']
 p[0]['namelist'] = p[1]['namelist']
 >>
@@ -1333,6 +1449,7 @@ p[0]['type'] = ''
 >>
 <<1
 p[0]['code'] = p[1]['code']
+p[0]['scopelist'] = p[1]['scopelist']
 p[0]['type'] = p[1]['type']
 p[0]['place'] = p[1]['place']
 >>
@@ -1340,23 +1457,29 @@ p[0]['place'] = p[1]['place']
 p[0]['place'] = newVar()
 if p[1]['type'] == p[3]['type']:
   p[0]['code'] = p[1]['code'] + p[3]['code'] + [p[0]['place'] + ' := ' + p[1]['place'] +" "+ p[2]['symbol'] + p[1]['type']+" " + p[3]['place']]
+  p[0]['scopelist'] = p[1]['scopelist'] + p[3]['scopelist'] + [actRecordSt[-1]]
   p[0]['type'] = p[1]['type']
 elif (p[1]['type']=='float' and p[3]['type']=='int'):
   p[0]['code'] = p[1]['code'] + p[3]['code'] + [p[0]['place'] + ' := cast-to-float ' + p[1]['place']+" " + p[2]['symbol'] + 'float ' + p[3]['place']]
+  p[0]['scopelist'] = p[1]['scopelist'] + p[3]['scopelist'] + [actRecordSt[-1]]
   p[0]['type'] ='float'
 elif (p[3]['type']=='float' and p[1]['type']=='int'):
   p[0]['code'] = p[1]['code'] + p[3]['code'] + [p[0]['place'] + ' := cast-to-float ' + p[3]['place'] +" "+ p[2]['symbol'] + 'float ' + p[1]['place']]
+  p[0]['scopelist'] = p[1]['scopelist'] + p[3]['scopelist'] + [actRecordSt[-1]]
   p[0]['type'] ='float'
 elif (p[1]['type']=='string'):
   p[0]['code'] = p[1]['code'] + p[3]['code'] + [p[0]['place'] + ' := cast-to-string ' + p[3]['place'] +" "+ p[2]['symbol'] + 'string ' + p[1]['place']]
+  p[0]['scopelist'] = p[1]['scopelist'] + p[3]['scopelist'] + [actRecordSt[-1]]
   p[0]['type'] ='string'
 elif (p[3]['type']=='string'):
   p[0]['code'] = p[1]['code'] + p[3]['code'] + [p[0]['place'] + ' := cast-to-string ' + p[1]['place'] +" "+ p[2]['symbol'] + 'string ' + p[3]['place']]
+  p[0]['scopelist'] = p[1]['scopelist'] + p[3]['scopelist'] + [actRecordSt[-1]]
   p[0]['type'] ='string'
 >>
 <<3
 p[0]['place'] = newVar()
 p[0]['code'] = [p[0]['place'] + ' := ' + p[1] + '.' + p[3]]
+p[0]['scopelist'] = [actRecordSt[-1]]
 sym_table = symTableDict[symTableSt[-1]]
 symbols = sym_table.getSymbols()
 if p[1] not in symbols:
@@ -1370,30 +1493,37 @@ p[0]['type'] = typ
 <<4
 p[0]['place'] = newVar()
 p[0]['code'] = p[3]['code']
+p[0]['scopelist'] = p[3]['scopelist']
 p[0]['type'] = p[1]
 p[0]['field_ass'] = p[3]['field_ass']
 code_so_far = p[0]['code'] # Following code is little optimization for saving registers
 i = 0
 j = 0
 res = []
+resscope = []
 for asgn in p[3]['field_ass']:
   tmp_name = asgn[1]
   this_code = p[0]['place'] + "." + asgn[0] + " := " + asgn[1]
   for j in range(i, len(code_so_far)):
     if tmp_name in code_so_far[j]:
       res += [code_so_far[j], this_code]
+      resscope += [actRecordSt[-1], actRecordSt[-1]]
       i = j + 1
       break
     else:
       res += [code_so_far[j]]
+      resscope += [actRecordSt[-1], actRecordSt[-1]]
   if (j == len(code_so_far)):
     res += [this_code]
+    resscope += [actRecordSt[-1]]
 p[0]['code'] = res
+p[0]['scopelist'] = resscope 
 >>
 
 ObjectParamList : ObjectParam ObjectParamTop
 <<1
 p[0]['code'] = p[1]['code'] + p[2]['code']
+p[0]['scopelist'] = p[1]['scopelist'] + p[2]['scopelist']
 p[0]['field_ass'] = p[1]['field_ass'] + p[2]['field_ass']
 >>
 
@@ -1402,20 +1532,24 @@ ObjectParamTop : COMMA ObjectParamTop
                | empty
 <<1
 p[0]['code'] = p[2]['code']
+p[0]['scopelist'] = p[2]['scopelist']
 p[0]['field_ass'] = p[2]['field_ass']
 >>
 <<2
 p[0]['code'] = p[2]['code']
+p[0]['scopelist'] = p[2]['scopelist']
 p[0]['field_ass'] = p[2]['field_ass']
 >>
 <<3
 p[0]['code'] = []
+p[0]['scopelist'] = []
 p[0]['field_ass'] = []
 >>
 
 ObjectParam   : IDENTIFIER COLON Expression
 <<1
 p[0]['code'] = p[3]['code']
+p[0]['scopelist'] = p[3]['scopelist']
 p[0]['field_ass'] = [(p[1], p[3]['place'])]
 >>
 
@@ -1428,16 +1562,19 @@ p[0]['type'] = p[2]['type']
 if (p[1]['symbol'] == "&"):
   p[0]['type'] = "*" + p[0]['type']
 p[0]['code'] = p[2]['code'] + [p[0]['place'] + ' := ' + p[1]['symbol'] + p[2]['place']]
+p[0]['scopelist'] = p[1]['scopelist'] + [actRecordSt[-1]]
 >>
 <<2
 p[0]['place'] = p[1]['place']
 p[0]['type'] = p[1]['type']
 p[0]['code'] = p[1]['code']
+p[0]['scopelist'] = p[1]['scopelist']
 >>
 <<3
 p[0]['place'] = newVar()
 p[0]['type'] = verifyCalType(p[2], p.lexer.lineno)[1:]
 p[0]['code'] = [p[0]['place'] + " := " + "*" + p[2]]
+p[0]['scopelist'] = [actRecordSt[-1]]
 >>
 
 binary_op  : OR_OR
@@ -1513,22 +1650,30 @@ p[0]['place'] = newVar()
 >>
 <<1
 p[0]['code'] = p[1]['code']
+p[0]['scopelist'] = p[1]['scopelist']
 p[0]['type'] = p[1]['type']
 p[0]['code'] += [p[0]['place'] + ' := ' + p[1]['place']]
+p[0]['scopelist'] += [actRecordSt[-1]]
 >>
 <<2
 p[0]['code'] = p[1]['code'] + p[2]['code']
+p[0]['scopelist'] = p[1]['scopelist'] + p[2]['scopelist']
 p[0]['code'] += [p[0]['place'] + ' := ' + p[1]['place'] + p[2]['symbol']]
+p[0]['scopelist'] += [actRecordSt[-1]]
 >>
 <<3
 p[0]['code'] = p[1]['code'] + p[2]['code']
+p[0]['scopelist'] = p[1]['scopelist'] + p[2]['scopelist']
 p[0]['type'] = p[1]['type']
 p[0]['code'] += [p[0]['place'] + ' := ' + p[1]['place'] + p[2]['symbol']]
+p[0]['scopelist'] += [actRecordSt[-1]]
 >>
 <<4
 p[0]['code'] = p[1]['code'] + p[2]['code']
+p[0]['scopelist'] = p[1]['scopelist'] + p[2]['scopelist']
 p[0]['type'] = p[1]['type']
 p[0]['code'] += [p[0]['place'] + ' := ' + p[1]['place'] + p[2]['symbol']]
+p[0]['scopelist'] += [actRecordSt[-1]]
 >>
 
 Operand : Literal
@@ -1543,10 +1688,12 @@ p[0]['place'] = newVar()
 >>
 <<1
 p[0]['code'] = [p[0]['place'] + ' := ' + p[1]['symbol']]
+p[0]['scopelist'] += [actRecordSt[-1]]
 p[0]['type'] = p[1]['type']
 >>
 <<2
 p[0]['code'] = p[1]['code'] + [p[0]['place'] + ' := ' + p[1]['place']]
+p[0]['scopelist'] = p[1]['scopelist'] + [actRecordSt[-1]]
 p[0]['type'] = p[1]['type']
 >>
 <<3
@@ -1555,18 +1702,23 @@ p[0]['type'] = 'Unknown'
 <<4
 p[0]['type'] = p[2]['type']
 p[0]['code'] = p[2]['code']
+p[0]['scopelist'] = p[2]['scopelist']
 p[0]['code'] += [p[0]['place'] + ' := ' + p[2]['place']]
+p[0]['scopelist'] += [actRecordSt[-1]]
 >>
 <<5
 p[0]['code'] = [p[0]['place'] + ' := true']
+p[0]['scopelist'] += [actRecordSt[-1]]
 p[0]['type'] = 'bool'
 >>
 <<6
 p[0]['code'] = [p[0]['place'] + ' := false']
+p[0]['scopelist'] += [actRecordSt[-1]]
 p[0]['type'] = 'bool'
 >>
 <<7
 p[0]['code'] = p[1]['code']
+p[0]['scopelist'] = p[1]['scopelist']
 p[0]['type'] = ""
 if len(p[1]['ret_types']) > 0:
   p[0]['type'] = p[1]['ret_types'][0]
@@ -1599,6 +1751,7 @@ OperandName : IDENTIFIER
 <<0
 p[0]['place'] = newVar()
 p[0]['code'] = [p[0]['place'] + ' := ' + p[1]]
+p[0]['scopelist'] = [actRecordSt[-1]]
 p[0]['type'] = verifyCalType(p[1], p.lexer.lineno)
 >>
 
@@ -1619,12 +1772,14 @@ Index    : LSQUARE Expression RSQUARE
 <<0
 p[0]['symbol'] = '[' + p[2]['place'] + ']'
 p[0]['code'] = p[2]['code']
+p[0]['scopelist'] = p[2]['scopelist']
 >>
 
 Arguments  : LPAREN ArgumentsHead RPAREN
 <<0
 p[0]['symbol'] = '(' + p[2]['symbol'] + ')'
 p[0]['code'] = p[2]['code']
+p[0]['scopelist'] = p[2]['scopelist']
 >>
 
 ArgumentsHead : ArgumentsHeadMid tripledotTop commaTop
@@ -1632,6 +1787,7 @@ ArgumentsHead : ArgumentsHeadMid tripledotTop commaTop
 <<1
 p[0]['symbol'] = p[1]['symbol'] + p[2]['symbol'] +p[3]['symbol']
 p[0]['code'] = p[1]['code']
+p[0]['scopelist'] = p[1]['scopelist']
 >>
 
 ArgumentsHeadMid  : ExpressionList
@@ -1644,6 +1800,7 @@ for elt in p[1]['namelist'][:-1]:
 str += p[1]['namelist'][-1]
 p[0]['symbol'] = str
 p[0]['code'] = p[1]['code']
+p[0]['scopelist'] = p[1]['scopelist']
 >>
 <<2
 str = p[1]['place'] + ','
@@ -1652,6 +1809,7 @@ for elt in p[3]['namelist'][:-1]:
 str += p[3]['namelist'][-1]
 p[0]['symbol'] = str
 p[0]['code'] = p[3]['code']
+p[0]['scopelist'] = p[3]['scopelist']
 >>
 <<3
 p[0]['symbol'] = p[1]['place']
