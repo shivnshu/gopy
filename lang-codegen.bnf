@@ -4,7 +4,11 @@ key = "sym#" + str(p.lexer.lineno) + "#" + str(p.lexer.lexpos)
 symtab = SymbolTable(symTableDict[symTableSt[-1]], key)
 symTableDict[key] = symtab
 symTableSt += [key]
-actRecord = ActivationRecord(key)
+if (actRecordSt == []):
+  pname = None
+else:
+  pname = actRecordSt[-1]
+actRecord = ActivationRecord(key, pname)
 actRecordDict[key] = actRecord
 actRecordSt += [actRecord.getName()]
 >>
@@ -938,7 +942,11 @@ key = "sym#" + str(p.lexer.lineno) + "#" + str(p.lexer.lexpos)
 symtab = SymbolTable(symTableDict[symTableSt[-1]], key)
 symTableDict[key] = symtab
 symTableSt += [key]
-actRecord = ActivationRecord(p[1])
+if (actRecordSt == []):
+  pname = None
+else:
+  pname = actRecordSt[-1]
+actRecord = ActivationRecord(p[1], pname)
 actRecordDict[p[1]] = actRecord
 actRecordSt += [actRecord.getName()]
 >>

@@ -220,8 +220,9 @@ class SymbolTable(object):
 
 
 class ActivationRecord:
-    def __init__(self, name):
+    def __init__(self, name, parent_name):
         self.name = name
+        self.parent = parent_name
         self.ret_values = []
         self.input_args = {}
         self.old_st_ptrs = {}
@@ -291,17 +292,27 @@ class ActivationRecord:
     def getSign(self, var_name):
         return self.var_signs[var_name]
 
-    def getVarTuple(self,var_name):
+    def getVarTuple(self,var_name,actRecordDict):
+
         if var_name in self.local_vars:
-            return self.local_vars[var_name], ""
+            (off, _) = self.local_vars[var_name]
+            return (off, 0), ""
         if var_name in self.input_args:
-            return self.input_args[var_name], ""
+            (off, _) = self.local_vars[var_name]
+            return (off, 0), ""
+        precord = actRecordDict[self.parent]
+        if precord is not None:
+            (off, jmp), typ = precord.getVarTuple(var_name, actRecordDict)
+            return (off, jmp+1), typ
+        '''
         if var_name in self.global_vars:
             return self.global_vars[var_name], "global"
         if var_name in self.const_vars:
             return (None, None), "const"
+        '''
+
         print("Error(actRecord):", var_name, "could not be found in activation record")
         sys.exit(0)
 
     def prettyPrint(self):
-        print("Name:", self.name, "Ret value:", self.ret_values, "Input Params:", self.input_args, "OldStPtrs:", self.old_st_ptrs, "SavedRegs:", self.saved_regs, "LocalVars:", self.local_vars, "GlobalVars:", self.global_vars, "ConstVars:", self.const_vars, "VarSigns:", self.var_signs, "\n")
+        print("Name:", self.name, "Ret value:", self.ret_values, "Input Params:", self.input_args, "OldStPtrs:", self.old_st_ptrs, "SavedRegs:", self.saved_regs, "LocalVars:", self.local_vars, "GlobalVars:", self.global_vars, "ConstVars:", self.const_vars, "VarSigns:", self.var_signs, "Parent: ", self.parent, "\n")
