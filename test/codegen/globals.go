@@ -21,6 +21,7 @@ func test() {
 func main() {
   fmt.printf("a = %d, b = %d, c = %s\n", a, b, c)
   d = 4
+  fmt.printf("d: %d\n", d)
   test()
   fmt.printf("e = %s\n", e)
 }

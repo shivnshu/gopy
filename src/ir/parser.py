@@ -138,8 +138,8 @@ def p_source_file(p):
 	p[0]['activationRecords'] = actRecordDict
 	for key in p[0]['dict_code']:
 	  print(key + ":")
-	  for code in p[0]['dict_code'][key]:
-	    print(code)
+	  for code, scope in zip(p[0]['dict_code'][key][0], p[0]['dict_code'][key][1]):
+	    print(code, "           | Scope:", scope)
 	  print()
 
 def p_package_clause(p):
@@ -309,8 +309,8 @@ def p_top_level_decl(p):
 	p[0]['dict_code'] = {}
 	p[0]['dict_code'] = {}
 	if len(p)==2 and p.slice[1].type=="Declaration":
-		p[0]['dict_code']['global_decl'] = code_optimization(p[1]['global_decl'])
-		p[0]['dict_code']['const_decl'] = code_optimization(p[1]['const_decl'])
+		p[0]['dict_code']['global_decl'] = code_optimization(p[1]['global_decl'], p[1]['scopelist'])
+		p[0]['dict_code']['const_decl'] = code_optimization(p[1]['const_decl'], p[1]['scopelist'])
 	if len(p)==2 and p.slice[1].type=="FunctionDecl":
 		p[0]['dict_code'].update(p[1]['dict_code'])
 	if len(p)==2 and p.slice[1].type=="MethodDecl":
@@ -522,7 +522,7 @@ def p_statement(p):
 	if len(p)==2 and p.slice[1].type=="SwitchStmt":
 		for typ in p[1]['ret_typelist']:
 		    p[0]['typelist'] += typ
-	if len(p)==2 and p.slice[1].type=="FuncCallStmt":
+	if len(p)==2 and p.slice[1].type=="GoFunc":
 		actRecordSt = actRecordSt[:-1]
 
 def p_continue_stmt(p):
@@ -540,10 +540,10 @@ def p_continue_stmt(p):
 	p[0]['dict_code'] = {}
 	if len(p)==2 and p.slice[1].type=="CONTINUE":
 		p[0]['code'] = ["goto beglabel"]
-		p[0]['scopelist'] =[None]
+		p[0]['scopelist'] =[actRecordSt[-1]]
 	if len(p)==3 and p.slice[2].type=="IDENTIFIER" and p.slice[1].type=="CONTINUE":
 		p[0]['code'] = ["goto " + p[2]]
-		p[0]['scopelist'] = [None]
+		p[0]['scopelist'] = [actRecordSt[-1]]
 
 def p_break_stmt(p):
 	'''
@@ -558,7 +558,7 @@ def p_break_stmt(p):
 	p[0]['scopelist'] = []
 	p[0]['dict_code'] = {}
 	p[0]['code'] = ["goto endlabel"]
-	p[0]['scopelist'] = [None]
+	p[0]['scopelist'] = [actRecordSt[-1]]
 
 def p_go_func(p):
 	'''
@@ -575,14 +575,14 @@ def p_go_func(p):
 	p[0]['dict_code'] = {}
 	if len(p)==8 and p.slice[7].type=="RPAREN" and p.slice[6].type=="ExpressionList" and p.slice[5].type=="LPAREN" and p.slice[4].type=="FunctionBody" and p.slice[3].type=="Parameters" and p.slice[2].type=="FUNC" and p.slice[1].type=="GO":
 		code = ["start_go_func:"] + p[6]['code']
-		scope = [None] + p[6]['scopelist']
+		scope = [actRecordSt[-1]] + p[6]['scopelist']
 		for id, value in zip(p[3]['idlist'], p[6]['namelist']):
 		    code += [id + " := " + value]
 		    scope += [actRecordSt[-1]]
 		code += p[4]['code']
 		p[0]['scopelist'] = scope + p[4]['scopelist']
 		p[0]['code'] = code + ["end_go_func"]
-		p[0]['scopelist'] += [None]
+		p[0]['scopelist'] += [actRecordSt[-1]]
 	if len(p)==6 and p.slice[5].type=="RPAREN" and p.slice[4].type=="ExpressionListBot" and p.slice[3].type=="LPAREN" and p.slice[2].type=="IDENTIFIER" and p.slice[1].type=="GO":
 		scope = symTableSt[-1]
 		symTable = symTableDict[scope]
@@ -607,7 +607,9 @@ def p_func_call_stmt(p):
 	p[0]['dict_code'] = {}
 	p[0]['ret_types'] = []
 	p[0]['namelist'] = []
-	actRecordSt += ["root"]
+	#actRecordSt += [actRecordSt[-1]]
+	#actRecordSt += ["root"]
+	print(actRecordSt)
 	if len(p)==4 and p.slice[3].type=="FuncCallStmt" and p.slice[2].type=="DOT" and p.slice[1].type=="IDENTIFIER":
 		b = False
 		for scope in symTableSt:
@@ -633,15 +635,15 @@ def p_func_call_stmt(p):
 		p[0]['scopelist'] = p[5]['scopelist']
 		for name in p[0]['namelist']:
 		  p[0]['code'] += ["ret_alloc 4"] # 4 for now
-		  p[0]['scopelist'] += [None]
+		  p[0]['scopelist'] += [actRecordSt[-1]]
 		for param in p[5]['namelist'][::-1]:
 		    p[0]['code'] += ["push_param " + param]
-		    p[0]['scopelist'] += [None]
+		    p[0]['scopelist'] += [actRecordSt[-1]]
 		p[0]['code'] += ["call " + p[1] + "." + p[3]]
 		p[0]['scopelist'] += [actRecordSt[-1]]
 		for name in p[0]['namelist']:
 		  p[0]['code'] += ["ret_param " + name]
-		  p['scopelist'] += [None]
+		  p['scopelist'] += [actRecordSt[-1]]
 	if len(p)==5 and p.slice[4].type=="RPAREN" and p.slice[3].type=="ExpressionListBot" and p.slice[2].type=="LPAREN" and p.slice[1].type=="IDENTIFIER":
 		b = False
 		for scope in symTableSt:
@@ -654,17 +656,17 @@ def p_func_call_stmt(p):
 		  sys.exit(0)
 		entry = table.get(p[1])
 		p[0]['ret_types'] = entry.getReturnTypes()
-		actRecordSt[-1] = entry.getName()
+		#actRecordSt[-1] = entry.getName()
 		for typ in p[0]['ret_types']:
 		  p[0]['namelist'] += [newVar()]
 		p[0]['code'] = p[3]['code']
 		p[0]['scopelist'] = p[3]['scopelist']
 		for name in p[0]['namelist']:
 		  p[0]['code'] += ["ret_alloc 4"] # 4 for now
-		  p[0]['scopelist'] += [None]
+		  p[0]['scopelist'] += [actRecordSt[-1]]
 		for param in p[3]['namelist'][::-1]:
 		    p[0]['code'] += ["push_param " + param]
-		    p[0]['scopelist'] += [None]
+		    p[0]['scopelist'] += [actRecordSt[-1]]
 		p[0]['code'] += ["call " + p[1]]
 		p[0]['scopelist'] += [actRecordSt[-1]]
 		for name in p[0]['namelist']:
@@ -1005,7 +1007,7 @@ def p_expression_list(p):
 	if len(p)==3 and p.slice[2].type=="ExpressionBotList" and p.slice[1].type=="FuncCallStmt":
 		p[0]['namelist'] = p[1]['namelist'] + p[2]['namelist']
 		p[0]['typelist'] = p[1]['ret_types'] + p[2]['typelist']
-		actRecordSt = actRecordSt[:-1]
+		#actRecordSt = actRecordSt[:-1]
 
 def p_expression_bot_list(p):
 	'''
@@ -1839,8 +1841,7 @@ def p_function_decl(p):
 	#act_record.storeOldStPtr("%rbp")
 	act_record.setRetValues(entry)
 	p[0]['code'] = p[2]['code'] + p[3]['code']
-	p[0]['dict_code'] = { func_name: code_optimization(p[0]['code']) }
-	print(len(p[0]['code']), len(p[0]['scopelist']))
+	p[0]['dict_code'] = { func_name: code_optimization(p[0]['code'], p[0]['scopelist']) }
 	p[3]['ret_actual_types'] = flatten_list(p[3]['ret_actual_types'])
 	for ret_actual in p[3]['ret_actual_types']:
 	      if (len(ret_actual) > 0 and p[2]['ret_types'] != ret_actual):
@@ -1985,7 +1986,9 @@ def p_method_decl(p):
 	p[0]['code'] = []
 	p[0]['scopelist'] = []
 	p[0]['dict_code'] = {}
-	p[0]['dict_code'] = { p[3]: code_optimization(p[4]['code']) }
+	p[0]['code'] = p[2]['code'] + p[3]['code'] + p[4]['code']
+	p[0]['scopelist'] = p[2]['scopelist'] + p[3]['scopelist'] + p[4]['scopelist']
+	p[0]['dict_code'] = { p[3]: code_optimization(p[0]['code'], p[0]['scopelist']) }
 
 def p_method_name(p):
 	'''
@@ -2347,7 +2350,7 @@ def p_else_bot(p):
 		p[2]['label'] = newLabel()
 		p[0]['symbol'] = 'else goto ' + p[2]['label']
 		p[0]['code'] = [p[2]['label'] + ' : '] + p[2]['code']
-		p[0]['scopelist'] = [None] + p[2]['scopelist']
+		p[0]['scopelist'] = [actRecordSt[-1]] + p[2]['scopelist']
 		p[0]['lastlabel'] = p[2]['lastlabel']
 	if len(p)==2 and p.slice[1].type=="empty":
 		p[0]['symbol'] = ''
@@ -2427,11 +2430,11 @@ def p_expr_switch_stmt(p):
 	  p[0]['scopelist'] += [actRecordSt[-1]]
 	for label, codeblock in zip(p[4]['labellist'][:-1], p[4]['code']):
 	  p[0]['code'] += codeblock
-	  p[0]['scopelist'] += [None]
+	  p[0]['scopelist'] += [actRecordSt[-1]]
 	  p[0]['code'] += ['goto ' + p[4]['labellist'][-1]]
-	  p[0]['scopelist'] += [None]
+	  p[0]['scopelist'] += [actRecordSt[-1]]
 	p[0]['code'] += [p[4]['labellist'][-1] + ':']
-	p[0]['scopelist'] += [None]
+	p[0]['scopelist'] += [actRecordSt[-1]]
 	p[0]['ret_typelist'] = p[4]['ret_typelist']
 
 def p_expr_case_clause_list(p):
@@ -2478,7 +2481,7 @@ def p_expr_case_clause(p):
 	p[0]['expcode'] = p[1]['code']
 	p[0]['label'] = newLabel()
 	p[0]['code'] = [p[0]['label'] + ' : '] + p[4]['code']
-	p[0]['scopelist'] = [None] + p[4]['scopelist']
+	p[0]['scopelist'] = [actRecordSt[-1]] + p[4]['scopelist']
 	p[0]['ret_typelist'] = p[4]['ret_typelist']
 
 def p_expr_switch_case(p):
@@ -2520,16 +2523,16 @@ def p_for_stmt(p):
 		  p[0]['code'] += ["if " + p[4]['place'] + " goto " + beglabel + " else goto " + endlabel]
 		  p[0]['scopelist'] += [actRecordSt[-1]]
 		p[0]['code'] += [beglabel + ":"]
-		p[0]['scopelist'] += [None]
+		p[0]['scopelist'] += [actRecordSt[-1]]
 		for line in p[7]['code']:
 		  if (line == "goto endlabel"):
 		    p[0]['code'] += ["goto " + endlabel]
-		    p[0]['scopelist'] += None
+		    p[0]['scopelist'] += [actRecordSt[-1]]
 		  elif (line == "goto beglabel"):
 		    p[0]['code'] += p[6]['code']
 		    p[0]['scopelist'] += p[6]['scopelist']
 		    p[0]['code'] += ["goto " + beglabel]
-		    p[0]['scopelist'] += [None]
+		    p[0]['scopelist'] += [actRecordSt[-1]]
 		  else:
 		    p[0]['code'] += [line]
 		    p[0]['scopelist'] += [actRecordSt[-1]]
@@ -2541,7 +2544,7 @@ def p_for_stmt(p):
 		  p[0]['code'] += ["if " + p[4]['place'] + " goto " + beglabel + " else goto " + endlabel]
 		  p[0]['scopelist'] += [actRecordSt[-1]]
 		p[0]['code'] += [endlabel + ":"]
-		p[0]['scopelist'] += [None]
+		p[0]['scopelist'] += [actRecordSt[-1]]
 
 def p_expression_bot(p):
 	'''
@@ -2582,7 +2585,7 @@ def p_return_stmt(p):
 	      p[0]['code'] += ["ret " + name]
 	      p[0]['code'] += [actRecordSt[-1]]
 	p[0]['code'] += ['func_end']
-	p[0]['code'] += [None]
+	p[0]['code'] += [actRecordSt[-1]]
 
 def p_expression_list_bot(p):
 	'''
@@ -3032,6 +3035,7 @@ def p_operand_name(p):
 	p[0]['dict_code'] = {}
 	p[0]['place'] = newVar()
 	p[0]['code'] = [p[0]['place'] + ' := ' + p[1]]
+	#print(actRecordSt)
 	p[0]['scopelist'] = [actRecordSt[-1]]
 	p[0]['type'] = verifyCalType(p[1], p.lexer.lineno)
 
