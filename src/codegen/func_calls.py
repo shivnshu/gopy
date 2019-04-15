@@ -2,10 +2,9 @@ import sys
 from common import get_register, free_register, getTokType, reserve_register, unreserve_register
 import assignments
 
-def asm_gen(line, activation_records, func_name, context, data_section):
+def asm_gen(line, activation_record, func_name, context, data_section, activation_records):
     res = []
     toks = line.split()
-    activation_record = activation_records[func_name]
     if (len(toks) != 2):
         return res, context
     if (toks[0] == "call"):
@@ -17,6 +16,7 @@ def asm_gen(line, activation_records, func_name, context, data_section):
         res += [toks[0] + " " + toks[1]]
     elif (toks[0] == "push_param"):
         param_type = getTokType(toks[1])
+        print("aaa", activation_record.getName())
         if (param_type == "register"):
             res += ["push " + get_register(toks[1])]
             free_register(toks[1])
@@ -30,6 +30,13 @@ def asm_gen(line, activation_records, func_name, context, data_section):
             if typ == "global" or typ == "const":
                 print("Error: unsupported code", line)
                 sys.exit(0)
+            elif typ == "const":
+                if context["const_decl"][toks[1]] == "string":
+                    res += ["push $" + toks[1]]
+                else:
+                    reg_1 = get_register("_p")
+                    res += ["movl $" + toks[1] + ", " + reg_1]
+                    res += ["push (" + reg_1 + ")"]
             else:
                 res += ["push " + str(offset) + "("+reg_+")"]
             free_register("_pqr")

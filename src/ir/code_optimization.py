@@ -7,7 +7,7 @@ unary_ops = ["+", "-", "!", "^", "*", "&", "<-"]
 regex = re.compile(r"_t[0-9]+")
 
 # Specifically handle unary op cases
-def unary_optimization(code_list):
+def unary_optimization(code_list, scope_list):
     my_dict = {}
     del_list = []
     for i in range(len(code_list)):
@@ -24,17 +24,20 @@ def unary_optimization(code_list):
         if (toks[0][0] == "_"):
             my_dict[toks[0]] = (toks[2], i)
     res = []
+    scope_res = []
     for i in range(len(code_list)):
         if not i in del_list:
             res += [code_list[i]]
-    return res
+            scope_res += [scope_list[i]]
+    return res, scope_res
 
 # Specifically handle array
-def array_optimization(code_list):
+def array_optimization(code_list, scope_list):
     my_dict = {}
     mapping = {}
     del_list = []
     res = []
+    scope_res = []
     for i in range(len(code_list)):
         code = code_list[i]
         toks = code.split()
@@ -58,11 +61,15 @@ def array_optimization(code_list):
             res += [this_code]
             mapping[toks[0]] = (this_code.split()[2], i)
     final_res = []
+    scope_res = []
     for i in range(len(res)):
         if not i in del_list:
             final_res += [res[i]]
+            scope_res += [scope_list[i]]
 
     code_list = final_res
+    scope_list = scope_res
+    scope_res = []
     res = []
     del_list = []
     my_map = {}
@@ -92,11 +99,13 @@ def array_optimization(code_list):
     for i in range(len(res)):
         if i not in del_list:
             final_res += [res[i]]
+            scope_res += [scope_list[i]]
 
-    return final_res
+    return final_res, scope_res
 
-def struct_optimization(code_list):
+def struct_optimization(code_list, scope_list):
     res = []
+    scope_res = []
     del_list = []
     for i in range(len(code_list)):
         line = code_list[i]
@@ -131,10 +140,12 @@ def struct_optimization(code_list):
     for i in range(len(res)):
         if i not in del_list:
             final_res += [res[i]]
-    return final_res
+            scope_res += [scope_list[i]]
+    return final_res, scope_res
 
-def func_optimization(code_list):
+def func_optimization(code_list, scope_list):
     res = []
+    scope_res = []
     del_list = []
     mapping = {}
     for i in range(len(code_list)):
@@ -164,47 +175,68 @@ def func_optimization(code_list):
     for i in range(len(res)):
         if i not in del_list:
             final_res += [res[i]]
+            scope_res += [scope_list[i]]
         pass
-    return final_res
+    return final_res, scope_res
 
-def code_optimization(code_list):
+def code_optimization(code_list, scope_list):
     # print()
     # for c in code_list:
     #     print(c)
     # print()
+    assert(len(code_list) == len(scope_list))
     res = []
+    scope_res = []
     first = ""
     last = ""
-    for code in code_list:
+    last_scope = ""
+    for i in range(len(code_list)):
+        code = code_list[i]
+        scope = scope_list[i]
         toks = code.split()
         if (len(toks) != 3 or not ":=" in code):
             if (len(first) > 0):
                 res += [first + " := " + last]
+                scope_res += [last_scope]
             first = ""
             last = ""
             res += [code]
+            scope_res += [scope]
             continue
         if (len(first) > 0 and first[0] != "_"):
             res += [first + " := " + last]
+            scope_res += [last_scope]
             first = ""
             last = ""
         if (len(first) == 0):
             first = toks[0]
+            last_scope = scope
             last = toks[2]
             continue
         if (first == toks[2]):
             first = toks[0]
+            last_scope = scope
             continue
         res += [first + " := " + last]
+        scope_res += [last_scope]
         first = toks[0]
+        last_scope = scope
         last = toks[2]
     if (first != ""):
         res += [first + " := " + last]
-    res = unary_optimization(res)
-    res = array_optimization(res)
-    res = struct_optimization(res)
-    res = func_optimization(res)
-    return res
+        scope_res += [last_scope]
+    assert(len(res) == len(scope_res))
+    res, scope_res = unary_optimization(res, scope_res)
+    assert(len(res) == len(scope_res))
+    res, scope_res = array_optimization(res, scope_res)
+    assert(len(res) == len(scope_res))
+    res, scope_res = struct_optimization(res, scope_res)
+    assert(len(res) == len(scope_res))
+    res, scope_res = func_optimization(res, scope_res)
+    assert(len(res) == len(scope_res))
+    # for i in range(len(res)):
+    #     print(res[i], scope_res[i])
+    return (res, scope_res)
 
 
 # code = ['_t0 := 10', '_t1 := _t0', 'a := _t1', '_t2 := a', '_t3 := _t2', '_t4 := _t3', '_t5 := &_t4', 'b := _t5']

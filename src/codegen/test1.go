@@ -11,4 +11,9 @@ func main() {
   a[1] = 1
   fmt.printf("%d\n", a[1])
   test(a)
+  {
+    bd := 10
+    bd = 2
+    fmt.printf("bd: %d\n", bd)
+  }
 }

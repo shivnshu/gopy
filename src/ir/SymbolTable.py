@@ -300,6 +300,8 @@ class ActivationRecord:
         if var_name in self.input_args:
             (off, _) = self.input_args[var_name]
             return (off, 0), ""
+        if var_name in self.const_vars:
+            return (None, None), "const"
         if self.parent == None:
             print("Error(actRecord):", var_name, "could not be found in activation record")
             sys.exit(0)
@@ -310,8 +312,6 @@ class ActivationRecord:
         '''
         if var_name in self.global_vars:
             return self.global_vars[var_name], "global"
-        if var_name in self.const_vars:
-            return (None, None), "const"
         '''
 
         print("Error(actRecord):", var_name, "could not be found in activation record")

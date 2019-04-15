@@ -37,32 +37,34 @@ def get_data_section(const_decl):
         res += [toks[0] + ": ." + lit_type + " " + toks[2]]
     return res
 
-def asm_gen(code_line, func_name, data_section):
+def asm_gen(code_line, func_name, scope, data_section):
     global context
+    global activation_records
+    activation_record = activation_records[scope]
     code_type = getCodeType(code_line)
     if (code_type == "assignments"):
-        res, context = assignments.asm_gen(code_line, activation_records[func_name], context, data_section, activation_records)
+        res, context = assignments.asm_gen(code_line, activation_record, context, data_section, activation_records)
         return res
     if (code_type == "function-call"):
-        res, context = func_calls.asm_gen(code_line, activation_records, func_name, context, data_section)
+        res, context = func_calls.asm_gen(code_line, activation_record, func_name, context, data_section, activation_records)
         return res
     if (code_type == "binary-op"):
-        res, context = binaryop.asm_gen(code_line, activation_records[func_name], context, activation_records)
+        res, context = binaryop.asm_gen(code_line, activation_record, context, activation_records)
         return res
     if (code_type == "ifstmt"):
         res = ifstmt.asm_gen(code_line, activation_records)
         return res
     if (code_type == "gotostmt"):
-        return gotostmt.asm_gen(code_line, activation_records)
+        return gotostmt.asm_gen(code_line,activation_record, activation_records)
     if (code_type == "arr_decl"):
-        res, context = arr_decl.asm_gen(code_line, activation_records[func_name], context, activation_records)
+        res, context = arr_decl.asm_gen(code_line, activation_record, context, activation_records)
         return res
     if (code_type == "struct_decl"):
-        return struct_decl.asm_gen(code_line, activation_records[func_name], activation_records)
+        return struct_decl.asm_gen(code_line, activation_record, activation_records)
     if (code_type == "structs"):
-        return structs.asm_gen(code_line, activation_records[func_name], activation_records)
+        return structs.asm_gen(code_line, activation_record, activation_records)
     if (code_type == "unary-op"):
-        res, context = unaryop.asm_gen(code_line, activation_records[func_name], context, activation_records)
+        res, context = unaryop.asm_gen(code_line, activation_record, context, activation_records)
         return res
     return [code_line]
 
@@ -76,7 +78,7 @@ def alloc_st_code(func_name):
     return ["subl $" + str(abs(min_offset)) + ", %esp"]
 
 def main(dict_code):
-
+    global activation_records
     data_section = [".section .data"]
 
     res = [".section .text", ".globl main", ""]
@@ -84,7 +86,7 @@ def main(dict_code):
     res += alloc_st_code("root")
 
     if 'global_decl' in dict_code:
-        code_list = dict_code['global_decl']
+        code_list = dict_code['global_decl'][0]
         for code_line in code_list:
             gen_code = asm_gen(code_line, "root", data_section)
             if (gen_code != None):
@@ -97,7 +99,7 @@ def main(dict_code):
     func_end = ["mov %ebp, %esp", "pop %ebp", "ret", ""]
 
     if 'const_decl' in dict_code:
-        data_section += get_data_section(dict_code['const_decl'])
+        data_section += get_data_section(dict_code['const_decl'][0])
 
     for func_name in dict_code:
         free_all_regs() # Free if new function comes
@@ -108,11 +110,12 @@ def main(dict_code):
         else:
             res += [func_name + ":"]
         res += func_init
-        code_list = dict_code[func_name]
+        code_list = dict_code[func_name][0]
+        scope_list = dict_code[func_name][1]
         res += alloc_st_code(func_name)
         ret_added = False
-        for code_line in code_list:
-            gen_code = asm_gen(code_line, func_name, data_section)
+        for code_line, scope in zip(code_list, scope_list):
+            gen_code = asm_gen(code_line, func_name, scope, data_section)
             if (code_line == "func_end"):
                 res += func_end
                 ret_added = True
