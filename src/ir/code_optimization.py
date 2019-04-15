@@ -55,6 +55,38 @@ def array_optimization(code_list):
     for i in range(len(res)):
         if not i in del_list:
             final_res += [res[i]]
+
+    code_list = final_res
+    res = []
+    del_list = []
+    my_map = {}
+    for i in range(len(code_list)):
+        code = code_list[i]
+        toks = code.split()
+        if len(toks) != 3 and toks[0] != "_decl" and len(toks) > 1 and toks[1] != "array":
+            res += [code]
+            continue
+        if len(toks) == 3 and toks[0][0] == "_" and toks[1] == ":=":
+            my_map[toks[0]] = (toks[2], i)
+            res += [code]
+            continue
+        if len(toks) > 1 and toks[0] == "_decl" and toks[1] == "array":
+            new_code = "_decl array " + toks[2] + " " + toks[3]
+            for j in range(4, len(toks)):
+                if toks[j][0] == "_":
+                    new_code += " " + my_map[toks[j]][0]
+                    del_list += [my_map[toks[j]][1]]
+                else:
+                    new_code += " " + toks[j]
+            res += [new_code]
+        else:
+            res += [code]
+
+    final_res = []
+    for i in range(len(res)):
+        if i not in del_list:
+            final_res += [res[i]]
+
     return final_res
 
 def struct_optimization(code_list):

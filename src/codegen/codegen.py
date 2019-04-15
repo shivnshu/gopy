@@ -116,7 +116,6 @@ def main(dict_code):
             if (code_line == "func_end"):
                 res += func_end
                 ret_added = True
-                break
             elif (gen_code != None):
                 res += gen_code
             else:
