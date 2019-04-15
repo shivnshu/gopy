@@ -72,7 +72,7 @@ def getCodeType(code):
     toks = code.split()
     if (len(toks) == 3 and ("." in toks[0] or "." in toks[2])):
         return "structs"
-    if (len(toks) == 3 and ":=" in code and (toks[2][0] not in unary_op_list)):
+    if (len(toks) == 3 and ":=" in code and (toks[2][0] not in unary_op_list or getTokType(toks[2][1:]) != "variable")):
         return "assignments"
     if (len(toks) == 2 and ("call" in toks or "push_param" in toks or "ret_param" in toks or "ret" in toks or "ret_alloc" in toks)):
         return "function-call"
@@ -84,7 +84,7 @@ def getCodeType(code):
         return "gotostmt"
     if (toks[0] == "_decl" and toks[1] == "array"):
         return "arr_decl"
-    if (len(toks)==3 and toks[1]==":=" and (toks[2][0] in unary_op_list)):
+    if (len(toks)==3 and toks[1]==":=" and (toks[2][0] in unary_op_list) and getTokType(toks[2][1:]) == "variable"):
         return "unary-op"
     return None
 
