@@ -1,7 +1,7 @@
 import common
 from common import get_register, free_register, getTokType, reserve_register, unreserve_register
 
-def asm_gen(line, activation_record, context):
+def asm_gen(line, activation_record, context, activation_records):
     res = []
     toks = line.split()
     # print(toks)

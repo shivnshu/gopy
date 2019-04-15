@@ -1,4 +1,7 @@
 import re
+import sys
+sys.path.insert(0, '../codegen')
+from common import getTokType
 
 unary_ops = ["+", "-", "!", "^", "*", "&", "<-"]
 regex = re.compile(r"_t[0-9]+")
@@ -47,6 +50,9 @@ def array_optimization(code_list):
             this_code = toks[0] + " := " + mapping[arr_idx[0]][0]
             del_list += [mapping[arr_idx[0]][1]]
             for dim in range(1, len(arr_idx)):
+                if arr_idx[dim] not in mapping:
+                    this_code += '[' + arr_idx[dim] + ']'
+                    continue
                 this_code += '[' + mapping[arr_idx[dim]][0] + ']'
                 del_list += [mapping[arr_idx[dim]][1]]
             res += [this_code]
@@ -141,12 +147,16 @@ def func_optimization(code_list):
             if (toks[0][0] != "_"):
                 res += [line]
                 continue
-            mapping[toks[0]] = (toks[2], i)
+            if getTokType(toks[2]) in ["positive-integer", "negative-integer", "variable"]:
+                mapping[toks[0]] = (toks[2], i)
             res += [line]
         elif (len(toks) == 2 and toks[0] == "push_param"):
             if (toks[1][0] == "_" and toks[1] in mapping):
                 res += ["push_param " + mapping[toks[1]][0]]
                 del_list += [mapping[toks[1]][1]]
+                continue
+            else:
+                res += [line]
                 continue
         else:
             res += [line]
@@ -193,7 +203,7 @@ def code_optimization(code_list):
     res = unary_optimization(res)
     res = array_optimization(res)
     res = struct_optimization(res)
-    # res = func_optimization(res)
+    res = func_optimization(res)
     return res
 
 

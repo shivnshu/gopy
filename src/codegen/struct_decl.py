@@ -4,14 +4,14 @@ from common import get_register, free_register, getTokType, reserve_register, un
 size_of = {'int': '4', 'float': '4', 'char': '1', "*int": '4', "*float": '4', "*char": '4', "string": '4'}
 lang_datatypes = ["int", "float", "bool"]
 
-def asm_gen(line, activation_record):
+def asm_gen(line, activation_record, activation_records):
     res = []
     toks = line.split()
     struct_type = toks[1]
     if (struct_type in lang_datatypes):
         return res
     var_name = toks[2]
-    (offset, size), typ = activation_record.getVarTuple(var_name)
+    (offset, size), typ = activation_record.getVarTuple(var_name, activation_records)
     if (typ == "global" or typ == "const"):
         print("Error: unsupported", typ, "for", var_name)
         sys.exit(0)

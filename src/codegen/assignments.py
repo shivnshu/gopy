@@ -7,7 +7,7 @@ from common import reserve_register, unreserve_register
 # Two sources of following truth. Another in common
 reserved_words = {"true": "1", "false": "0"}
 
-def cal_array_offset(arr_idx, offset, reg, activation_record, dimentions):
+def cal_array_offset(arr_idx, offset, reg, activation_record, dimentions, activation_records):
     res = []
     num_dims = len(arr_idx) - 1
     reg2 = get_register("_tmp2")
@@ -27,7 +27,7 @@ def cal_array_offset(arr_idx, offset, reg, activation_record, dimentions):
             res += ["add " + reg3 + ", "  + reg]
             free_register("_tmp3")
         elif (getTokType(idx_name) == "variable"):
-            (offset, size), typ = activation_record.getVarTuple(idx_name)
+            (offset, size), typ = activation_record.getVarTuple(idx_name, activation_records)
             if typ in ["global", "const"]:
                 print("Error: type", typ, "for", idx_name, "is not yet supported")
                 sys.exit(0)
@@ -44,7 +44,7 @@ def cal_array_offset(arr_idx, offset, reg, activation_record, dimentions):
     free_register("_tmp2")
     return res
 
-def asm_gen(line, activation_record, context, data_section):
+def asm_gen(line, activation_record, context, data_section, activation_records):
     global reserved_words
     res = []
     toks = line.split(" ", 2) # string support
@@ -55,7 +55,7 @@ def asm_gen(line, activation_record, context, data_section):
     if (left_type == "register"):
         dst_entry = get_register(toks[0])
     elif (left_type == "variable"):
-        (offset, size), typ = activation_record.getVarTuple(toks[0])
+        (offset, size), typ = activation_record.getVarTuple(toks[0], activation_records)
         if typ == "global":
             dst_entry = str(offset) + "(%esi)"
         elif typ == "const":
@@ -67,7 +67,7 @@ def asm_gen(line, activation_record, context, data_section):
         if (getTokType(toks[0][1:]) != "variable"):
             print("Error: invalid dereference", toks[0])
             sys.exit(0)
-        (offset, size), typ = activation_record.getVarTuple(toks[0][1:])
+        (offset, size), typ = activation_record.getVarTuple(toks[0][1:], activation_records)
         if typ == "global":
             dst_entry = str(offset) + "(%esi)"
         elif typ == "const":
@@ -85,12 +85,12 @@ def asm_gen(line, activation_record, context, data_section):
         if (len(dimentions) != len(arr_idx)-1):
             print("Error: dimentions mismatch for array", arr_idx[0])
             sys.exit(0)
-        (offset, size), typ = activation_record.getVarTuple(arr_idx[0])
+        (offset, size), typ = activation_record.getVarTuple(arr_idx[0], activation_records)
         if (typ == "global" or typ == "const"):
             print("Error: unsupported code", line)
             sys.exit(0)
         reg = get_register("_tmp_left")
-        res += cal_array_offset(arr_idx, offset, reg, activation_record, dimentions)
+        res += cal_array_offset(arr_idx, offset, reg, activation_record, dimentions, activation_records)
         res += ["imul $" + context["array_decl"][arr_idx[0]]["size"] + ", " + reg]
         res += ["add " + str(offset) + "(%ebp), " + reg]
         dst_entry = "0(" + reg + ")"
@@ -112,7 +112,7 @@ def asm_gen(line, activation_record, context, data_section):
         res.append("movl " + src_entry + ", " + dst_entry)
         res.append("negl " + dst_entry)
     elif (right_type == "variable"):
-        (offset, size), typ = activation_record.getVarTuple(toks[2])
+        (offset, size), typ = activation_record.getVarTuple(toks[2], activation_records)
         # print(toks, "with offset", offset)
         if typ == "global":
             src_entry = str(offset) + "(%esi)"
@@ -150,7 +150,7 @@ def asm_gen(line, activation_record, context, data_section):
         if (getTokType(toks[2][1:]) != "variable"):
             print("Error: Address of " + toks[2][1:] + " does not exist")
         else:
-            (offset, size), typ = activation_record.getVarTuple(toks[2][1:])
+            (offset, size), typ = activation_record.getVarTuple(toks[2][1:], activation_records)
             if (left_type != "variable"):
                 res.append("lea " + str(offset) + "(%ebp) ," + dst_entry)
             else:
@@ -168,20 +168,26 @@ def asm_gen(line, activation_record, context, data_section):
     elif (right_type == "array"):
         arr_idx = re.split("\[|\]", toks[2])
         arr_idx = list(filter(None, arr_idx))
-        (offset, size), typ = activation_record.getVarTuple(arr_idx[0])
+        (offset, size), typ = activation_record.getVarTuple(arr_idx[0], activation_records)
         if (typ != "global" and typ != "const"):
             pass
         reg = get_register("_tmp_right")
         dimentions = context["array_decl"][arr_idx[0]]["dimentions"]
-        res += cal_array_offset(arr_idx, offset, reg, activation_record, dimentions)
+        res += cal_array_offset(arr_idx, offset, reg, activation_record, dimentions, activation_records)
         res += ["imul $" + context["array_decl"][arr_idx[0]]["size"] + ", " + reg]
         res += ["add " + str(offset) + "(%ebp), " + reg]
-        res += ["movl 0(" + reg + "), " + dst_entry]
+        if "(" in dst_entry:
+            reg10 = get_register("_tmp10")
+            res += ["movl 0(" + reg + "), " + reg10]
+            res += ["movl " + reg10 + ", " + dst_entry]
+            free_register("_tmp10")
+        else:
+            res += ["movl 0(" + reg + "), " + dst_entry]
     elif (right_type == "dereference"):
         if (getTokType(toks[2][1:]) != "variable"):
             print("Error: dereference of non variable", toks[2][1:])
             sys.exit(0)
-        (offset, size), typ = activation_record.getVarTuple(toks[2][1:])
+        (offset, size), typ = activation_record.getVarTuple(toks[2][1:], activation_records)
         if (typ == "global" or typ == "const"):
             print("Error: unsupported code", line)
             sys.exit(0)

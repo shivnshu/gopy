@@ -1,7 +1,8 @@
 import sys
-from common import get_register, free_register, getTokType
+from common import get_register, free_register, getTokType, reserve_register, unreserve_register
+import assignments
 
-def asm_gen(line, activation_records, func_name, context):
+def asm_gen(line, activation_records, func_name, context, data_section):
     res = []
     toks = line.split()
     activation_record = activation_records[func_name]
@@ -28,8 +29,33 @@ def asm_gen(line, activation_records, func_name, context):
                 res += ["push " + str(offset) + "(%ebp)"]
         elif (param_type == "positive-integer"):
             res += ["push " + "$" + toks[1]]
+        elif (param_type == "address"):
+            assert(getTokType(toks[1][1:]) == "variable")
+            (offset, size), typ = activation_record.getVarTuple(toks[1][1:], activation_records)
+            reg = get_register("_push_param")
+            res += ["movl %ebp, " + reg]
+            res += ["add $" + str(offset) + ", " + reg]
+            res += ["push " + reg]
+            free_register("_push_param")
+        elif (param_type == "string"):
+            reserve_register("%eax")
+            reg = get_register("_push_param")
+            string_lit = toks[1].encode().decode('unicode_escape') # Allow newline etc.
+            res += ["push %eax"]
+            res += ["push $" + str(len(string_lit) + 1)]
+            res += ["call malloc"]
+            index = 0
+            for ch_lit in string_lit:
+                res += ["movb $" + hex(ord(ch_lit)) + ", " + str(index) + "(%eax)"]
+                index += 1
+            res += ["movb $0x0, " + str(index) + "(%eax)"]
+            res += ["movl %eax, " + reg]
+            res += ["pop %eax"]
+            res += ["push " + reg]
+            free_register("_push_param")
+            unreserve_register("%eax")
         else:
-            print("Error")
+            print("Error: push_param", toks[1], "type", param_type, "not supported")
             sys.exit(0)
     elif (toks[0] == "ret_param"):
         (offset, _) = context["last_func_call_ret"][0]

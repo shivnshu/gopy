@@ -1,7 +1,7 @@
 import common
 from common import get_register, free_register, getTokType, reserve_register, unreserve_register
 
-def asm_gen(line, activation_record, context):
+def asm_gen(line, activation_record, context, activation_records):
     res = []
     toks = line.split()
     # print(toks)
@@ -11,7 +11,7 @@ def asm_gen(line, activation_record, context):
     '''
     r0 = get_register(toks[0])
     idx_name = toks[2][1:]
-    (offset, size), typ = activation_record.getVarTuple(idx_name)
+    (offset, size), typ = activation_record.getVarTuple(idx_name, activation_records)
     if typ == "global":
             dst_entry = str(offset) + "(%esi)"
     elif typ == "const":

@@ -3,7 +3,7 @@ from common import get_register, free_register, getTokType, reserve_register, un
 
 size_of = {'int': '4', 'float': '4', 'char': '1', "*int": '4', "*float": '4', "*char": '4', "string": '4'}
 
-def asm_gen(line, activation_record):
+def asm_gen(line, activation_record, activation_records):
     res = []
     toks = line.split()
     if ("." in toks[0]):
@@ -11,7 +11,7 @@ def asm_gen(line, activation_record):
         var_name = var_field[0]
         field_name = var_field[1]
         assert(getTokType(var_name) == "variable")
-        (offset, size), typ = activation_record.getVarTuple(var_name)
+        (offset, size), typ = activation_record.getVarTuple(var_name, activation_records)
         if (typ == "global" or typ == "const"):
             print("Error: unsupported type", type, "of", var_name)
             sys.exit(0)
@@ -66,7 +66,7 @@ def asm_gen(line, activation_record):
     left_param = toks[0]
     left_type = getTokType(left_param)
     assert(getTokType(var_name) == "variable")
-    (offset, size), typ = activation_record.getVarTuple(var_name)
+    (offset, size), typ = activation_record.getVarTuple(var_name, activation_records)
     if (typ == "global" or typ == "const"):
         print("Error: unsupported type", type, "of", var_name)
         sys.exit(0)
@@ -79,7 +79,7 @@ def asm_gen(line, activation_record):
             res += ["movl (" + reg + "), " + get_register(left_param)]
             free_register("_tmp")
     elif (left_type == "variable"):
-        (var_offset, _), typ = activation_record.getVarTuple(left_param)
+        (var_offset, _), typ = activation_record.getVarTuple(left_param, activation_records)
         reg = get_register("_tmp")
         res += ["movl " + str(offset) + "(%ebp)" + ", " + reg]
         res += ["add $" + str(field_offset) + ", " + reg]

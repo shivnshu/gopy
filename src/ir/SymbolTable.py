@@ -298,7 +298,7 @@ class ActivationRecord:
             (off, _) = self.local_vars[var_name]
             return (off, 0), ""
         if var_name in self.input_args:
-            (off, _) = self.local_vars[var_name]
+            (off, _) = self.input_args[var_name]
             return (off, 0), ""
         precord = actRecordDict[self.parent]
         if precord is not None:

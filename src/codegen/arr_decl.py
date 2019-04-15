@@ -3,7 +3,7 @@ from common import get_register, free_register, getTokType
 
 size_of = {'int': '4', 'float': '4', 'char': '1', "*int": '4', "*float": '4', "*char": '4', "string": '4'}
 
-def asm_gen(line, activation_record, context):
+def asm_gen(line, activation_record, context, activation_records):
     global size_of
     res = []
     toks = line.split()
@@ -21,7 +21,7 @@ def asm_gen(line, activation_record, context):
 
     context['array_decl'][toks[3]] = {"size": type_size, "dimentions": dimentions}
 
-    (offset, size), typ = activation_record.getVarTuple(arr_var)
+    (offset, size), typ = activation_record.getVarTuple(arr_var, activation_records)
     if (offset >= 0):
         return res, context # Variable is not local
 

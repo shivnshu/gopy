@@ -41,28 +41,28 @@ def asm_gen(code_line, func_name, data_section):
     global context
     code_type = getCodeType(code_line)
     if (code_type == "assignments"):
-        res, context = assignments.asm_gen(code_line, activation_records[func_name], context, data_section)
+        res, context = assignments.asm_gen(code_line, activation_records[func_name], context, data_section, activation_records)
         return res
     if (code_type == "function-call"):
-        res, context = func_calls.asm_gen(code_line, activation_records, func_name, context)
+        res, context = func_calls.asm_gen(code_line, activation_records, func_name, context, data_section)
         return res
     if (code_type == "binary-op"):
-        res, context = binaryop.asm_gen(code_line, activation_records[func_name], context)
+        res, context = binaryop.asm_gen(code_line, activation_records[func_name], context, activation_records)
         return res
     if (code_type == "ifstmt"):
         res = ifstmt.asm_gen(code_line, activation_records)
         return res
     if (code_type == "gotostmt"):
-        return gotostmt.asm_gen(code_line)
+        return gotostmt.asm_gen(code_line, activation_records)
     if (code_type == "arr_decl"):
-        res, context = arr_decl.asm_gen(code_line, activation_records[func_name], context)
+        res, context = arr_decl.asm_gen(code_line, activation_records[func_name], context, activation_records)
         return res
     if (code_type == "struct_decl"):
-        return struct_decl.asm_gen(code_line, activation_records[func_name])
+        return struct_decl.asm_gen(code_line, activation_records[func_name], activation_records)
     if (code_type == "structs"):
-        return structs.asm_gen(code_line, activation_records[func_name])
+        return structs.asm_gen(code_line, activation_records[func_name], activation_records)
     if (code_type == "unary-op"):
-        res, context = unaryop.asm_gen(code_line, activation_records[func_name], context)
+        res, context = unaryop.asm_gen(code_line, activation_records[func_name], context, activation_records)
         return res
     return [code_line]
 
@@ -118,6 +118,7 @@ def main(dict_code):
                 ret_added = True
             elif (gen_code != None):
                 res += gen_code
+                ret_added = False
             else:
                 print("Code generation error for line: ", code_line)
         if not ret_added:
