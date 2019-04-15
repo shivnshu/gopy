@@ -1,8 +1,9 @@
 #!/usr/bin/env python3
 import sys
+import os
 import argparse
 
-sys.path.insert(0, '../ir')
+sys.path.insert(0, os.environ['GoPyPATH'] + '/src/ir')
 from ir_gen import ir_gen
 from common import getCodeType, getLitType, free_all_regs
 import assignments
