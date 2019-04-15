@@ -883,7 +883,6 @@ myidxlists = p[1]['idxlists']
 mynamelist = p[2]['namelist']
 #for name, typ in zip(p[1]['idlist'], p[2]['typelist']):
 #    p[0]['code'] += ["_decl " + typ + " " + name]
-
 for index in range(len(mylist)):
     i = mylist[index]
     var = VarEntry(i)
@@ -932,6 +931,7 @@ p[0]['typelist'] = []
 
 FunctionDecl : FUNC Signature FunctionBodyTop
 <<0
+p[0]['scopelist'] = p[2]['scopelist'] + p[3]['scopelist']
 this_func_sym_table = symTableDict[symTableSt[-1]]
 act_record = actRecordDict[actRecordSt[-1]]
 actRecordSt = actRecordSt[:-1]
@@ -945,7 +945,9 @@ entry = symTableDict[symTableSt[-1]].get(func_name)
 act_record.setLocalVarsInputArgs(this_func_sym_table)
 #act_record.storeOldStPtr("%rbp")
 act_record.setRetValues(entry)
-p[0]['dict_code'] = { func_name: code_optimization(p[2]['code'] + p[3]['code']) }
+p[0]['code'] = p[2]['code'] + p[3]['code']
+p[0]['dict_code'] = { func_name: code_optimization(p[0]['code']) }
+print(len(p[0]['code']), len(p[0]['scopelist']))
 p[3]['ret_actual_types'] = flatten_list(p[3]['ret_actual_types'])
 for ret_actual in p[3]['ret_actual_types']:
       if (len(ret_actual) > 0 and p[2]['ret_types'] != ret_actual):
@@ -1147,7 +1149,6 @@ AssignmentGen : IdOrArrayElemList assign_op ExpressionList
 <<0
 p[0]['code'] = p[1]['code'] + p[3]['code']
 p[0]['scopelist'] = p[1]['scopelist'] + p[3]['scopelist']
-
 for i, idx,  j, k in zip(p[1]['idlist'], p[1]['idxlists'],  p[3]['namelist'], p[3]['typelist']):
   q = i
   if q[0] in ['*']:
@@ -1324,9 +1325,9 @@ for exp, label in zip(p[4]['explist'], p[4]['labellist'][:-1]):
   p[0]['code'] += ['if ' + var + ' goto ' + label]
   p[0]['scopelist'] += [actRecordSt[-1]]
 for label, codeblock in zip(p[4]['labellist'][:-1], p[4]['code']):
-	p[0]['code'] += codeblock
+  p[0]['code'] += codeblock
   p[0]['scopelist'] += [None]
-	p[0]['code'] += ['goto ' + p[4]['labellist'][-1]]
+  p[0]['code'] += ['goto ' + p[4]['labellist'][-1]]
   p[0]['scopelist'] += [None]
 p[0]['code'] += [p[4]['labellist'][-1] + ':']
 p[0]['scopelist'] += [None]
@@ -1380,7 +1381,7 @@ if (p[4]['place'] != ""):
   p[0]['code'] += ["if " + p[4]['place'] + " goto " + beglabel + " else goto " + endlabel]
   p[0]['scopelist'] += [actRecordSt[-1]]
 p[0]['code'] += [beglabel + ":"]
-p[0]['scopelist'] += None
+p[0]['scopelist'] += [None]
 for line in p[7]['code']:
   if (line == "goto endlabel"):
     p[0]['code'] += ["goto " + endlabel]

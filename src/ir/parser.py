@@ -78,6 +78,7 @@ def p_keyword_lcurly(p):
 	global actRecordDict
 	p[0] = {}
 	p[0]['code'] = []
+	p[0]['scopelist'] = []
 	p[0]['dict_code'] = {}
 	key = "sym#" + str(p.lexer.lineno) + "#" + str(p.lexer.lexpos)
 	symtab = SymbolTable(symTableDict[symTableSt[-1]], key)
@@ -101,6 +102,7 @@ def p_keyword_rcurly(p):
 	global actRecordDict
 	p[0] = {}
 	p[0]['code'] = []
+	p[0]['scopelist'] = []
 	p[0]['dict_code'] = {}
 	sym_table = symTableDict[symTableSt[-1]]
 	act_record = actRecordDict[actRecordSt[-1]]
@@ -118,6 +120,7 @@ def p_source_file(p):
 	global actRecordDict
 	p[0] = {}
 	p[0]['code'] = []
+	p[0]['scopelist'] = []
 	p[0]['dict_code'] = {}
 	for record_name in actRecordDict:
 	  if (record_name == "root"):
@@ -149,6 +152,7 @@ def p_package_clause(p):
 	global actRecordDict
 	p[0] = {}
 	p[0]['code'] = []
+	p[0]['scopelist'] = []
 	p[0]['dict_code'] = {}
 
 def p_import_decl_list(p):
@@ -162,6 +166,7 @@ def p_import_decl_list(p):
 	global actRecordDict
 	p[0] = {}
 	p[0]['code'] = []
+	p[0]['scopelist'] = []
 	p[0]['dict_code'] = {}
 
 def p_import_decl(p):
@@ -174,6 +179,7 @@ def p_import_decl(p):
 	global actRecordDict
 	p[0] = {}
 	p[0]['code'] = []
+	p[0]['scopelist'] = []
 	p[0]['dict_code'] = {}
 
 def p_import_spec_top_list(p):
@@ -187,6 +193,7 @@ def p_import_spec_top_list(p):
 	global actRecordDict
 	p[0] = {}
 	p[0]['code'] = []
+	p[0]['scopelist'] = []
 	p[0]['dict_code'] = {}
 
 def p_import_spec_list(p):
@@ -200,6 +207,7 @@ def p_import_spec_list(p):
 	global actRecordDict
 	p[0] = {}
 	p[0]['code'] = []
+	p[0]['scopelist'] = []
 	p[0]['dict_code'] = {}
 
 def p_import_spec(p):
@@ -212,6 +220,7 @@ def p_import_spec(p):
 	global actRecordDict
 	p[0] = {}
 	p[0]['code'] = []
+	p[0]['scopelist'] = []
 	p[0]['dict_code'] = {}
 
 def p_import_spec_init(p):
@@ -226,6 +235,7 @@ def p_import_spec_init(p):
 	global actRecordDict
 	p[0] = {}
 	p[0]['code'] = []
+	p[0]['scopelist'] = []
 	p[0]['dict_code'] = {}
 
 def p_import_path(p):
@@ -238,6 +248,7 @@ def p_import_path(p):
 	global actRecordDict
 	p[0] = {}
 	p[0]['code'] = []
+	p[0]['scopelist'] = []
 	p[0]['dict_code'] = {}
 	scope = symTableSt[-1]
 	symTable = symTableDict[scope]
@@ -258,6 +269,7 @@ def p_top_level_decl_list(p):
 	global actRecordDict
 	p[0] = {}
 	p[0]['code'] = []
+	p[0]['scopelist'] = []
 	p[0]['dict_code'] = {}
 	if len(p)==3 and p.slice[2].type=="TopLevelDeclList" and p.slice[1].type=="TopLevelDecl":
 		#p[0]['dict_code'].update(p[1]['dict_code'])
@@ -293,6 +305,7 @@ def p_top_level_decl(p):
 	global actRecordDict
 	p[0] = {}
 	p[0]['code'] = []
+	p[0]['scopelist'] = []
 	p[0]['dict_code'] = {}
 	p[0]['dict_code'] = {}
 	if len(p)==2 and p.slice[1].type=="Declaration":
@@ -313,6 +326,7 @@ def p_struct_def(p):
 	global actRecordDict
 	p[0] = {}
 	p[0]['code'] = []
+	p[0]['scopelist'] = []
 	p[0]['dict_code'] = {}
 	scope = symTableSt[-1]
 	symTable = symTableDict[scope]
@@ -334,6 +348,7 @@ def p_parameter_decl_list2(p):
 	global actRecordDict
 	p[0] = {}
 	p[0]['code'] = []
+	p[0]['scopelist'] = []
 	p[0]['dict_code'] = {}
 	if len(p)==3 and p.slice[2].type=="ParameterDeclList2" and p.slice[1].type=="ParameterDecl2":
 		p[0]['fields'] = p[1]['fields']
@@ -351,6 +366,7 @@ def p_parameter_decl2(p):
 	global actRecordDict
 	p[0] = {}
 	p[0]['code'] = []
+	p[0]['scopelist'] = []
 	p[0]['dict_code'] = {}
 	if len(p)==3 and p.slice[2].type=="Type" and p.slice[1].type=="IdentifierList1":
 		p[0]['fields'] = {}
@@ -367,6 +383,7 @@ def p_interface_decl(p):
 	global actRecordDict
 	p[0] = {}
 	p[0]['code'] = []
+	p[0]['scopelist'] = []
 	p[0]['dict_code'] = {}
 	scope = symTableSt[-1]
 	symTable = symTableDict[scope]
@@ -385,6 +402,7 @@ def p_interface_block(p):
 	global actRecordDict
 	p[0] = {}
 	p[0]['code'] = []
+	p[0]['scopelist'] = []
 	p[0]['dict_code'] = {}
 
 def p_i_func_dec_list(p):
@@ -398,6 +416,7 @@ def p_i_func_dec_list(p):
 	global actRecordDict
 	p[0] = {}
 	p[0]['code'] = []
+	p[0]['scopelist'] = []
 	p[0]['dict_code'] = {}
 
 def p_i_func_dec(p):
@@ -410,6 +429,7 @@ def p_i_func_dec(p):
 	global actRecordDict
 	p[0] = {}
 	p[0]['code'] = []
+	p[0]['scopelist'] = []
 	p[0]['dict_code'] = {}
 	scope = symTableSt[-1]
 	symTable = symTableDict[scope]
@@ -428,6 +448,7 @@ def p_i_func_def(p):
 	global actRecordDict
 	p[0] = {}
 	p[0]['code'] = []
+	p[0]['scopelist'] = []
 	p[0]['dict_code'] = {}
 
 def p_block(p):
@@ -440,8 +461,10 @@ def p_block(p):
 	global actRecordDict
 	p[0] = {}
 	p[0]['code'] = []
+	p[0]['scopelist'] = []
 	p[0]['dict_code'] = {}
 	p[0]['code'] = p[2]['code']
+	p[0]['scopelist'] = p[2]['scopelist']
 	p[0]['ret_typelist'] = p[2]['ret_typelist']
 
 def p_statement_list(p):
@@ -455,10 +478,12 @@ def p_statement_list(p):
 	global actRecordDict
 	p[0] = {}
 	p[0]['code'] = []
+	p[0]['scopelist'] = []
 	p[0]['dict_code'] = {}
 	p[0]['ret_typelist'] = []
 	if len(p)==3 and p.slice[2].type=="StatementList" and p.slice[1].type=="Statement":
 		p[0]['code'] = p[1]['code'] + p[2]['code']
+		p[0]['scopelist'] = p[1]['scopelist'] + p[2]['scopelist']
 		p[0]['ret_typelist'] = [p[1]['typelist']] + p[2]['ret_typelist']
 
 def p_statement(p):
@@ -481,8 +506,10 @@ def p_statement(p):
 	global actRecordDict
 	p[0] = {}
 	p[0]['code'] = []
+	p[0]['scopelist'] = []
 	p[0]['dict_code'] = {}
 	p[0]['code'] = p[1]['code']
+	p[0]['scopelist'] = p[1]['scopelist']
 	p[0]['typelist'] = []
 	if len(p)==2 and p.slice[1].type=="ReturnStmt":
 		p[0]['typelist'] = p[1]['typelist']
@@ -509,11 +536,14 @@ def p_continue_stmt(p):
 	global actRecordDict
 	p[0] = {}
 	p[0]['code'] = []
+	p[0]['scopelist'] = []
 	p[0]['dict_code'] = {}
 	if len(p)==2 and p.slice[1].type=="CONTINUE":
 		p[0]['code'] = ["goto beglabel"]
+		p[0]['scopelist'] =[None]
 	if len(p)==3 and p.slice[2].type=="IDENTIFIER" and p.slice[1].type=="CONTINUE":
 		p[0]['code'] = ["goto " + p[2]]
+		p[0]['scopelist'] = [None]
 
 def p_break_stmt(p):
 	'''
@@ -525,8 +555,10 @@ def p_break_stmt(p):
 	global actRecordDict
 	p[0] = {}
 	p[0]['code'] = []
+	p[0]['scopelist'] = []
 	p[0]['dict_code'] = {}
 	p[0]['code'] = ["goto endlabel"]
+	p[0]['scopelist'] = [None]
 
 def p_go_func(p):
 	'''
@@ -539,13 +571,18 @@ def p_go_func(p):
 	global actRecordDict
 	p[0] = {}
 	p[0]['code'] = []
+	p[0]['scopelist'] = []
 	p[0]['dict_code'] = {}
 	if len(p)==8 and p.slice[7].type=="RPAREN" and p.slice[6].type=="ExpressionList" and p.slice[5].type=="LPAREN" and p.slice[4].type=="FunctionBody" and p.slice[3].type=="Parameters" and p.slice[2].type=="FUNC" and p.slice[1].type=="GO":
 		code = ["start_go_func:"] + p[6]['code']
+		scope = [None] + p[6]['scopelist']
 		for id, value in zip(p[3]['idlist'], p[6]['namelist']):
 		    code += [id + " := " + value]
+		    scope += [actRecordSt[-1]]
 		code += p[4]['code']
+		p[0]['scopelist'] = scope + p[4]['scopelist']
 		p[0]['code'] = code + ["end_go_func"]
+		p[0]['scopelist'] += [None]
 	if len(p)==6 and p.slice[5].type=="RPAREN" and p.slice[4].type=="ExpressionListBot" and p.slice[3].type=="LPAREN" and p.slice[2].type=="IDENTIFIER" and p.slice[1].type=="GO":
 		scope = symTableSt[-1]
 		symTable = symTableDict[scope]
@@ -566,6 +603,7 @@ def p_func_call_stmt(p):
 	global actRecordDict
 	p[0] = {}
 	p[0]['code'] = []
+	p[0]['scopelist'] = []
 	p[0]['dict_code'] = {}
 	p[0]['ret_types'] = []
 	p[0]['namelist'] = []
@@ -581,6 +619,7 @@ def p_func_call_stmt(p):
 		  sys.exit(0)
 		p[0]['ret_types'] = p[3]['ret_types']
 		p[0]['code'] = p[3]['code']
+		p[0]['scopelist'] = p[3]['scopelist']
 	if len(p)==7 and p.slice[6].type=="RPAREN" and p.slice[5].type=="ExpressionListBot" and p.slice[4].type=="LPAREN" and p.slice[3].type=="IDENTIFIER" and p.slice[2].type=="DOT" and p.slice[1].type=="IDENTIFIER":
 		b = False
 		for scope in symTableSt:
@@ -591,13 +630,18 @@ def p_func_call_stmt(p):
 		  print("Function", p[1], "not defined on line number", p.lexer.lineno)
 		  sys.exit(0)
 		p[0]['code'] = p[5]['code']
+		p[0]['scopelist'] = p[5]['scopelist']
 		for name in p[0]['namelist']:
 		  p[0]['code'] += ["ret_alloc 4"] # 4 for now
+		  p[0]['scopelist'] += [None]
 		for param in p[5]['namelist'][::-1]:
 		    p[0]['code'] += ["push_param " + param]
+		    p[0]['scopelist'] += [None]
 		p[0]['code'] += ["call " + p[1] + "." + p[3]]
+		p[0]['scopelist'] += [actRecordSt[-1]]
 		for name in p[0]['namelist']:
 		  p[0]['code'] += ["ret_param " + name]
+		  p['scopelist'] += [None]
 	if len(p)==5 and p.slice[4].type=="RPAREN" and p.slice[3].type=="ExpressionListBot" and p.slice[2].type=="LPAREN" and p.slice[1].type=="IDENTIFIER":
 		b = False
 		for scope in symTableSt:
@@ -614,13 +658,18 @@ def p_func_call_stmt(p):
 		for typ in p[0]['ret_types']:
 		  p[0]['namelist'] += [newVar()]
 		p[0]['code'] = p[3]['code']
+		p[0]['scopelist'] = p[3]['scopelist']
 		for name in p[0]['namelist']:
 		  p[0]['code'] += ["ret_alloc 4"] # 4 for now
+		  p[0]['scopelist'] += [None]
 		for param in p[3]['namelist'][::-1]:
 		    p[0]['code'] += ["push_param " + param]
+		    p[0]['scopelist'] += [None]
 		p[0]['code'] += ["call " + p[1]]
+		p[0]['scopelist'] += [actRecordSt[-1]]
 		for name in p[0]['namelist']:
 		  p[0]['code'] += ["ret_param " + name]
+		  p[0]['scopelist'] += [actRecordSt[-1]]
 		if entry.getInputArgs() != p[3]['typelist']:
 		   print("Function", p[1], "arguments mismatch at line num", p.lexer.lineno)
 		   sys.exit(0)
@@ -635,6 +684,7 @@ def p_object_method(p):
 	global actRecordDict
 	p[0] = {}
 	p[0]['code'] = []
+	p[0]['scopelist'] = []
 	p[0]['dict_code'] = {}
 
 def p_declaration(p):
@@ -649,8 +699,10 @@ def p_declaration(p):
 	global actRecordDict
 	p[0] = {}
 	p[0]['code'] = []
+	p[0]['scopelist'] = []
 	p[0]['dict_code'] = {}
 	p[0]['code'] = p[1]['code']
+	p[0]['scopelist'] = p[1]['scopelist']
 	p[0]['const_decl'] = []
 	p[0]['global_decl'] = []
 	if len(p)==2 and p.slice[1].type=="ConstDecl":
@@ -668,8 +720,10 @@ def p_const_decl(p):
 	global actRecordDict
 	p[0] = {}
 	p[0]['code'] = []
+	p[0]['scopelist'] = []
 	p[0]['dict_code'] = {}
 	p[0]['code'] = p[2]['code']
+	p[0]['scopelist'] = p[2]['scopelist']
 
 def p_const_spec_top_list(p):
 	'''
@@ -682,11 +736,14 @@ def p_const_spec_top_list(p):
 	global actRecordDict
 	p[0] = {}
 	p[0]['code'] = []
+	p[0]['scopelist'] = []
 	p[0]['dict_code'] = {}
 	if len(p)==2 and p.slice[1].type=="ConstSpec":
 		p[0]['code'] = p[1]['code']
+		p[0]['scopelist'] = p[1]['scopelist']
 	if len(p)==4 and p.slice[3].type=="RPAREN" and p.slice[2].type=="ConstSpecList" and p.slice[1].type=="LPAREN":
 		p[0]['code'] = p[2]['code']
+		p[0]['scopelist'] = p[2]['scopelist']
 
 def p_const_spec_list(p):
 	'''
@@ -699,9 +756,11 @@ def p_const_spec_list(p):
 	global actRecordDict
 	p[0] = {}
 	p[0]['code'] = []
+	p[0]['scopelist'] = []
 	p[0]['dict_code'] = {}
 	if len(p)==3 and p.slice[2].type=="ConstSpecList" and p.slice[1].type=="ConstSpec":
 		p[0]['code'] = p[1]['code'] + p[2]['code']
+		p[0]['scopelist'] = p[1]['scopelist'] + p[2]['scopelist']
 
 def p_const_spec(p):
 	'''
@@ -713,6 +772,7 @@ def p_const_spec(p):
 	global actRecordDict
 	p[0] = {}
 	p[0]['code'] = []
+	p[0]['scopelist'] = []
 	p[0]['dict_code'] = {}
 	scope = symTableSt[-1]
 	symTable = symTableDict[scope]
@@ -721,8 +781,10 @@ def p_const_spec(p):
 	  print("Length mismatch on line number", p.lexer.lineno)
 	  sys.exit(0)
 	p[0]['code'] = p[1]['code'] + p[2]['code']
+	p[0]['scopelist'] = p[1]['scopelist'] + p[2]['scopelist']
 	for i,j,k in zip(p[1]['idlist'], p[2]['namelist'], p[2]['typelist']):
 	    p[0]['code'] += [i + ' := ' + j]
+	    p[0]['scopelist'] += [actRecordSt[-1]]
 	    actRecord.putConstVar(i)
 	    lit = LitEntry(i, k)
 	    if (symTable.put(lit) == False):
@@ -740,11 +802,13 @@ def p_const_spec_tail(p):
 	global actRecordDict
 	p[0] = {}
 	p[0]['code'] = []
+	p[0]['scopelist'] = []
 	p[0]['dict_code'] = {}
 	if len(p)==4 and p.slice[3].type=="ExpressionList" and p.slice[2].type=="EQ" and p.slice[1].type=="TypeTop":
 		p[0]['namelist'] = p[3]['namelist']
 		p[0]['typelist'] = p[3]['typelist']
 		p[0]['code'] = p[3]['code']
+		p[0]['scopelist'] = p[3]['scopelist']
 
 def p_type_top(p):
 	'''
@@ -757,6 +821,7 @@ def p_type_top(p):
 	global actRecordDict
 	p[0] = {}
 	p[0]['code'] = []
+	p[0]['scopelist'] = []
 	p[0]['dict_code'] = {}
 
 def p_identifier_list1(p):
@@ -770,6 +835,7 @@ def p_identifier_list1(p):
 	global actRecordDict
 	p[0] = {}
 	p[0]['code'] = []
+	p[0]['scopelist'] = []
 	p[0]['dict_code'] = {}
 	if len(p)==3 and p.slice[2].type=="IdentifierBotList1" and p.slice[1].type=="IDENTIFIER":
 		p[0]['idlist'] = [p[1]] + p[2]['idlist']
@@ -788,6 +854,7 @@ def p_identifier_bot_list1(p):
 	global actRecordDict
 	p[0] = {}
 	p[0]['code'] = []
+	p[0]['scopelist'] = []
 	p[0]['dict_code'] = {}
 	if len(p)==4 and p.slice[3].type=="IDENTIFIER" and p.slice[2].type=="COMMA" and p.slice[1].type=="IdentifierBotList1":
 		p[0]['idlist'] = p[1]['idlist'] + [p[3]]
@@ -808,6 +875,7 @@ def p_identifier_list3(p):
 	global actRecordDict
 	p[0] = {}
 	p[0]['code'] = []
+	p[0]['scopelist'] = []
 	p[0]['dict_code'] = {}
 	if len(p)==3 and p.slice[2].type=="IdentifierBotList3" and p.slice[1].type=="IDENTIFIER":
 		p[0]['idlist'] = [p[1]] + p[2]['idlist']
@@ -829,6 +897,7 @@ def p_identifier_bot_list3(p):
 	global actRecordDict
 	p[0] = {}
 	p[0]['code'] = []
+	p[0]['scopelist'] = []
 	p[0]['dict_code'] = {}
 	if len(p)==4 and p.slice[3].type=="IDENTIFIER" and p.slice[2].type=="COMMA" and p.slice[1].type=="IdentifierBotList3":
 		p[0]['idlist'] = p[1]['idlist'] + [p[3]]
@@ -849,10 +918,12 @@ def p_id_or_array_elem_list(p):
 	global actRecordDict
 	p[0] = {}
 	p[0]['code'] = []
+	p[0]['scopelist'] = []
 	p[0]['dict_code'] = {}
 	p[0]['idlist'] = [p[1]['id']] + p[2]['idlist']
 	p[0]['idxlists'] = [p[1]['idxlist']] + p[2]['idxlists']
 	p[0]['code'] = p[1]['code'] + p[2]['code']
+	p[0]['scopelist'] = p[1]['scopelist'] + p[2]['scopelist']
 
 def p_id_or_array_elem_bot_list(p):
 	'''
@@ -865,11 +936,13 @@ def p_id_or_array_elem_bot_list(p):
 	global actRecordDict
 	p[0] = {}
 	p[0]['code'] = []
+	p[0]['scopelist'] = []
 	p[0]['dict_code'] = {}
 	if len(p)==4 and p.slice[3].type=="IdOrArrayElem" and p.slice[2].type=="COMMA" and p.slice[1].type=="IdOrArrayElemBotList":
 		p[0]['idlist'] = p[1]['idlist'] + [p[3]['id']]
 		p[0]['idxlists'] = p[1]['idxlists'] + [p[3]['idxlist']]
 		p[0]['code'] = p[1]['code'] + p[3]['code']
+		p[0]['scopelist'] = p[1]['scopelist'] + p[3]['scopelist']
 	if len(p)==2 and p.slice[1].type=="empty":
 		p[0]['idlist'] = []
 		p[0]['idxlists'] = []
@@ -884,10 +957,12 @@ def p_id_or_array_elem(p):
 	global actRecordDict
 	p[0] = {}
 	p[0]['code'] = []
+	p[0]['scopelist'] = []
 	p[0]['dict_code'] = {}
 	p[0]['id'] = p[1]
 	p[0]['idxlist'] = p[2]['idxlist']
 	p[0]['code'] = p[2]['code']
+	p[0]['scopelist'] = p[2]['scopelist']
 
 def p_more_dims(p):
 	'''
@@ -900,10 +975,12 @@ def p_more_dims(p):
 	global actRecordDict
 	p[0] = {}
 	p[0]['code'] = []
+	p[0]['scopelist'] = []
 	p[0]['dict_code'] = {}
 	if len(p)==5 and p.slice[4].type=="MoreDims" and p.slice[3].type=="RSQUARE" and p.slice[2].type=="Expression" and p.slice[1].type=="LSQUARE":
 		p[0]['idxlist'] = [p[2]['place']] + p[4]['idxlist']
 		p[0]['code'] = p[2]['code'] + p[4]['code']
+		p[0]['scopelist'] = p[2]['scopelist'] + p[4]['scopelist']
 	if len(p)==2 and p.slice[1].type=="empty":
 		p[0]['idxlist']  = []
 
@@ -918,8 +995,10 @@ def p_expression_list(p):
 	global actRecordDict
 	p[0] = {}
 	p[0]['code'] = []
+	p[0]['scopelist'] = []
 	p[0]['dict_code'] = {}
 	p[0]['code'] = p[1]['code'] + p[2]['code']
+	p[0]['scopelist'] = p[1]['scopelist'] + p[2]['scopelist']
 	if len(p)==3 and p.slice[2].type=="ExpressionBotList" and p.slice[1].type=="Expression":
 		p[0]['namelist'] = [p[1]['place']] + p[2]['namelist']
 		p[0]['typelist'] = [p[1]['type']] + p[2]['typelist']
@@ -939,11 +1018,13 @@ def p_expression_bot_list(p):
 	global actRecordDict
 	p[0] = {}
 	p[0]['code'] = []
+	p[0]['scopelist'] = []
 	p[0]['dict_code'] = {}
 	if len(p)==4 and p.slice[3].type=="Expression" and p.slice[2].type=="COMMA" and p.slice[1].type=="ExpressionBotList":
 		p[0]['namelist'] = p[1]['namelist'] + [p[3]['place']]
 		p[0]['typelist'] = p[1]['typelist'] + [p[3]['type']]
 		p[0]['code'] = p[1]['code'] + p[3]['code']
+		p[0]['scopelist'] = p[1]['scopelist'] + p[3]['scopelist']
 	if len(p)==2 and p.slice[1].type=="empty":
 		p[0]['namelist'] = []
 		p[0]['typelist'] = []
@@ -958,6 +1039,7 @@ def p_type_decl(p):
 	global actRecordDict
 	p[0] = {}
 	p[0]['code'] = []
+	p[0]['scopelist'] = []
 	p[0]['dict_code'] = {}
 
 def p_type_spec_top_list(p):
@@ -971,6 +1053,7 @@ def p_type_spec_top_list(p):
 	global actRecordDict
 	p[0] = {}
 	p[0]['code'] = []
+	p[0]['scopelist'] = []
 	p[0]['dict_code'] = {}
 
 def p_type_spec_list(p):
@@ -984,6 +1067,7 @@ def p_type_spec_list(p):
 	global actRecordDict
 	p[0] = {}
 	p[0]['code'] = []
+	p[0]['scopelist'] = []
 	p[0]['dict_code'] = {}
 
 def p_type_spec(p):
@@ -997,6 +1081,7 @@ def p_type_spec(p):
 	global actRecordDict
 	p[0] = {}
 	p[0]['code'] = []
+	p[0]['scopelist'] = []
 	p[0]['dict_code'] = {}
 
 def p_alias_decl(p):
@@ -1009,6 +1094,7 @@ def p_alias_decl(p):
 	global actRecordDict
 	p[0] = {}
 	p[0]['code'] = []
+	p[0]['scopelist'] = []
 	p[0]['dict_code'] = {}
 
 def p_type_def(p):
@@ -1021,6 +1107,7 @@ def p_type_def(p):
 	global actRecordDict
 	p[0] = {}
 	p[0]['code'] = []
+	p[0]['scopelist'] = []
 	p[0]['dict_code'] = {}
 	print(p[2])
 	scope = symTableSt[-1]
@@ -1044,20 +1131,24 @@ def p_type(p):
 	global actRecordDict
 	p[0] = {}
 	p[0]['code'] = []
+	p[0]['scopelist'] = []
 	p[0]['dict_code'] = {}
 	p[0]['dim'] = 0
 	p[0]['dimrange'] = []
 	if len(p)==2 and p.slice[1].type=="TypeName":
 		p[0]['type'] = p[1]['type']
 		p[0]['code'] = p[1]['code']
+		p[0]['scopelist'] = p[1]['scopelist']
 	if len(p)==2 and p.slice[1].type=="TypeLit":
 		p[0]['type'] = p[1]['type']
 		p[0]['dim'] = p[1]['dims']
 		p[0]['dimrange'] = p[1]['dimrange']
 		p[0]['code'] = p[1]['code']
+		p[0]['scopelist'] = p[1]['scopelist']
 	if len(p)==4 and p.slice[3].type=="RPAREN" and p.slice[2].type=="Type" and p.slice[1].type=="LPAREN":
 		p[0]['type'] = p[2]['type']
 		p[0]['code'] = p[2]['code']
+		p[0]['scopelist'] = p[2]['scopelist'] 
 
 def p_type_name(p):
 	'''
@@ -1071,6 +1162,7 @@ def p_type_name(p):
 	global actRecordDict
 	p[0] = {}
 	p[0]['code'] = []
+	p[0]['scopelist'] = []
 	p[0]['dict_code'] = {}
 	if len(p)==2 and p.slice[1].type=="IDENTIFIER":
 		p[0]['type'] = p[1]
@@ -1089,6 +1181,7 @@ def p_qualified_ident(p):
 	global actRecordDict
 	p[0] = {}
 	p[0]['code'] = []
+	p[0]['scopelist'] = []
 	p[0]['dict_code'] = {}
 	p[0]['type'] = verifyCalType(p[3], p.lexer.lineno)
 
@@ -1104,10 +1197,12 @@ def p_type_lit(p):
 	global actRecordDict
 	p[0] = {}
 	p[0]['code'] = []
+	p[0]['scopelist'] = []
 	p[0]['dict_code'] = {}
 	p[0]['type'] = p[1]['type']
 	p[0]['dimrange'] = []
 	p[0]['code'] = p[1]['code']
+	p[0]['scopelist'] = p[1]['scopelist']
 	if len(p)==2 and p.slice[1].type=="ArrayType":
 		p[0]['dims'] = p[1]['dims']
 		p[0]['dimrange'] = p[1]['dimrange']
@@ -1122,6 +1217,7 @@ def p_array_type(p):
 	global actRecordDict
 	p[0] = {}
 	p[0]['code'] = []
+	p[0]['scopelist'] = []
 	p[0]['dict_code'] = {}
 	if p[2]['type'] != "int" and p[2]['type'] != '':
 	  print("Array index error on line number", p.lexer.lineno)
@@ -1130,6 +1226,7 @@ def p_array_type(p):
 	p[0]['dims'] = 1 + p[4]['dims']
 	p[0]['dimrange'] = [p[2]['place']] + p[4]['dimrange']
 	p[0]['code'] = p[2]['code'] + p[4]['code']
+	p[0]['scopelist'] = p[2]['scopelist'] + p[4]['scopelist']
 
 def p_array_length(p):
 	'''
@@ -1142,11 +1239,13 @@ def p_array_length(p):
 	global actRecordDict
 	p[0] = {}
 	p[0]['code'] = []
+	p[0]['scopelist'] = []
 	p[0]['dict_code'] = {}
 	if len(p)==2 and p.slice[1].type=="Expression":
 		p[0]['type'] = p[1]['type']
 		p[0]['place'] = p[1]['place']
 		p[0]['code'] = p[1]['code']
+		p[0]['scopelist'] = p[1]['scopelist']
 	if len(p)==2 and p.slice[1].type=="empty":
 		p[0]['type'] = ''
 		p[0]['place'] = ''
@@ -1161,6 +1260,7 @@ def p_element_type(p):
 	global actRecordDict
 	p[0] = {}
 	p[0]['code'] = []
+	p[0]['scopelist'] = []
 	p[0]['dict_code'] = {}
 	p[0]['type'] = p[1]['type']
 	p[0]['dims'] = p[1]['dim']
@@ -1176,6 +1276,7 @@ def p_struct_type(p):
 	global actRecordDict
 	p[0] = {}
 	p[0]['code'] = []
+	p[0]['scopelist'] = []
 	p[0]['dict_code'] = {}
 
 def p_field_decl_list(p):
@@ -1189,6 +1290,7 @@ def p_field_decl_list(p):
 	global actRecordDict
 	p[0] = {}
 	p[0]['code'] = []
+	p[0]['scopelist'] = []
 	p[0]['dict_code'] = {}
 
 def p_field_decl(p):
@@ -1201,6 +1303,7 @@ def p_field_decl(p):
 	global actRecordDict
 	p[0] = {}
 	p[0]['code'] = []
+	p[0]['scopelist'] = []
 	p[0]['dict_code'] = {}
 
 def p_tag_top(p):
@@ -1214,6 +1317,7 @@ def p_tag_top(p):
 	global actRecordDict
 	p[0] = {}
 	p[0]['code'] = []
+	p[0]['scopelist'] = []
 	p[0]['dict_code'] = {}
 
 def p_field_decl_head(p):
@@ -1227,6 +1331,7 @@ def p_field_decl_head(p):
 	global actRecordDict
 	p[0] = {}
 	p[0]['code'] = []
+	p[0]['scopelist'] = []
 	p[0]['dict_code'] = {}
 
 def p_embedded_field(p):
@@ -1239,6 +1344,7 @@ def p_embedded_field(p):
 	global actRecordDict
 	p[0] = {}
 	p[0]['code'] = []
+	p[0]['scopelist'] = []
 	p[0]['dict_code'] = {}
 
 def p_star_top(p):
@@ -1252,6 +1358,7 @@ def p_star_top(p):
 	global actRecordDict
 	p[0] = {}
 	p[0]['code'] = []
+	p[0]['scopelist'] = []
 	p[0]['dict_code'] = {}
 
 def p_tag(p):
@@ -1264,6 +1371,7 @@ def p_tag(p):
 	global actRecordDict
 	p[0] = {}
 	p[0]['code'] = []
+	p[0]['scopelist'] = []
 	p[0]['dict_code'] = {}
 
 def p_function_type(p):
@@ -1276,6 +1384,7 @@ def p_function_type(p):
 	global actRecordDict
 	p[0] = {}
 	p[0]['code'] = []
+	p[0]['scopelist'] = []
 	p[0]['dict_code'] = {}
 
 def p_result_top(p):
@@ -1289,6 +1398,7 @@ def p_result_top(p):
 	global actRecordDict
 	p[0] = {}
 	p[0]['code'] = []
+	p[0]['scopelist'] = []
 	p[0]['dict_code'] = {}
 	if len(p)==2 and p.slice[1].type=="Result":
 		p[0]['ret_types'] = p[1]['ret_types']
@@ -1306,6 +1416,7 @@ def p_result(p):
 	global actRecordDict
 	p[0] = {}
 	p[0]['code'] = []
+	p[0]['scopelist'] = []
 	p[0]['dict_code'] = {}
 	if len(p)==2 and p.slice[1].type=="Ret_Types":
 		p[0]['ret_types'] = p[1]['ret_types']
@@ -1322,6 +1433,7 @@ def p_ret__types(p):
 	global actRecordDict
 	p[0] = {}
 	p[0]['code'] = []
+	p[0]['scopelist'] = []
 	p[0]['dict_code'] = {}
 	p[0]['ret_types'] = p[2]['types']
 
@@ -1336,6 +1448,7 @@ def p_type_list(p):
 	global actRecordDict
 	p[0] = {}
 	p[0]['code'] = []
+	p[0]['scopelist'] = []
 	p[0]['dict_code'] = {}
 	if len(p)==3 and p.slice[2].type=="TypeListBot" and p.slice[1].type=="Type":
 		p[0]['types'] = [p[1]['type']] + p[2]['types']
@@ -1353,6 +1466,7 @@ def p_type_list_bot(p):
 	global actRecordDict
 	p[0] = {}
 	p[0]['code'] = []
+	p[0]['scopelist'] = []
 	p[0]['dict_code'] = {}
 	if len(p)==4 and p.slice[3].type=="TypeListBot" and p.slice[2].type=="Type" and p.slice[1].type=="COMMA":
 		p[0]['types'] = [p[2]['type']] + p[3]['types']
@@ -1369,8 +1483,10 @@ def p_parameters(p):
 	global actRecordDict
 	p[0] = {}
 	p[0]['code'] = []
+	p[0]['scopelist'] = []
 	p[0]['dict_code'] = {}
 	p[0]['code'] = p[2]['code']
+	p[0]['scopelist'] = p[2]['scopelist']
 	p[0]['args_types'] = p[2]['args_types']
 	p[0]['idlist'] = p[2]['idlist']
 	params = p[2]['idlist']
@@ -1388,6 +1504,7 @@ def p_parameters(p):
 	        decl_tail += " " + dr
 	    decl += decl_tail
 	    p[0]['code'] += [decl]
+	    p[0]['scopelist'] += [actRecordSt[-1]]
 	    if (table.put(entry) == False):
 	        print("Error:", param, "redeclared on line number", p.lexer.lineno)
 	        sys.exit(0)
@@ -1403,6 +1520,7 @@ def p_parameter_list_top(p):
 	global actRecordDict
 	p[0] = {}
 	p[0]['code'] = []
+	p[0]['scopelist'] = []
 	p[0]['dict_code'] = {}
 	if len(p)==3 and p.slice[2].type=="commaTop" and p.slice[1].type=="ParameterList":
 		p[0]['args_types'] = p[1]['args_types']
@@ -1410,6 +1528,7 @@ def p_parameter_list_top(p):
 		p[0]['dims'] = p[1]['dims']
 		p[0]['dimranges'] = p[1]['dimranges']
 		p[0]['code'] = p[1]['code']
+		p[0]['scopelist'] = p[1]['scopelist']
 	if len(p)==2 and p.slice[1].type=="empty":
 		p[0]['args_types'] = []
 		p[0]['idlist'] = []
@@ -1427,6 +1546,7 @@ def p_comma_top(p):
 	global actRecordDict
 	p[0] = {}
 	p[0]['code'] = []
+	p[0]['scopelist'] = []
 	p[0]['dict_code'] = {}
 
 def p_parameter_list(p):
@@ -1439,12 +1559,14 @@ def p_parameter_list(p):
 	global actRecordDict
 	p[0] = {}
 	p[0]['code'] = []
+	p[0]['scopelist'] = []
 	p[0]['dict_code'] = {}
 	p[0]['args_types'] = [p[1]['type']] + p[2]['args_types']
 	p[0]['idlist'] = p[1]['idlist'] + p[2]['idlist']
 	p[0]['dims'] = [p[1]['dim']] + p[2]['dims']
 	p[0]['dimranges'] = [p[1]['dimrange']] + p[2]['dimranges']
 	p[0]['code'] = p[1]['code'] + p[2]['code']
+	p[0]['scopelist'] = p[1]['scopelist'] + p[2]['scopelist']
 
 def p_parameter_decl_list(p):
 	'''
@@ -1457,6 +1579,7 @@ def p_parameter_decl_list(p):
 	global actRecordDict
 	p[0] = {}
 	p[0]['code'] = []
+	p[0]['scopelist'] = []
 	p[0]['dict_code'] = {}
 	if len(p)==4 and p.slice[3].type=="ParameterDeclList" and p.slice[2].type=="ParameterDecl" and p.slice[1].type=="COMMA":
 		p[0]['args_types'] = [p[2]['type']] + p[3]['args_types']
@@ -1464,6 +1587,7 @@ def p_parameter_decl_list(p):
 		p[0]['dims'] = [p[2]['dim']] + p[3]['dims']
 		p[0]['dimranges'] = [p[2]['dimrange']] + p[3]['dimranges']
 		p[0]['code'] = p[2]['code'] + p[3]['code']
+		p[0]['scopelist'] = p[2]['scopelist'] + p[3]['scopelist']
 	if len(p)==2 and p.slice[1].type=="empty":
 		p[0]['args_types'] = []
 		p[0]['idlist'] = []
@@ -1480,12 +1604,14 @@ def p_parameter_decl(p):
 	global actRecordDict
 	p[0] = {}
 	p[0]['code'] = []
+	p[0]['scopelist'] = []
 	p[0]['dict_code'] = {}
 	p[0]['type'] = p[3]['type']
 	p[0]['idlist'] = p[1]['idlist']
 	p[0]['dim'] = p[3]['dim']
 	p[0]['dimrange'] = p[3]['dimrange']
 	p[0]['code'] = p[1]['code'] + p[3]['code']
+	p[0]['scopelist'] = p[1]['scopelist'] + p[3]['scopelist']
 
 def p_tripledot_top(p):
 	'''
@@ -1498,6 +1624,7 @@ def p_tripledot_top(p):
 	global actRecordDict
 	p[0] = {}
 	p[0]['code'] = []
+	p[0]['scopelist'] = []
 	p[0]['dict_code'] = {}
 	if len(p)==2 and p.slice[1].type=="DOT_DOT_DOT":
 		p[0]['symbol'] = '...'
@@ -1515,6 +1642,7 @@ def p_parameter_decl_head(p):
 	global actRecordDict
 	p[0] = {}
 	p[0]['code'] = []
+	p[0]['scopelist'] = []
 	p[0]['dict_code'] = {}
 	if len(p)==2 and p.slice[1].type=="IdentifierList1":
 		p[0]['idlist'] = p[1]['idlist']
@@ -1531,8 +1659,10 @@ def p_var_decl(p):
 	global actRecordDict
 	p[0] = {}
 	p[0]['code'] = []
+	p[0]['scopelist'] = []
 	p[0]['dict_code'] = {}
 	p[0]['code'] = p[2]['code']
+	p[0]['scopelist'] = p[2]['scopelist']
 	sym_table = symTableDict[symTableSt[-1]]
 	var_symbols = sym_table.getVarSymbols()
 	var_names = p[2]['idlist']
@@ -1551,6 +1681,7 @@ def p_var_decl(p):
 	  decl = "_decl array " + type + " " + var_entry.getName() + decl_tail
 	  var_entry.setType(type, sym_table)
 	  p[0]['code'] += [decl]
+	  p[0]['scopelist'] += [actRecordSt[-1]]
 
 def p_var_spec_top_list(p):
 	'''
@@ -1563,12 +1694,15 @@ def p_var_spec_top_list(p):
 	global actRecordDict
 	p[0] = {}
 	p[0]['code'] = []
+	p[0]['scopelist'] = []
 	p[0]['dict_code'] = {}
 	if len(p)==2 and p.slice[1].type=="VarSpec":
 		p[0]['code'] = p[1]['code']
+		p[0]['scopelist'] = p[1]['scopelist']
 		p[0]['idlist'] = p[1]['idlist']
 	if len(p)==4 and p.slice[3].type=="RPAREN" and p.slice[2].type=="VarSpecList" and p.slice[1].type=="LPAREN":
 		p[0]['code'] = p[2]['code']
+		p[0]['scopelist'] = p[2]['scopelist']
 		p[0]['idlist'] = p[2]['idlist']
 
 def p_var_spec_list(p):
@@ -1582,9 +1716,11 @@ def p_var_spec_list(p):
 	global actRecordDict
 	p[0] = {}
 	p[0]['code'] = []
+	p[0]['scopelist'] = []
 	p[0]['dict_code'] = {}
 	if len(p)==4 and p.slice[3].type=="SEMICOLON" and p.slice[2].type=="VarSpecList" and p.slice[1].type=="VarSpec":
 		p[0]['code'] = p[1]['code'] + p[2]['code']
+		p[0]['scopelist'] = p[1]['scopelist'] + p[2]['scopelist']
 		p[0]['idlist'] = p[1]['idlist'] + p[2]['idlist']
 	if len(p)==2 and p.slice[1].type=="empty":
 		p[0]['idlist'] = []
@@ -1599,6 +1735,7 @@ def p_var_spec(p):
 	global actRecordDict
 	p[0] = {}
 	p[0]['code'] = []
+	p[0]['scopelist'] = []
 	p[0]['dict_code'] = {}
 	scope = symTableSt[-1]
 	symTable = symTableDict[scope]
@@ -1606,6 +1743,7 @@ def p_var_spec(p):
 	  print("Length mismatch on line number", p.lexer.lineno)
 	  sys.exit(0)
 	p[0]['code'] = p[1]['code'] + p[2]['code']
+	p[0]['scopelist'] = p[1]['scopelist'] + p[2]['scopelist']
 	p[0]['idlist'] = p[1]['idlist']
 	mylist = p[1]['idlist']
 	mytypelist = p[2]['typelist']
@@ -1620,6 +1758,7 @@ def p_var_spec(p):
 	    var.setDimRanges(myidxlists[index])
 	    if (index < len(mynamelist)):
 	      p[0]['code'] += [i + " := " + mynamelist[index]]
+	      p[0]['scopelist'] += [actRecordSt[-1]]
 	    if (p[2]['type_used'] == False):
 	      var.setType(mytypelist[index], symTable)
 	    else:
@@ -1639,9 +1778,11 @@ def p_var_spec_tail(p):
 	global actRecordDict
 	p[0] = {}
 	p[0]['code'] = []
+	p[0]['scopelist'] = []
 	p[0]['dict_code'] = {}
 	p[0]['namelist'] = p[2]['namelist']
 	p[0]['code'] = p[2]['code']
+	p[0]['scopelist'] = p[2]['scopelist']
 	if len(p)==3 and p.slice[2].type=="VarSpecMid" and p.slice[1].type=="Type":
 		p[0]['typelist'] = [p[1]['type']]
 		p[0]['type_used'] = True
@@ -1660,11 +1801,13 @@ def p_var_spec_mid(p):
 	global actRecordDict
 	p[0] = {}
 	p[0]['code'] = []
+	p[0]['scopelist'] = []
 	p[0]['dict_code'] = {}
 	if len(p)==3 and p.slice[2].type=="ExpressionList" and p.slice[1].type=="EQ":
 		p[0]['namelist'] = p[2]['namelist']
 		p[0]['typelist'] = p[2]['typelist']
 		p[0]['code'] = p[2]['code']
+		p[0]['scopelist'] = p[2]['scopelist']
 	if len(p)==2 and p.slice[1].type=="empty":
 		p[0]['namelist'] = []
 		p[0]['typelist'] = []
@@ -1679,7 +1822,9 @@ def p_function_decl(p):
 	global actRecordDict
 	p[0] = {}
 	p[0]['code'] = []
+	p[0]['scopelist'] = []
 	p[0]['dict_code'] = {}
+	p[0]['scopelist'] = p[2]['scopelist'] + p[3]['scopelist']
 	this_func_sym_table = symTableDict[symTableSt[-1]]
 	act_record = actRecordDict[actRecordSt[-1]]
 	actRecordSt = actRecordSt[:-1]
@@ -1693,7 +1838,9 @@ def p_function_decl(p):
 	act_record.setLocalVarsInputArgs(this_func_sym_table)
 	#act_record.storeOldStPtr("%rbp")
 	act_record.setRetValues(entry)
-	p[0]['dict_code'] = { func_name: code_optimization(p[2]['code'] + p[3]['code']) }
+	p[0]['code'] = p[2]['code'] + p[3]['code']
+	p[0]['dict_code'] = { func_name: code_optimization(p[0]['code']) }
+	print(len(p[0]['code']), len(p[0]['scopelist']))
 	p[3]['ret_actual_types'] = flatten_list(p[3]['ret_actual_types'])
 	for ret_actual in p[3]['ret_actual_types']:
 	      if (len(ret_actual) > 0 and p[2]['ret_types'] != ret_actual):
@@ -1710,12 +1857,14 @@ def p_signature(p):
 	global actRecordDict
 	p[0] = {}
 	p[0]['code'] = []
+	p[0]['scopelist'] = []
 	p[0]['dict_code'] = {}
 	func_name = p[1]['func_name']
 	p[0]['input_args'] = p[2]['args_types']
 	p[0]['ret_types'] = p[3]['ret_types']
 	p[0]['func_name'] = func_name
 	p[0]['code'] = p[2]['code']
+	p[0]['scopelist'] = p[2]['scopelist']
 	entry = symTableDict[symTableSt[-2]].get(func_name)
 	entry.setInputArgs(p[0]['input_args'])
 	entry.setReturnTypes(p[0]['ret_types'])
@@ -1731,10 +1880,12 @@ def p_function_body_top(p):
 	global actRecordDict
 	p[0] = {}
 	p[0]['code'] = []
+	p[0]['scopelist'] = []
 	p[0]['dict_code'] = {}
 	p[0]['ret_actual_types'] = []
 	if len(p)==2 and p.slice[1].type=="FunctionBody":
 		p[0]['code'] = p[1]['code']
+		p[0]['scopelist'] = p[1]['scopelist']
 		p[0]['ret_actual_types'] = p[1]['ret_typelist']
 
 def p_function_decl_tail(p):
@@ -1748,8 +1899,10 @@ def p_function_decl_tail(p):
 	global actRecordDict
 	p[0] = {}
 	p[0]['code'] = []
+	p[0]['scopelist'] = []
 	p[0]['dict_code'] = {}
 	p[0]['code'] = p[1]['code']
+	p[0]['scopelist'] = p[1]['scopelist']
 	p[0]['input_args'] = p[1]['input_args']
 	p[0]['ret_types'] = p[1]['ret_types']
 	p[0]['ret_actual_types'] = []
@@ -1766,6 +1919,7 @@ def p_function_name(p):
 	global actRecordDict
 	p[0] = {}
 	p[0]['code'] = []
+	p[0]['scopelist'] = []
 	p[0]['dict_code'] = {}
 	table = symTableDict[symTableSt[-1]]
 	entry = FuncEntry(p[1])
@@ -1795,8 +1949,10 @@ def p_function(p):
 	global actRecordDict
 	p[0] = {}
 	p[0]['code'] = []
+	p[0]['scopelist'] = []
 	p[0]['dict_code'] = {}
 	p[0]['code'] = p[2]['code']
+	p[0]['scopelist'] = p[2]['scopelist']
 	p[0]['input_args'] = p[1]['input_args']
 	p[0]['ret_types'] = p[1]['ret_types']
 	p[0]['ret_actual_types'] = p[2]['ret_typelist']
@@ -1811,8 +1967,10 @@ def p_function_body(p):
 	global actRecordDict
 	p[0] = {}
 	p[0]['code'] = []
+	p[0]['scopelist'] = []
 	p[0]['dict_code'] = {}
 	p[0]['code'] = p[2]['code']
+	p[0]['scopelist'] = p[2]['scopelist']
 	p[0]['ret_typelist'] = p[2]['ret_typelist']
 
 def p_method_decl(p):
@@ -1825,6 +1983,7 @@ def p_method_decl(p):
 	global actRecordDict
 	p[0] = {}
 	p[0]['code'] = []
+	p[0]['scopelist'] = []
 	p[0]['dict_code'] = {}
 	p[0]['dict_code'] = { p[3]: code_optimization(p[4]['code']) }
 
@@ -1838,6 +1997,7 @@ def p_method_name(p):
 	global actRecordDict
 	p[0] = {}
 	p[0]['code'] = []
+	p[0]['scopelist'] = []
 	p[0]['dict_code'] = {}
 	scope = symTableSt[-1]
 	symTable = symTableDict[scope]
@@ -1856,6 +2016,7 @@ def p_receiver(p):
 	global actRecordDict
 	p[0] = {}
 	p[0]['code'] = []
+	p[0]['scopelist'] = []
 	p[0]['dict_code'] = {}
 
 def p_simple_stmt(p):
@@ -1871,8 +2032,10 @@ def p_simple_stmt(p):
 	global actRecordDict
 	p[0] = {}
 	p[0]['code'] = []
+	p[0]['scopelist'] = []
 	p[0]['dict_code'] = {}
 	p[0]['code'] = p[1]['code']
+	p[0]['scopelist'] = p[1]['scopelist']
 	p[0]['place'] = ''
 	if len(p)==2 and p.slice[1].type=="ExpressionStmt":
 		p[0]['place'] = p[1]['place']
@@ -1888,9 +2051,11 @@ def p_simple_stmt_bot(p):
 	global actRecordDict
 	p[0] = {}
 	p[0]['code'] = []
+	p[0]['scopelist'] = []
 	p[0]['dict_code'] = {}
 	if len(p)==2 and p.slice[1].type=="SimpleStmt":
 		p[0]['code'] = p[1]['code']
+		p[0]['scopelist'] = p[1]['scopelist']
 		p[0]['place'] = p[1]['place']
 	if len(p)==2 and p.slice[1].type=="empty":
 		p[0]['place'] = ""
@@ -1905,8 +2070,10 @@ def p_expression_stmt(p):
 	global actRecordDict
 	p[0] = {}
 	p[0]['code'] = []
+	p[0]['scopelist'] = []
 	p[0]['dict_code'] = {}
 	p[0]['code'] = p[1]['code']
+	p[0]['scopelist'] = p[1]['scopelist']
 	p[0]['place'] = p[1]['place']
 
 def p_short_var_decl(p):
@@ -1919,17 +2086,21 @@ def p_short_var_decl(p):
 	global actRecordDict
 	p[0] = {}
 	p[0]['code'] = []
+	p[0]['scopelist'] = []
 	p[0]['dict_code'] = {}
 	for name, typ in zip(p[1]['idlist'], p[3]['typelist']):
 	    p[0]['code'] += ["_decl " + typ + " " + name]
+	    p[0]['scopelist'] += [actRecordSt[-1]]
 	scope = symTableSt[-1]
 	table = symTableDict[scope]
 	p[0]['code'] += p[3]['code']
+	p[0]['scopelist'] += p[3]['scopelist']
 	if (len(p[1]['idlist']) != len(p[3]['namelist'])):
 	   print("Left and right side not equal on line number", p.lexer.lineno)
 	   sys.exit(0)
 	for i, j, k in zip(p[1]['idlist'], p[3]['namelist'], p[3]['typelist']):
 	  p[0]['code'] += [i + ' := ' + j]
+	  p[0]['scopelist'] += [actRecordSt[-1]]
 	  entry = VarEntry(i)
 	  entry.setType(k, table)
 	  if (table.put(entry) == False):
@@ -1946,6 +2117,7 @@ def p_assignment(p):
 	global actRecordDict
 	p[0] = {}
 	p[0]['code'] = []
+	p[0]['scopelist'] = []
 	p[0]['dict_code'] = {}
 	for id in p[1]['idlist']:
 	  id = id.split(".")[0]
@@ -1960,6 +2132,7 @@ def p_assignment(p):
 	    print("Error:", id, "not defined on line number", p.lexer.lineno)
 	    sys.exit(0)
 	p[0]['code'] = p[1]['code'] + p[3]['code']
+	p[0]['scopelist'] = p[1]['scopelist'] + p[3]['scopelist']
 	if (p[2]['len'] == 1):
 	  for i, j, k in zip(p[1]['idlist'], p[3]['namelist'], p[3]['typelist']):
 	    q = i
@@ -1970,6 +2143,7 @@ def p_assignment(p):
 	      print("Error type mismatch in line " +str(p.lexer.lineno) +". Expected type " +left_elem_type+", got type "+ k)
 	      sys.exit(0)
 	    p[0]['code'] += [i + ' := ' + j] 
+	    p[0]['scopelist'] += [actRecordSt[-1]]
 	else:
 	  for i, j, k in zip(p[1]['idlist'], p[3]['namelist'], p[3]['typelist']):
 	    q = i
@@ -1986,6 +2160,7 @@ def p_assignment(p):
 	    p[0]['code'] += [var + " := " + i]
 	    p[0]['code'] += [var_dest + ' :=  '+ var + " " + p[2]['symbol'] + k + " " + j]
 	    p[0]['code'] += [i + " := " + var_dest]
+	    p[0]['scopelist'] += [actRecordSt[-1], actRecordSt[-1], actRecordSt[-1]]
 
 def p_assignment_gen(p):
 	'''
@@ -1997,8 +2172,10 @@ def p_assignment_gen(p):
 	global actRecordDict
 	p[0] = {}
 	p[0]['code'] = []
+	p[0]['scopelist'] = []
 	p[0]['dict_code'] = {}
 	p[0]['code'] = p[1]['code'] + p[3]['code']
+	p[0]['scopelist'] = p[1]['scopelist'] + p[3]['scopelist']
 	for i, idx,  j, k in zip(p[1]['idlist'], p[1]['idxlists'],  p[3]['namelist'], p[3]['typelist']):
 	  q = i
 	  if q[0] in ['*']:
@@ -2021,8 +2198,10 @@ def p_assignment_gen(p):
 	    for l in idx:
 	      loc += "[" + l + "]"
 	    p[0]['code'] += [i + loc + ' := ' + j]
+	    p[0]['scopelist'] += [actRecordSt[-1]]
 	else:
 	    p[0]['code'] += [i + ' := ' + i + str(idx) + p2['symbol'] + j]
+	    p[0]['scopelist'] += [actRecordSt[-1]]
 
 def p_assign_op(p):
 	'''
@@ -2034,6 +2213,7 @@ def p_assign_op(p):
 	global actRecordDict
 	p[0] = {}
 	p[0]['code'] = []
+	p[0]['scopelist'] = []
 	p[0]['dict_code'] = {}
 	p[0]['len'] = 1 + p[1]['len']
 	p[0]['symbol'] = p[1]['symbol']
@@ -2050,6 +2230,7 @@ def p_addmul_op(p):
 	global actRecordDict
 	p[0] = {}
 	p[0]['code'] = []
+	p[0]['scopelist'] = []
 	p[0]['dict_code'] = {}
 	if len(p)==2 and p.slice[1].type=="add_op":
 		p[0]['len'] = 1
@@ -2071,6 +2252,7 @@ def p_if_stmt(p):
 	global actRecordDict
 	p[0] = {}
 	p[0]['code'] = []
+	p[0]['scopelist'] = []
 	p[0]['dict_code'] = {}
 	p[0]['lastlabel'] = p[5]['lastlabel']
 	p[4]['label'] = newLabel()
@@ -2079,11 +2261,15 @@ def p_if_stmt(p):
 	   sys.exit(0)
 	if (p[5]['symbol'] != ""):
 	   p[0]['code'] = p[2]['code'] + ['if '+ p[2]['place'] + p[3]['symbol'] + ' goto ' + p[4]['label'] + " " +p[5]['symbol']]
+	   p[0]['scopelist'] = p[2]['scopelist'] + [actRecordSt[-1]]
 	else:
 	   p[0]['code'] = p[2]['code'] + ['if '+ p[2]['place'] + p[3]['symbol'] + ' goto ' + p[4]['label'] + " else goto " +p[0]['lastlabel']]
+	   p[0]['scopelist'] = p[2]['scopelist'] + [actRecordSt[-1]]
 	   
 	p[0]['code'] += [p[4]['label'] + ':'] + p[4]['code'] + ["goto " + p[0]['lastlabel']]
+	p[0]['scopelist'] += [actRecordSt[-1]] + p[4]['scopelist'] + [actRecordSt[-1]]
 	p[0]['code'] += p[5]['code'] + [p[0]['lastlabel'] +": "]
+	p[0]['scopelist'] = p[5]['scopelist'] + [actRecordSt[-1]]
 	p[0]['ret_typelist'] = p[4]['ret_typelist']
 
 def p_if_stmt2(p):
@@ -2096,6 +2282,7 @@ def p_if_stmt2(p):
 	global actRecordDict
 	p[0] = {}
 	p[0]['code'] = []
+	p[0]['scopelist'] = []
 	p[0]['dict_code'] = {}
 	p[0]['lastlabel'] = p[5]['lastlabel']
 	p[4]['label'] = newLabel()
@@ -2104,11 +2291,15 @@ def p_if_stmt2(p):
 	   sys.exit(0)
 	if (p[5]['symbol'] != ""):
 	   p[0]['code'] = p[2]['code'] + ['if '+ p[2]['place'] + p[3]['symbol'] + ' goto ' + p[4]['label'] + " " +p[5]['symbol']]
+	   p[0]['scopelist'] = p[2]['scopelist'] + [actRecordSt[-1]]
 	else:
 	   p[0]['code'] = p[2]['code'] + ['if '+ p[2]['place'] + p[3]['symbol'] + ' goto ' + p[4]['label'] + " else goto " +p[0]['lastlabel']]
+	   p[0]['scopelist'] = p[2]['scopelist'] + [actRecordSt[-1]]
 	   
 	p[0]['code'] += [p[4]['label'] + ':'] + p[4]['code'] + ["goto " + p[0]['lastlabel']]
+	p[0]['scopelist'] += [actRecordSt[-1]] + p[4]['scopelist'] + [actRecordSt[-1]]
 	p[0]['code'] += p[5]['code']
+	p[0]['scopelist'] += p[5]['scopelist']
 	p[0]['ret_typelist'] = p[4]['ret_typelist']
 
 def p_simple_stmt_bot(p):
@@ -2124,10 +2315,13 @@ def p_simple_stmt_bot(p):
 	global actRecordDict
 	p[0] = {}
 	p[0]['code'] = []
+	p[0]['scopelist'] = []
 	p[0]['dict_code'] = {}
 	p[0]['code'] = []
+	p[0]['scopelist'] = []
 	if len(p)==2 and p.slice[1].type=="SimpleStmt":
 		p[0]['code'] = p[1]['code']
+		p[0]['scopelist'] = p[1]['scopelist']
 		p[0]['place'] = p[1]['place']
 	if len(p)==2 and p.slice[1].type=="TRUE":
 		p[1]['place'] = 'true'
@@ -2147,15 +2341,18 @@ def p_else_bot(p):
 	global actRecordDict
 	p[0] = {}
 	p[0]['code'] = []
+	p[0]['scopelist'] = []
 	p[0]['dict_code'] = {}
 	if len(p)==3 and p.slice[2].type=="elseTail" and p.slice[1].type=="ELSE":
 		p[2]['label'] = newLabel()
 		p[0]['symbol'] = 'else goto ' + p[2]['label']
 		p[0]['code'] = [p[2]['label'] + ' : '] + p[2]['code']
+		p[0]['scopelist'] = [None] + p[2]['scopelist']
 		p[0]['lastlabel'] = p[2]['lastlabel']
 	if len(p)==2 and p.slice[1].type=="empty":
 		p[0]['symbol'] = ''
 		p[0]['code'] = []
+		p[0]['scopelist'] = []
 		p[0]['lastlabel'] = newLabel()
 
 def p_else_tail(p):
@@ -2169,8 +2366,10 @@ def p_else_tail(p):
 	global actRecordDict
 	p[0] = {}
 	p[0]['code'] = []
+	p[0]['scopelist'] = []
 	p[0]['dict_code'] = {}
 	p[0]['code'] = p[1]['code']
+	p[0]['scopelist'] = p[1]['scopelist']
 	if len(p)==2 and p.slice[1].type=="IfStmt2":
 		p[0]['lastlabel'] = p[1]['lastlabel']
 	if len(p)==2 and p.slice[1].type=="Block":
@@ -2186,8 +2385,10 @@ def p_switch_stmt(p):
 	global actRecordDict
 	p[0] = {}
 	p[0]['code'] = []
+	p[0]['scopelist'] = []
 	p[0]['dict_code'] = {}
 	p[0]['code'] = p[1]['code']
+	p[0]['scopelist'] = p[1]['scopelist']
 	p[0]['ret_typelist'] = p[1]['ret_typelist']
 
 def p_expr_switch_stmt(p):
@@ -2200,6 +2401,7 @@ def p_expr_switch_stmt(p):
 	global actRecordDict
 	p[0] = {}
 	p[0]['code'] = []
+	p[0]['scopelist'] = []
 	p[0]['dict_code'] = {}
 	b = False
 	for scope in symTableSt:
@@ -2210,18 +2412,26 @@ def p_expr_switch_stmt(p):
 	  print("Switch variable", p[2], "not declared on line number", p.lexer.lineno)
 	  sys.exit(0)
 	p[0]['code'] = p[4]['expcodelist']
+	p[0]['scopelist'] = p[4]['scopelist']
 	for exp, label in zip(p[4]['explist'], p[4]['labellist'][:-1]):
 	  exp_var = newVar()
 	  var = newVar()
 	  var2 = newVar()
 	  p[0]['code'] += [exp_var + " := " + exp]
+	  p[0]['scopelist'] += [actRecordSt[-1]]
 	  p[0]['code'] += [var2 + " := " + p[2]]
+	  p[0]['scopelist'] += [actRecordSt[-1]]
 	  p[0]['code'] += [var + " := " + var2 + ' == ' + exp_var]
+	  p[0]['scopelist'] += [actRecordSt[-1]]
 	  p[0]['code'] += ['if ' + var + ' goto ' + label]
+	  p[0]['scopelist'] += [actRecordSt[-1]]
 	for label, codeblock in zip(p[4]['labellist'][:-1], p[4]['code']):
-		p[0]['code'] += codeblock
-		p[0]['code'] += ['goto ' + p[4]['labellist'][-1]]
+	  p[0]['code'] += codeblock
+	  p[0]['scopelist'] += [None]
+	  p[0]['code'] += ['goto ' + p[4]['labellist'][-1]]
+	  p[0]['scopelist'] += [None]
 	p[0]['code'] += [p[4]['labellist'][-1] + ':']
+	p[0]['scopelist'] += [None]
 	p[0]['ret_typelist'] = p[4]['ret_typelist']
 
 def p_expr_case_clause_list(p):
@@ -2235,18 +2445,21 @@ def p_expr_case_clause_list(p):
 	global actRecordDict
 	p[0] = {}
 	p[0]['code'] = []
+	p[0]['scopelist'] = []
 	p[0]['dict_code'] = {}
 	if len(p)==3 and p.slice[2].type=="ExprCaseClauseList" and p.slice[1].type=="ExprCaseClause":
 		p[0]['explist'] = [p[1]['exp']] + p[2]['explist']
 		p[0]['expcodelist'] = p[1]['expcode'] + p[2]['expcodelist']
 		p[0]['labellist'] = [p[1]['label']] + p[2]['labellist']
 		p[0]['code'] = [p[1]['code']] + p[2]['code']
+		p[0]['scopelist'] = p[1]['scopelist'] + p[2]['scopelist']
 		p[0]['ret_typelist'] = [p[1]['ret_typelist']] + p[2]['ret_typelist']
 	if len(p)==2 and p.slice[1].type=="empty":
 		p[0]['explist'] = []
 		p[0]['expcodelist'] = []
 		p[0]['labellist'] = [newLabel()]
 		p[0]['code'] = []
+		p[0]['scopelist'] = []
 		p[0]['ret_typelist'] = []
 
 def p_expr_case_clause(p):
@@ -2259,11 +2472,13 @@ def p_expr_case_clause(p):
 	global actRecordDict
 	p[0] = {}
 	p[0]['code'] = []
+	p[0]['scopelist'] = []
 	p[0]['dict_code'] = {}
 	p[0]['exp'] = p[1]['exp']
 	p[0]['expcode'] = p[1]['code']
 	p[0]['label'] = newLabel()
 	p[0]['code'] = [p[0]['label'] + ' : '] + p[4]['code']
+	p[0]['scopelist'] = [None] + p[4]['scopelist']
 	p[0]['ret_typelist'] = p[4]['ret_typelist']
 
 def p_expr_switch_case(p):
@@ -2277,10 +2492,12 @@ def p_expr_switch_case(p):
 	global actRecordDict
 	p[0] = {}
 	p[0]['code'] = []
+	p[0]['scopelist'] = []
 	p[0]['dict_code'] = {}
 	if len(p)==3 and p.slice[2].type=="Expression" and p.slice[1].type=="CASE":
 		p[0]['exp'] = p[2]['place']
 		p[0]['code'] = p[2]['code']
+		p[0]['scopelist'] = p[2]['scopelist']
 
 def p_for_stmt(p):
 	'''
@@ -2292,27 +2509,39 @@ def p_for_stmt(p):
 	global actRecordDict
 	p[0] = {}
 	p[0]['code'] = []
+	p[0]['scopelist'] = []
 	p[0]['dict_code'] = {}
 	if len(p)==8 and p.slice[7].type=="Block" and p.slice[6].type=="SimpleStmtBot" and p.slice[5].type=="SEMICOLON" and p.slice[4].type=="SimpleStmtBot" and p.slice[3].type=="SEMICOLON" and p.slice[2].type=="SimpleStmtBot" and p.slice[1].type=="FOR":
 		p[0]['code'] = p[2]['code'] + p[4]['code']
+		p[0]['scopelist'] = p[2]['scopelist'] + p[4]['scopelist']
 		beglabel = newLabel()
 		endlabel = newLabel()
 		if (p[4]['place'] != ""):
 		  p[0]['code'] += ["if " + p[4]['place'] + " goto " + beglabel + " else goto " + endlabel]
+		  p[0]['scopelist'] += [actRecordSt[-1]]
 		p[0]['code'] += [beglabel + ":"]
+		p[0]['scopelist'] += [None]
 		for line in p[7]['code']:
 		  if (line == "goto endlabel"):
 		    p[0]['code'] += ["goto " + endlabel]
+		    p[0]['scopelist'] += None
 		  elif (line == "goto beglabel"):
 		    p[0]['code'] += p[6]['code']
+		    p[0]['scopelist'] += p[6]['scopelist']
 		    p[0]['code'] += ["goto " + beglabel]
+		    p[0]['scopelist'] += [None]
 		  else:
 		    p[0]['code'] += [line]
+		    p[0]['scopelist'] += [actRecordSt[-1]]
 		p[0]['code'] += p[6]['code']
+		p[0]['scopelist'] += p[6]['scopelist']
 		p[0]['code'] += p[4]['code']
+		p[0]['scopelist'] += p[4]['scopelist']
 		if (p[4]['place'] != ""):
 		  p[0]['code'] += ["if " + p[4]['place'] + " goto " + beglabel + " else goto " + endlabel]
+		  p[0]['scopelist'] += [actRecordSt[-1]]
 		p[0]['code'] += [endlabel + ":"]
+		p[0]['scopelist'] += [None]
 
 def p_expression_bot(p):
 	'''
@@ -2325,6 +2554,7 @@ def p_expression_bot(p):
 	global actRecordDict
 	p[0] = {}
 	p[0]['code'] = []
+	p[0]['scopelist'] = []
 	p[0]['dict_code'] = {}
 	if len(p)==2 and p.slice[1].type=="Expression":
 		p[0]['symbol'] = p[1]['code'][-1] 
@@ -2341,14 +2571,18 @@ def p_return_stmt(p):
 	global actRecordDict
 	p[0] = {}
 	p[0]['code'] = []
+	p[0]['scopelist'] = []
 	p[0]['dict_code'] = {}
 	p[0]['typelist'] = p[2]['typelist']
 	p[0]['code'] = p[2]['code']
+	p[0]['scopelist'] = p[2]['scopelist']
 	#if len(p[2]['typelist']) == 0:
 	#   p[0]['code'] += ["ret"]
 	for name in p[2]['namelist']:
 	      p[0]['code'] += ["ret " + name]
+	      p[0]['code'] += [actRecordSt[-1]]
 	p[0]['code'] += ['func_end']
+	p[0]['code'] += [None]
 
 def p_expression_list_bot(p):
 	'''
@@ -2361,9 +2595,11 @@ def p_expression_list_bot(p):
 	global actRecordDict
 	p[0] = {}
 	p[0]['code'] = []
+	p[0]['scopelist'] = []
 	p[0]['dict_code'] = {}
 	if len(p)==2 and p.slice[1].type=="ExpressionList":
 		p[0]['code'] = p[1]['code']
+		p[0]['scopelist'] = p[1]['scopelist']
 		p[0]['typelist'] = p[1]['typelist']
 		p[0]['namelist'] = p[1]['namelist']
 	if len(p)==2 and p.slice[1].type=="empty":
@@ -2383,32 +2619,40 @@ def p_expression(p):
 	global actRecordDict
 	p[0] = {}
 	p[0]['code'] = []
+	p[0]['scopelist'] = []
 	p[0]['dict_code'] = {}
 	p[0]['type'] = ''
 	if len(p)==2 and p.slice[1].type=="UnaryExpr":
 		p[0]['code'] = p[1]['code']
+		p[0]['scopelist'] = p[1]['scopelist']
 		p[0]['type'] = p[1]['type']
 		p[0]['place'] = p[1]['place']
 	if len(p)==4 and p.slice[3].type=="Expression" and p.slice[2].type=="binary_op" and p.slice[1].type=="Expression":
 		p[0]['place'] = newVar()
 		if p[1]['type'] == p[3]['type']:
 		  p[0]['code'] = p[1]['code'] + p[3]['code'] + [p[0]['place'] + ' := ' + p[1]['place'] +" "+ p[2]['symbol'] + p[1]['type']+" " + p[3]['place']]
+		  p[0]['scopelist'] = p[1]['scopelist'] + p[3]['scopelist'] + [actRecordSt[-1]]
 		  p[0]['type'] = p[1]['type']
 		elif (p[1]['type']=='float' and p[3]['type']=='int'):
 		  p[0]['code'] = p[1]['code'] + p[3]['code'] + [p[0]['place'] + ' := cast-to-float ' + p[1]['place']+" " + p[2]['symbol'] + 'float ' + p[3]['place']]
+		  p[0]['scopelist'] = p[1]['scopelist'] + p[3]['scopelist'] + [actRecordSt[-1]]
 		  p[0]['type'] ='float'
 		elif (p[3]['type']=='float' and p[1]['type']=='int'):
 		  p[0]['code'] = p[1]['code'] + p[3]['code'] + [p[0]['place'] + ' := cast-to-float ' + p[3]['place'] +" "+ p[2]['symbol'] + 'float ' + p[1]['place']]
+		  p[0]['scopelist'] = p[1]['scopelist'] + p[3]['scopelist'] + [actRecordSt[-1]]
 		  p[0]['type'] ='float'
 		elif (p[1]['type']=='string'):
 		  p[0]['code'] = p[1]['code'] + p[3]['code'] + [p[0]['place'] + ' := cast-to-string ' + p[3]['place'] +" "+ p[2]['symbol'] + 'string ' + p[1]['place']]
+		  p[0]['scopelist'] = p[1]['scopelist'] + p[3]['scopelist'] + [actRecordSt[-1]]
 		  p[0]['type'] ='string'
 		elif (p[3]['type']=='string'):
 		  p[0]['code'] = p[1]['code'] + p[3]['code'] + [p[0]['place'] + ' := cast-to-string ' + p[1]['place'] +" "+ p[2]['symbol'] + 'string ' + p[3]['place']]
+		  p[0]['scopelist'] = p[1]['scopelist'] + p[3]['scopelist'] + [actRecordSt[-1]]
 		  p[0]['type'] ='string'
 	if len(p)==4 and p.slice[3].type=="IDENTIFIER" and p.slice[2].type=="DOT" and p.slice[1].type=="IDENTIFIER":
 		p[0]['place'] = newVar()
 		p[0]['code'] = [p[0]['place'] + ' := ' + p[1] + '.' + p[3]]
+		p[0]['scopelist'] = [actRecordSt[-1]]
 		sym_table = symTableDict[symTableSt[-1]]
 		symbols = sym_table.getSymbols()
 		if p[1] not in symbols:
@@ -2421,25 +2665,31 @@ def p_expression(p):
 	if len(p)==5 and p.slice[4].type=="keyword_rcurly" and p.slice[3].type=="ObjectParamList" and p.slice[2].type=="keyword_lcurly" and p.slice[1].type=="IDENTIFIER":
 		p[0]['place'] = newVar()
 		p[0]['code'] = p[3]['code']
+		p[0]['scopelist'] = p[3]['scopelist']
 		p[0]['type'] = p[1]
 		p[0]['field_ass'] = p[3]['field_ass']
 		code_so_far = p[0]['code'] # Following code is little optimization for saving registers
 		i = 0
 		j = 0
 		res = []
+		resscope = []
 		for asgn in p[3]['field_ass']:
 		  tmp_name = asgn[1]
 		  this_code = p[0]['place'] + "." + asgn[0] + " := " + asgn[1]
 		  for j in range(i, len(code_so_far)):
 		    if tmp_name in code_so_far[j]:
 		      res += [code_so_far[j], this_code]
+		      resscope += [actRecordSt[-1], actRecordSt[-1]]
 		      i = j + 1
 		      break
 		    else:
 		      res += [code_so_far[j]]
+		      resscope += [actRecordSt[-1], actRecordSt[-1]]
 		  if (j == len(code_so_far)):
 		    res += [this_code]
+		    resscope += [actRecordSt[-1]]
 		p[0]['code'] = res
+		p[0]['scopelist'] = resscope 
 
 def p_object_param_list(p):
 	'''
@@ -2451,9 +2701,11 @@ def p_object_param_list(p):
 	global actRecordDict
 	p[0] = {}
 	p[0]['code'] = []
+	p[0]['scopelist'] = []
 	p[0]['dict_code'] = {}
 	if len(p)==3 and p.slice[2].type=="ObjectParamTop" and p.slice[1].type=="ObjectParam":
 		p[0]['code'] = p[1]['code'] + p[2]['code']
+		p[0]['scopelist'] = p[1]['scopelist'] + p[2]['scopelist']
 		p[0]['field_ass'] = p[1]['field_ass'] + p[2]['field_ass']
 
 def p_object_param_top(p):
@@ -2468,15 +2720,19 @@ def p_object_param_top(p):
 	global actRecordDict
 	p[0] = {}
 	p[0]['code'] = []
+	p[0]['scopelist'] = []
 	p[0]['dict_code'] = {}
 	if len(p)==3 and p.slice[2].type=="ObjectParamTop" and p.slice[1].type=="COMMA":
 		p[0]['code'] = p[2]['code']
+		p[0]['scopelist'] = p[2]['scopelist']
 		p[0]['field_ass'] = p[2]['field_ass']
 	if len(p)==3 and p.slice[2].type=="ObjectParam" and p.slice[1].type=="COMMA":
 		p[0]['code'] = p[2]['code']
+		p[0]['scopelist'] = p[2]['scopelist']
 		p[0]['field_ass'] = p[2]['field_ass']
 	if len(p)==2 and p.slice[1].type=="empty":
 		p[0]['code'] = []
+		p[0]['scopelist'] = []
 		p[0]['field_ass'] = []
 
 def p_object_param(p):
@@ -2489,9 +2745,11 @@ def p_object_param(p):
 	global actRecordDict
 	p[0] = {}
 	p[0]['code'] = []
+	p[0]['scopelist'] = []
 	p[0]['dict_code'] = {}
 	if len(p)==4 and p.slice[3].type=="Expression" and p.slice[2].type=="COLON" and p.slice[1].type=="IDENTIFIER":
 		p[0]['code'] = p[3]['code']
+		p[0]['scopelist'] = p[3]['scopelist']
 		p[0]['field_ass'] = [(p[1], p[3]['place'])]
 
 def p_unary_expr(p):
@@ -2506,6 +2764,7 @@ def p_unary_expr(p):
 	global actRecordDict
 	p[0] = {}
 	p[0]['code'] = []
+	p[0]['scopelist'] = []
 	p[0]['dict_code'] = {}
 	if len(p)==3 and p.slice[2].type=="UnaryExpr" and p.slice[1].type=="unary_op":
 		p[0]['place'] = newVar()
@@ -2513,14 +2772,17 @@ def p_unary_expr(p):
 		if (p[1]['symbol'] == "&"):
 		  p[0]['type'] = "*" + p[0]['type']
 		p[0]['code'] = p[2]['code'] + [p[0]['place'] + ' := ' + p[1]['symbol'] + p[2]['place']]
+		p[0]['scopelist'] = p[1]['scopelist'] + [actRecordSt[-1]]
 	if len(p)==2 and p.slice[1].type=="PrimaryExpr":
 		p[0]['place'] = p[1]['place']
 		p[0]['type'] = p[1]['type']
 		p[0]['code'] = p[1]['code']
+		p[0]['scopelist'] = p[1]['scopelist']
 	if len(p)==3 and p.slice[2].type=="IDENTIFIER" and p.slice[1].type=="MULT":
 		p[0]['place'] = newVar()
 		p[0]['type'] = verifyCalType(p[2], p.lexer.lineno)[1:]
 		p[0]['code'] = [p[0]['place'] + " := " + "*" + p[2]]
+		p[0]['scopelist'] = [actRecordSt[-1]]
 
 def p_binary_op(p):
 	'''
@@ -2537,6 +2799,7 @@ def p_binary_op(p):
 	global actRecordDict
 	p[0] = {}
 	p[0]['code'] = []
+	p[0]['scopelist'] = []
 	p[0]['dict_code'] = {}
 	if len(p)==2 and p.slice[1].type=="OR_OR":
 		p[0]['symbol'] = p[1]
@@ -2566,6 +2829,7 @@ def p_rel_op(p):
 	global actRecordDict
 	p[0] = {}
 	p[0]['code'] = []
+	p[0]['scopelist'] = []
 	p[0]['dict_code'] = {}
 	p[0]['symbol'] = p[1]
 
@@ -2582,6 +2846,7 @@ def p_add_op(p):
 	global actRecordDict
 	p[0] = {}
 	p[0]['code'] = []
+	p[0]['scopelist'] = []
 	p[0]['dict_code'] = {}
 	p[0]['symbol'] = p[1]
 
@@ -2600,6 +2865,7 @@ def p_mul_op(p):
 	global actRecordDict
 	p[0] = {}
 	p[0]['code'] = []
+	p[0]['scopelist'] = []
 	p[0]['dict_code'] = {}
 	p[0]['symbol'] = p[1]
 
@@ -2619,6 +2885,7 @@ def p_unary_op(p):
 	global actRecordDict
 	p[0] = {}
 	p[0]['code'] = []
+	p[0]['scopelist'] = []
 	p[0]['dict_code'] = {}
 	p[0]['symbol'] = p[1]
 
@@ -2635,23 +2902,32 @@ def p_primary_expr(p):
 	global actRecordDict
 	p[0] = {}
 	p[0]['code'] = []
+	p[0]['scopelist'] = []
 	p[0]['dict_code'] = {}
 	p[0]['place'] = newVar()
 	if len(p)==2 and p.slice[1].type=="Operand":
 		p[0]['code'] = p[1]['code']
+		p[0]['scopelist'] = p[1]['scopelist']
 		p[0]['type'] = p[1]['type']
 		p[0]['code'] += [p[0]['place'] + ' := ' + p[1]['place']]
+		p[0]['scopelist'] += [actRecordSt[-1]]
 	if len(p)==3 and p.slice[2].type=="Selector" and p.slice[1].type=="PrimaryExpr":
 		p[0]['code'] = p[1]['code'] + p[2]['code']
+		p[0]['scopelist'] = p[1]['scopelist'] + p[2]['scopelist']
 		p[0]['code'] += [p[0]['place'] + ' := ' + p[1]['place'] + p[2]['symbol']]
+		p[0]['scopelist'] += [actRecordSt[-1]]
 	if len(p)==3 and p.slice[2].type=="Index" and p.slice[1].type=="PrimaryExpr":
 		p[0]['code'] = p[1]['code'] + p[2]['code']
+		p[0]['scopelist'] = p[1]['scopelist'] + p[2]['scopelist']
 		p[0]['type'] = p[1]['type']
 		p[0]['code'] += [p[0]['place'] + ' := ' + p[1]['place'] + p[2]['symbol']]
+		p[0]['scopelist'] += [actRecordSt[-1]]
 	if len(p)==3 and p.slice[2].type=="Arguments" and p.slice[1].type=="PrimaryExpr":
 		p[0]['code'] = p[1]['code'] + p[2]['code']
+		p[0]['scopelist'] = p[1]['scopelist'] + p[2]['scopelist']
 		p[0]['type'] = p[1]['type']
 		p[0]['code'] += [p[0]['place'] + ' := ' + p[1]['place'] + p[2]['symbol']]
+		p[0]['scopelist'] += [actRecordSt[-1]]
 
 def p_operand(p):
 	'''
@@ -2669,28 +2945,36 @@ def p_operand(p):
 	global actRecordDict
 	p[0] = {}
 	p[0]['code'] = []
+	p[0]['scopelist'] = []
 	p[0]['dict_code'] = {}
 	p[0]['place'] = newVar()
 	if len(p)==2 and p.slice[1].type=="Literal":
 		p[0]['code'] = [p[0]['place'] + ' := ' + p[1]['symbol']]
+		p[0]['scopelist'] += [actRecordSt[-1]]
 		p[0]['type'] = p[1]['type']
 	if len(p)==2 and p.slice[1].type=="OperandName":
 		p[0]['code'] = p[1]['code'] + [p[0]['place'] + ' := ' + p[1]['place']]
+		p[0]['scopelist'] = p[1]['scopelist'] + [actRecordSt[-1]]
 		p[0]['type'] = p[1]['type']
 	if len(p)==2 and p.slice[1].type=="MethodExpr":
 		p[0]['type'] = 'Unknown'
 	if len(p)==4 and p.slice[3].type=="RPAREN" and p.slice[2].type=="Expression" and p.slice[1].type=="LPAREN":
 		p[0]['type'] = p[2]['type']
 		p[0]['code'] = p[2]['code']
+		p[0]['scopelist'] = p[2]['scopelist']
 		p[0]['code'] += [p[0]['place'] + ' := ' + p[2]['place']]
+		p[0]['scopelist'] += [actRecordSt[-1]]
 	if len(p)==2 and p.slice[1].type=="TRUE":
 		p[0]['code'] = [p[0]['place'] + ' := true']
+		p[0]['scopelist'] += [actRecordSt[-1]]
 		p[0]['type'] = 'bool'
 	if len(p)==2 and p.slice[1].type=="FALSE":
 		p[0]['code'] = [p[0]['place'] + ' := false']
+		p[0]['scopelist'] += [actRecordSt[-1]]
 		p[0]['type'] = 'bool'
 	if len(p)==2 and p.slice[1].type=="FuncCallStmt":
 		p[0]['code'] = p[1]['code']
+		p[0]['scopelist'] = p[1]['scopelist']
 		p[0]['type'] = ""
 		if len(p[1]['ret_types']) > 0:
 		  p[0]['type'] = p[1]['ret_types'][0]
@@ -2706,6 +2990,7 @@ def p_literal(p):
 	global actRecordDict
 	p[0] = {}
 	p[0]['code'] = []
+	p[0]['scopelist'] = []
 	p[0]['dict_code'] = {}
 	if len(p)==2 and p.slice[1].type=="BasicLit":
 		p[0]['type'] = p[1]['type']
@@ -2723,6 +3008,7 @@ def p_basic_lit(p):
 	global actRecordDict
 	p[0] = {}
 	p[0]['code'] = []
+	p[0]['scopelist'] = []
 	p[0]['dict_code'] = {}
 	p[0]['symbol'] = p[1]
 	if len(p)==2 and p.slice[1].type=="INTEGERLIT":
@@ -2742,9 +3028,11 @@ def p_operand_name(p):
 	global actRecordDict
 	p[0] = {}
 	p[0]['code'] = []
+	p[0]['scopelist'] = []
 	p[0]['dict_code'] = {}
 	p[0]['place'] = newVar()
 	p[0]['code'] = [p[0]['place'] + ' := ' + p[1]]
+	p[0]['scopelist'] = [actRecordSt[-1]]
 	p[0]['type'] = verifyCalType(p[1], p.lexer.lineno)
 
 def p_function_lit(p):
@@ -2757,6 +3045,7 @@ def p_function_lit(p):
 	global actRecordDict
 	p[0] = {}
 	p[0]['code'] = []
+	p[0]['scopelist'] = []
 	p[0]['dict_code'] = {}
 
 def p_method_expr(p):
@@ -2769,6 +3058,7 @@ def p_method_expr(p):
 	global actRecordDict
 	p[0] = {}
 	p[0]['code'] = []
+	p[0]['scopelist'] = []
 	p[0]['dict_code'] = {}
 
 def p_receiver_type(p):
@@ -2783,6 +3073,7 @@ def p_receiver_type(p):
 	global actRecordDict
 	p[0] = {}
 	p[0]['code'] = []
+	p[0]['scopelist'] = []
 	p[0]['dict_code'] = {}
 
 def p_selector(p):
@@ -2795,6 +3086,7 @@ def p_selector(p):
 	global actRecordDict
 	p[0] = {}
 	p[0]['code'] = []
+	p[0]['scopelist'] = []
 	p[0]['dict_code'] = {}
 	p[0]['symbol'] = '.' + p[2]
 
@@ -2808,9 +3100,11 @@ def p_index(p):
 	global actRecordDict
 	p[0] = {}
 	p[0]['code'] = []
+	p[0]['scopelist'] = []
 	p[0]['dict_code'] = {}
 	p[0]['symbol'] = '[' + p[2]['place'] + ']'
 	p[0]['code'] = p[2]['code']
+	p[0]['scopelist'] = p[2]['scopelist']
 
 def p_arguments(p):
 	'''
@@ -2822,9 +3116,11 @@ def p_arguments(p):
 	global actRecordDict
 	p[0] = {}
 	p[0]['code'] = []
+	p[0]['scopelist'] = []
 	p[0]['dict_code'] = {}
 	p[0]['symbol'] = '(' + p[2]['symbol'] + ')'
 	p[0]['code'] = p[2]['code']
+	p[0]['scopelist'] = p[2]['scopelist']
 
 def p_arguments_head(p):
 	'''
@@ -2837,10 +3133,12 @@ def p_arguments_head(p):
 	global actRecordDict
 	p[0] = {}
 	p[0]['code'] = []
+	p[0]['scopelist'] = []
 	p[0]['dict_code'] = {}
 	if len(p)==4 and p.slice[3].type=="commaTop" and p.slice[2].type=="tripledotTop" and p.slice[1].type=="ArgumentsHeadMid":
 		p[0]['symbol'] = p[1]['symbol'] + p[2]['symbol'] +p[3]['symbol']
 		p[0]['code'] = p[1]['code']
+		p[0]['scopelist'] = p[1]['scopelist']
 
 def p_arguments_head_mid(p):
 	'''
@@ -2854,6 +3152,7 @@ def p_arguments_head_mid(p):
 	global actRecordDict
 	p[0] = {}
 	p[0]['code'] = []
+	p[0]['scopelist'] = []
 	p[0]['dict_code'] = {}
 	if len(p)==2 and p.slice[1].type=="ExpressionList":
 		str = ''
@@ -2862,6 +3161,7 @@ def p_arguments_head_mid(p):
 		str += p[1]['namelist'][-1]
 		p[0]['symbol'] = str
 		p[0]['code'] = p[1]['code']
+		p[0]['scopelist'] = p[1]['scopelist']
 	if len(p)==4 and p.slice[3].type=="ExpressionList" and p.slice[2].type=="COMMA" and p.slice[1].type=="Type":
 		str = p[1]['place'] + ','
 		for elt in p[3]['namelist'][:-1]:
@@ -2869,6 +3169,7 @@ def p_arguments_head_mid(p):
 		str += p[3]['namelist'][-1]
 		p[0]['symbol'] = str
 		p[0]['code'] = p[3]['code']
+		p[0]['scopelist'] = p[3]['scopelist']
 	if len(p)==2 and p.slice[1].type=="Type":
 		p[0]['symbol'] = p[1]['place']
 

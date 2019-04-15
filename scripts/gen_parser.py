@@ -26,7 +26,11 @@ def insertActionsHelper(prod_num, grammer_list, i, tabs_num):
         out += "\n"
         i += 1
         # print(grammer_list)
-        line = grammer_list[i]
+        try:
+            line = grammer_list[i]
+        except:
+            print(grammer_list[i-10:i-1])
+            sys.exit(0)
     return (out, i)
 
 output = ''
@@ -133,6 +137,7 @@ for grammer in grammers:
     output += "\tglobal actRecordSt\n\tglobal actRecordDict\n"
     output += "\tp[0] = {}\n"
     output += "\tp[0]['code'] = []\n"
+    output += "\tp[0]['scopelist'] = []\n"
     output += "\tp[0]['dict_code'] = {}\n"
     output += tmp_out
     if (len(tmp_out) == 0):

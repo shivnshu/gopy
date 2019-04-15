@@ -300,6 +300,9 @@ class ActivationRecord:
         if var_name in self.input_args:
             (off, _) = self.input_args[var_name]
             return (off, 0), ""
+        if self.parent == None:
+            print("Error(actRecord):", var_name, "could not be found in activation record")
+            sys.exit(0)
         precord = actRecordDict[self.parent]
         if precord is not None:
             (off, jmp), typ = precord.getVarTuple(var_name, actRecordDict)
