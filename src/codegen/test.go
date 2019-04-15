@@ -3,9 +3,11 @@ package mypkg
 import "fmt"
 
 type person struct {
-	int age
-	string name
+	age int
+	name string
 }
+
+const a = 5
 
 func main() {
 	sahil := person{name:"Sahil", age:20}

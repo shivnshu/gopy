@@ -1,3 +1,5 @@
+import sys
+
 type_to_size = {}
 type_to_size["int"] = 4
 type_to_size["char"] = 1
@@ -6,6 +8,23 @@ type_to_size["string"] = 4 # Since storing address
 type_to_size["*int"] = 4
 type_to_size["*char"] = 4
 type_to_size["*float"] = 4
+
+def give_type_size(type, symTable):
+    if (type=="int" or type=="char" or type=="float" or type=="string" or type=="*int" or type=="*char" or type=="*float"):
+        return type_to_size[var]
+    else:
+        print(symTable.getSymbols())
+        b = False
+        while (symTable is not None):
+            if type in symTable.getSymbols():
+                d = True
+                break
+            symTable = symTable.getParent()
+        if not d:
+            print("Error: Type "+type+" not found")
+            sys.exit(0)
+        struct_entry = symTable.getSymbols()[type]
+        return struct_entry.getSize()
 
 
 class SymbolTableEntry:
@@ -72,6 +91,13 @@ class SymbolTableStructEntry(SymbolTableEntry):
         self.fields = {}
     def addFields(self, fields):
         self.fields = fields
+    def setSize(self):
+        size = 0
+        for key in self.fields.keys():
+            size += type_to_size[self.fields[key]]
+        self.size = size
+    def getSize(self):
+        return self.size
     def prettyPrint(self):
         SymbolTableEntry.prettyPrint(self)
         print(",")
@@ -196,7 +222,7 @@ class ActivationRecord:
             var_entry = varSymbols[symbol]
             var_type = var_entry.getType()
             if (var_entry.getIsLocal() == True):
-                size = (1 + var_entry.getDim()) * type_to_size[var_type]
+                size = (1 + var_entry.getDim()) * give_type_size(var_type, sym_table)
                 self.offset -= size
                 self.local_vars[var_entry.getName()] = (self.offset, size)
             else:

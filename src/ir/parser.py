@@ -306,6 +306,7 @@ def p_struct_def(p):
 	symTable = symTableDict[scope]
 	struc = StructEntry(p[2])
 	struc.addFields(p[5]['fields'])
+	struc.setSize()
 	if (symTable.put(struc) == False):
 	     print("Error:", p[2], "redeclared on line number", p.lexer.lineno)
 	     sys.exit(0)
@@ -341,8 +342,8 @@ def p_parameter_decl2(p):
 	p[0]['dict_code'] = {}
 	if len(p)==3 and p.slice[2].type=="Type" and p.slice[1].type=="IdentifierList1":
 		p[0]['fields'] = {}
-		for id in p[1]:
-		  p[0]['fields'][id] = p[2]
+		for id in p[1]['idlist']:
+		  p[0]['fields'][id] = p[2]['type']
 
 def p_interface_decl(p):
 	'''
@@ -2360,13 +2361,12 @@ def p_expression(p):
 		p[0]['place'] = newVar()
 		p[0]['code'] = [p[0]['place'] + ' := ' + p[1]['place'] + '.' + p[2]['place']]
 	if len(p)==5 and p.slice[4].type=="keyword_rcurly" and p.slice[3].type=="ObjectParamList" and p.slice[2].type=="keyword_lcurly" and p.slice[1].type=="IDENTIFIER":
-		print("AAAAAAa")
 		p[0]['place'] = newVar()
 		p[0]['code'] = p[3]['code']
 		p[0]['type'] = p[1]
 		p[0]['field_ass'] = p[3]['field_ass']
 		for asgn in p[3]['field_ass']:
-		  p[0]['code'] += [asgn[0] + ": " + asgn[1]]
+		  p[0]['code'] += [p[0]['place'] + "." + asgn[0] + ": " + asgn[1]]
 
 def p_object_param_list(p):
 	'''
