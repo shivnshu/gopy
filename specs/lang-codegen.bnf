@@ -317,6 +317,9 @@ for name in p[0]['namelist']:
 >>
 <<3
 actRecord = actRecordDict[p[1]]
+#print(actRecordSt)
+#print(actRecord.getName())
+#print("sddf")
 actRecord.setParent(actRecordSt[-1])
 b = False
 for scope in symTableSt:

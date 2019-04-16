@@ -9,13 +9,16 @@ const (
   b = 123
   c = "string1"
 )
-var d int
+var d int = 11
 var e string
 
 func test() {
   fmt.printf("d = %d\n", d)
   e = "string2"
-  fmt.printf("aa = %d, aaa = %d\n", aa, aaa)
+  //fmt.printf("aa = %d, aaa = %d\n", aa, aaa)
+  ac := d
+  //fmt.printf("%d\n", d)
+  //fmt.printf("%d\n", ac)
 }
 
 func main() {
@@ -23,5 +26,5 @@ func main() {
   d = 4
   fmt.printf("d: %d\n", d)
   test()
-  fmt.printf("e = %s\n", e)
+  //fmt.printf("e = %s\n", e)
 }

@@ -39,6 +39,10 @@ def set_register(name, value):
         sys.exit(0)
     register_mapping[name] = value
 
+def is_assigned(name):
+    global register_mapping
+    return name in register_mapping
+
 def free_register(name):
     global free_registers
     global register_mapping
@@ -73,6 +77,8 @@ def getCodeType(code):
     if (len(toks) == 3 and ("." in toks[0] or "." in toks[2])):
         return "structs"
     if (len(toks) == 3 and ":=" in code and (toks[2][0] not in unary_op_list or getTokType(toks[2][1:]) != "variable")):
+        if getTokType(toks[0]) == "variable" and getTokType(toks[2]) == "variable":
+            return "var_assign"
         return "assignments"
     if (len(toks) == 2 and ("call" in toks or "push_param" in toks or "ret_param" in toks or "ret" in toks or "ret_alloc" in toks)):
         return "function-call"

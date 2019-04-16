@@ -183,7 +183,6 @@ class SymbolTable(object):
         return self.children
 
     def removeMe(self, name, symTableDict):
-        print("Remobi", name)
         for key in symTableDict:
             symTableDict[key].removeChild(name)
 
@@ -292,7 +291,6 @@ class ActivationRecord:
 
 
     def setLocalVarsInputArgs(self, sym_table, symTableDict):
-        print("SetLoacl", sym_table.getName(), sym_table.getChildren())
         global type_to_size
         self.setLocalVarsHelper(sym_table, symTableDict)
         varSymbols = sym_table.getVarSymbols()

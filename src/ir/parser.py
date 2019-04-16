@@ -703,6 +703,9 @@ def p_func_call_stmt(p):
 		  p['scopelist'] += [actRecordSt[-1]]
 	if len(p)==5 and p.slice[4].type=="RPAREN" and p.slice[3].type=="ExpressionListBot" and p.slice[2].type=="LPAREN" and p.slice[1].type=="IDENTIFIER":
 		actRecord = actRecordDict[p[1]]
+		#print(actRecordSt)
+		#print(actRecord.getName())
+		#print("sddf")
 		actRecord.setParent(actRecordSt[-1])
 		b = False
 		for scope in symTableSt:

@@ -16,6 +16,7 @@ import arr_decl
 import struct_decl
 import structs
 import unaryop
+import var_assign
 
 arg_parser = argparse.ArgumentParser()
 arg_parser.add_argument("input", nargs="*")
@@ -44,7 +45,11 @@ def asm_gen(code_line, func_name, scope, data_section):
     global activation_records
     activation_record = activation_records[scope]
     code_type = getCodeType(code_line)
+    toks = code_line.split()
     # print(code_line, code_type)
+    if (code_type == "var_assign"):
+        res, context = var_assign.asm_gen(code_line, activation_record, context, data_section, activation_records)
+        return res
     if (code_type == "assignments"):
         res, context = assignments.asm_gen(code_line, activation_record, context, data_section, activation_records)
         return res

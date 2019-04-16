@@ -2,7 +2,7 @@ import common
 import sys
 import re
 from common import get_register, set_register, free_register, getTokType
-from common import reserve_register, unreserve_register
+from common import reserve_register, unreserve_register, is_assigned
 
 # Two sources of following truth. Another in common
 reserved_words = {"true": "1", "false": "0"}
@@ -57,7 +57,11 @@ def asm_gen(line, activation_record, context, data_section, activation_records):
 
     left_type = getTokType(toks[0])
     right_type = getTokType(toks[2])
+
+    assert(left_type != "variable" or right_type != "variable")
+
     # print(toks, left_type, right_type)
+
     if (left_type == "register"):
         dst_entry = get_register(toks[0])
     elif (left_type == "variable"):
@@ -67,9 +71,7 @@ def asm_gen(line, activation_record, context, data_section, activation_records):
         while (jmp > 0):
             res += ["movl ("+reg_+"), " + reg_]
             jmp -= 1
-        if typ == "global":
-            dst_entry = str(offset) + "(%esi)"
-        elif typ == "const":
+        if typ == "const":
             print("Error: const", toks[0], "can not be assigned")
             sys.exit(0)
         else:
@@ -115,7 +117,6 @@ def asm_gen(line, activation_record, context, data_section, activation_records):
         res += ["imul $" + context["array_decl"][arr_idx[0]]["size"] + ", " + reg]
         res += ["add " + str(offset) + "("+reg_+"), " + reg]
         dst_entry = "0(" + reg + ")"
-        pass
     else:
         print("Error: unknown type of", toks[0])
         sys.exit(0)
@@ -134,19 +135,15 @@ def asm_gen(line, activation_record, context, data_section, activation_records):
         res.append("negl " + dst_entry)
     elif (right_type == "variable"):
         (offset, jmp), typ = activation_record.getVarTuple(toks[2], activation_records)
-        # print(toks, "with offset", offset)
-        reg_ = get_register("_pqr")
-        res += ["movl %ebp, " + reg_]
+        reg_src = get_register("_pright")
+        res += ["movl %ebp, " + reg_src]
         while (jmp > 0):
-            res += ["movl ("+reg_+"), " + reg_]
+            res += ["movl ("+reg_src+"), " + reg_src]
             jmp -= 1
-        if typ == "global":
-            src_entry = str(offset) + "(%esi)"
-        elif typ == "const":
+        if typ == "const":
             src_entry = "$" + toks[2]
         else:
-            src_entry = str(offset) + "("+reg_+")"
-        free_register("_pqr")
+            src_entry = str(offset) + "("+reg_src+")"
         if (left_type != "variable" and left_type != "dereference" and left_type != "array"):
             res.append("movl " + src_entry + ", " + dst_entry)
         else:
@@ -156,6 +153,9 @@ def asm_gen(line, activation_record, context, data_section, activation_records):
             free_register("_tmp")
         if (left_type == "register" and typ == "const" and context["const_decl"][toks[2]] != "string"): # Why
             res.append("movl (" + dst_entry + "), " + dst_entry)
+        if left_type != "register":
+            free_register("_pqr")
+        free_register("_pright")
     elif (right_type == "string"):
         string_lit = toks[2][1:-1].encode().decode('unicode_escape') # Allow newline etc.
         if (left_type == "register"):
@@ -164,7 +164,6 @@ def asm_gen(line, activation_record, context, data_section, activation_records):
             dst_entry = get_register(toks[0])
             unreserve_register("%eax")
         res += ["push $" + str(len(string_lit) + 1)]
-        print("inside ass", line)
         res += ["call malloc"]
         index = 0
         for ch_lit in string_lit:

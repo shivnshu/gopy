@@ -8,5 +8,6 @@ func main() {
   fmt.printf("%d\n", a[1][2])
   a[1][1] = 5
   var i int = 1
-  fmt.printf("%d\n", a[i][i])
+  tmp := a[i][i]
+  fmt.printf("%d\n", tmp)
 }
