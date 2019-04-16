@@ -2,15 +2,16 @@ package mypkg
 
 import "fmt"
 
-func test(b [4]int) {
+func test(b [4]int, c int) {
   fmt.printf("%d\n", b[1])
+  fmt.printf("%d\n", c)
 }
 
 func main() {
   var a[4]int
   a[1] = 1
   fmt.printf("%d\n", a[1])
-  test(a)
+  test(a, 11)
   {
     bd := 10
     bd = 2

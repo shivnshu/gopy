@@ -1,20 +1,22 @@
 package mypkg
 import "fmt"
 
-func A (x int, y int) int{
-	if x==1 {
+func A(x int, y int) int {
+	if (x==0) {
 		return y+1
 	}
-	else if y==0 {
+	else if (y==0) {
 		tmp := A(x-1, 1)
 		return tmp
 	}
 	else {
-		tmp := A(x-1, A(x, y-1))
+    sec := A(x, y-1)
+		tmp := A(x-1, sec)
+    return tmp
 	}
 }
 
 func main () {
-	s := A (2,1)
+	s := A(2,1)
 	fmt.printf("%d\n", s)
 }

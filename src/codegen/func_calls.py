@@ -87,7 +87,7 @@ def asm_gen(line, activation_record, func_name, context, data_section, activatio
         param_type = getTokType(toks[1])
         if (param_type == "register"):
             res += ["movl " + get_register(toks[1]) + ", " + str(ret_offset) + "(%ebp)"]
-            # res += ["movl %ebp, %esp", "pop %ebp", "ret"]
+            free_register(toks[1])
         else:
             print("Error:", toks[0], "type not known")
             sys.exit(0)

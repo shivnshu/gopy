@@ -1655,8 +1655,10 @@ def p_parameters(p):
 	    for dr in dimrange:
 	        decl_tail += " " + dr
 	    decl += decl_tail
-	    p[0]['code'] += [decl]
-	    p[0]['scopelist'] += [actRecordSt[-1]]
+	    toks = decl.split()
+	    if len(toks) > 4:
+	      p[0]['code'] += [decl]
+	      p[0]['scopelist'] += [actRecordSt[-1]]
 	    if (table.put(entry) == False):
 	        print("Error:", param, "redeclared on line number", p.lexer.lineno)
 	        sys.exit(0)
