@@ -7,6 +7,7 @@ from common import reserve_register, unreserve_register
 # Two sources of following truth. Another in common
 reserved_words = {"true": "1", "false": "0"}
 
+
 def cal_array_offset(arr_idx, offset, reg, activation_record):
     res = []
     num_dims = len(arr_idx) - 1
@@ -48,9 +49,17 @@ def asm_gen(line, activation_record, context, data_section):
     global reserved_words
     res = []
     toks = line.split(" ", 2) # string support
-
+    #print(toks)
     left_type = getTokType(toks[0])
     right_type = getTokType(toks[2])
+
+    if(right_type == "register"):
+        if toks[2] in context["float_stack"]:
+            right_type = "float-register"
+    if( right_type == "variable"):
+        if toks[2] in context["float_vals"]:
+            right_type = "float-variable"
+
     if (left_type == "register"):
         dst_entry = get_register(toks[0])
     elif (left_type == "variable"):
@@ -159,12 +168,51 @@ def asm_gen(line, activation_record, context, data_section):
                 res.append("movl " + reg + ", " + dst_entry)
                 free_register("_tmp")
     elif (right_type == "float"):
-        # res.append("mov $" + toks[2] + " ," + reg)
-        # res.append("fld " + "$" + toks[2] + "")
-        # res.append("fstp " + dst_entry)
+        #print("HELLO")
+        #print(toks)
         float_name = "float_" + str(context["counter"])
         context["counter"] += 1
         data_section += [float_name + ": .float " + toks[2]]
+        if(left_type == "register"):
+            res += ["fld " + float_name]
+            context["float_stack"].append(toks[0])
+        else:
+            res += ["fld" + " " + float_name]
+            res += ["fstp " + dst_entry]
+            context["float_vals"].append(toks[0])
+    elif (right_type == 'float-register'):
+        #ind = context["float_stack"].index(toks[2])
+        if (context["float_stack"][-1] != toks[2]):
+            l = len(context["float_stack"])
+            ind = context["float_stack"].index(toks[2])
+            reg = "%st" + str(l - ind)
+            res += ["fld" + " "+reg]    
+        res += ["fstp " + dst_entry]
+        context["float_vals"].append(toks[0])
+        #context["float_vals"][toks[0]] = context["float_vals"][toks[2]]
+    elif (right_type == 'float-variable'):
+
+        (offset, size), typ = activation_record.getVarTuple(toks[2])
+        # print(toks, "with offset", offset)
+        if typ == "global":
+            src_entry = str(offset) + "(%esi)"
+        #elif typ == "const":
+        #    src_entry = "$" + toks[2]
+        else:
+            src_entry = str(offset) + "(%ebp)"
+
+        if(left_type == "register"):
+            res += ["fld " + src_entry]
+            context["float_stack"].append(toks[0])
+        else:
+            res += ["fld " + src_entry]
+            res += ["fstp " + dst_entry]
+            context["float_vals"].append(toks[0])
+        #context["float_vals"][toks[0]] = context["float_vals"][toks[2]]
+
+        #print(dst_entry)
+        #print(toks[0])
+        #print(context["float_vals"][toks[0]])
     elif (right_type == "array"):
         arr_idx = re.split("\[|\]", toks[2])
         arr_idx = list(filter(None, arr_idx))

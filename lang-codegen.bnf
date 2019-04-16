@@ -1310,11 +1310,11 @@ p[0]['place'] = newVar()
 if p[1]['type'] == p[3]['type']:
   p[0]['code'] = p[1]['code'] + p[3]['code'] + [p[0]['place'] + ' := ' + p[1]['place'] +" "+ p[2]['symbol'] + p[1]['type']+" " + p[3]['place']]
   p[0]['type'] = p[1]['type']
-elif (p[1]['type']=='float' and p[3]['type']=='int'):
+elif (p[1]['type']=='int' and p[3]['type']=='float'):
   p[0]['code'] = p[1]['code'] + p[3]['code'] + [p[0]['place'] + ' := cast-to-float ' + p[1]['place']+" " + p[2]['symbol'] + 'float ' + p[3]['place']]
   p[0]['type'] ='float'
-elif (p[3]['type']=='float' and p[1]['type']=='int'):
-  p[0]['code'] = p[1]['code'] + p[3]['code'] + [p[0]['place'] + ' := cast-to-float ' + p[3]['place'] +" "+ p[2]['symbol'] + 'float ' + p[1]['place']]
+elif (p[3]['type']=='int' and p[1]['type']=='float'):
+  p[0]['code'] = p[1]['code'] + p[3]['code'] + [p[0]['place'] + " := " + p[1]['place']] +" "+ p[2]['symbol'] + 'float '  + 'cast-to-float ' + p[3]['place']
   p[0]['type'] ='float'
 elif (p[1]['type']=='string'):
   p[0]['code'] = p[1]['code'] + p[3]['code'] + [p[0]['place'] + ' := cast-to-string ' + p[3]['place'] +" "+ p[2]['symbol'] + 'string ' + p[1]['place']]

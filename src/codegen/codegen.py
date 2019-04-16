@@ -23,7 +23,7 @@ ir_info = ir_gen(input_file)
 dict_code = ir_info['dict_code']
 activation_records = ir_info['activationRecords']
 
-context = {"last_func_call_ret": [], "func_ret": [], "rel_op_num": 0, "counter": 0, "array_decl": {}, "const_decl": {}}
+context = {"last_func_call_ret": [], "func_ret": [], "rel_op_num": 0, "counter": 0, "array_decl": {}, "const_decl": {}, "float_vals": [],"float_stack": []}
 
 def get_data_section(const_decl):
     global context
@@ -38,6 +38,7 @@ def get_data_section(const_decl):
 def asm_gen(code_line, func_name, data_section):
     global context
     code_type = getCodeType(code_line)
+    #print("AAA:" + code_type)
     if (code_type == "assignments"):
         res, context = assignments.asm_gen(code_line, activation_records[func_name], context, data_section)
         return res
@@ -45,6 +46,7 @@ def asm_gen(code_line, func_name, data_section):
         res, context = func_calls.asm_gen(code_line, activation_records, func_name, context)
         return res
     if (code_type == "binary-op"):
+        #print("HELPHELPHELP")
         res, context = binaryop.asm_gen(code_line, activation_records[func_name], context)
         return res
     if (code_type == "ifstmt"):
@@ -55,8 +57,8 @@ def asm_gen(code_line, func_name, data_section):
     if (code_type == "arr_decl"):
         res, context = arr_decl.asm_gen(code_line, activation_records[func_name], context)
         return res
-    if (code_type == "structs"):
-        return structs.asm_gen(code_line, activation_records[func_name])
+    #if (code_type == "structs"):
+    #    return structs.asm_gen(code_line, activation_records[func_name])
     # return None
     return [code_line]
 
@@ -103,6 +105,7 @@ def main(dict_code):
         code_list = dict_code[func_name]
         res += alloc_st_code(func_name)
         for code_line in code_list:
+            #print("AAA" + code_line)
             gen_code = asm_gen(code_line, func_name, data_section)
             if (gen_code != None):
                 res += gen_code

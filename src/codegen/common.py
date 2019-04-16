@@ -3,6 +3,7 @@ import re
 
 # %esi store global starting address, that's why not part of usable registers
 usable_registers = ["%eax", "%ebx", "%ecx", "%edx", "%edi"]
+
 free_registers = usable_registers.copy()
 reserved_registers = []
 
@@ -69,13 +70,21 @@ binary_op_list = ["+", "-", "*", "/", "&&", "||", "==", "!=", "<", ">", "<=", ">
 def getCodeType(code):
     code = re.sub(r'".*"', 'string', code)
     toks = code.split()
-    if (len(toks) == 3 and ("." in toks[0] or "." in toks[2])):
-        return "structs"
+    #print("tok values")
+    #print(toks)
+    #print(len(toks))
+    #if (":=" in toks):
+    #    print ("WHY")
+    #if (len(toks) == 3 and ("." in toks[0] or "." in toks[2])):
+    #    return "structs"
     if (len(toks) == 3 and ":=" in code):
+        #print("AAA" + code)
         return "assignments"
     if (len(toks) == 2 and ("call" in toks or "push_param" in toks or "ret_param" in toks or "ret" in toks or "ret_alloc" in toks)):
         return "function-call"
-    if  (len(toks)==5 and toks[1]==":=" and (toks[3][0] in binary_op_list or toks[3][0:2] in binary_op_list)):
+    if  (len(toks)==5 and toks[1]==":=" and (toks[3][0] in binary_op_list or toks[3][0:1] in binary_op_list)):
+        return "binary-op"
+    if  (len(toks)==6 and toks[1]==":=" and (toks[4][0] in binary_op_list or toks[4][0:1] in binary_op_list)):
         return "binary-op"
     if (toks[0] == "if"):
         return "ifstmt"
@@ -125,3 +134,4 @@ def getLitType(lit):
         return "string"
     print("Error: unknown const type:", lit)
     sys.exit(0)
+
