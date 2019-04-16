@@ -1843,6 +1843,8 @@ def p_var_decl(p):
 	  var_entry = var_symbols[var_name]
 	  type = var_entry.getType()
 	  if (var_entry.getDim() <= 0):
+	    p[0]['code'] += ["_decl " + type + " " + var_name]
+	    p[0]['scopelist'] += [actRecordSt[-1]]
 	    continue
 	  dim_ranges = var_entry.getDimRanges()
 	  decl_tail = " "

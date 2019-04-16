@@ -54,6 +54,24 @@ def asm_gen(line, activation_record, activation_records):
             res += ["pop %eax"]
             free_register("_tmp")
             unreserve_register("%eax")
+        elif right_type == "variable":
+            (var_offset, _), typ = activation_record.getVarTuple(right_param, activation_records)
+            reg = get_register("_tmp")
+            res += ["movl " + str(offset) + "(%ebp)" + ", " + reg]
+            res += ["add $" + str(field_offset) + ", " + reg]
+            if typ == "const":
+                res += ["movl $" + right_param + ", (" + reg + ")"]
+            elif typ == "global":
+                reg2 = get_register("_tmp2")
+                res += ["movl " + str(var_offset) + "(%esi), " + reg2]
+                res += ["movl " + reg2 + ", (" + reg + ")"]
+                free_register("_tmp2")
+            else:
+                reg2 = get_register("_tmp2")
+                res += ["movl " + str(var_offset) + "(%ebp), " + reg2]
+                res += ["movl " + reg2 + ", (" + reg + ")"]
+                free_register("_tmp2")
+            free_register("_tmp")
         else:
             print("Error: unknown type", right_type, "of", toks[-1])
             sys.exit(0)
