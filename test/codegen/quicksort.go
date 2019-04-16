@@ -32,12 +32,13 @@ func quicksort(arr [10]int, left int, right int) {
 
 func main(){
 	var arr [10]int
-	var j int
-	for i:=0; i<10; i += 1 {
-		fmt.scanf("%d", &j)
-		arr[i] = j
-	}
-	quicksort(arr, 0, 9)
+  res := partition(arr, 0, 9)
+  var j int
+  for i:=0; i<10; i += 1 {
+    fmt.scanf("%d", &j)
+    arr[i] = j
+  }
+  quicksort(arr, 0, 9)
   fmt.printf("Sorted numbers are:\n")
   for j=0; j<10; j+=1 {
     fmt.printf("%d ", arr[j])

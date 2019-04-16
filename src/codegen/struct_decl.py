@@ -12,6 +12,7 @@ def asm_gen(line, activation_record, activation_records):
         return res
     var_name = toks[2]
     (offset, jmp), typ = activation_record.getVarTuple(var_name, activation_records)
+    reserve_register("%eax")
     reg_ = get_register("_pqr")
     res += ["movl %ebp, " + reg_]
     while (jmp > 0):
@@ -25,7 +26,6 @@ def asm_gen(line, activation_record, activation_records):
     for field in var_sign:
         tupl = var_sign[field]
         var_size = max(var_size, tupl[0]+tupl[1])
-    reserve_register("%eax")
     res += ["push %eax"]
     res += ["push $" + str(var_size)]
     res += ["call malloc"]

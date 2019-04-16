@@ -74,7 +74,6 @@ def asm_gen(line, activation_record, context, data_section, activation_records):
             sys.exit(0)
         else:
             dst_entry = str(offset) + "("+reg_+")"
-        free_register("_pqr")
     elif (left_type == "dereference"):
         if (getTokType(toks[0][1:]) != "variable"):
             print("Error: invalid dereference", toks[0])
@@ -92,7 +91,6 @@ def asm_gen(line, activation_record, context, data_section, activation_records):
             sys.exit(0)
         else:
             dst_entry = str(offset) + "("+reg_+")"
-        free_register("_pqr")
         reg = get_register("_tmp2")
         res += ["movl " + dst_entry + ", " + reg]
         dst_entry = "(" + reg + ")"
@@ -116,7 +114,6 @@ def asm_gen(line, activation_record, context, data_section, activation_records):
         res += cal_array_offset(arr_idx, offset, reg, activation_record, dimentions, activation_records)
         res += ["imul $" + context["array_decl"][arr_idx[0]]["size"] + ", " + reg]
         res += ["add " + str(offset) + "("+reg_+"), " + reg]
-        free_register("_pqr")
         dst_entry = "0(" + reg + ")"
         pass
     else:
@@ -256,5 +253,4 @@ def asm_gen(line, activation_record, context, data_section, activation_records):
         free_register("_tmp_left")
     if (right_type == "array"):
         free_register("_tmp_right")
-    # print(toks, left_type, right_type, res)
     return res, context
