@@ -1848,6 +1848,8 @@ def p_var_decl(p):
 	  var_entry = var_symbols[var_name]
 	  type = var_entry.getType()
 	  if (var_entry.getDim() <= 0):
+	    p[0]['code'] += ["_decl " + type + " " + var_entry.getName()]
+	    p[0]['scopelist'] += [actRecordSt[-1]]
 	    continue
 	  dim_ranges = var_entry.getDimRanges()
 	  decl_tail = " "
@@ -2927,6 +2929,7 @@ def p_expression(p):
 		p[0]['type'] = p[1]
 		p[0]['field_ass'] = p[3]['field_ass']
 		code_so_far = p[0]['code'] # Following code is little optimization for saving registers
+		scope_so_far = p[0]['scopelist']
 		i = 0
 		j = 0
 		res = []
@@ -2937,13 +2940,13 @@ def p_expression(p):
 		  for j in range(i, len(code_so_far)):
 		    if tmp_name in code_so_far[j]:
 		      res += [code_so_far[j], this_code]
-		      resscope += [actRecordSt[-1], actRecordSt[-1]]
+		      resscope += [scope_so_far[j], actRecordSt[-1]]
 		      i = j + 1
 		      break
 		    else:
 		      res += [code_so_far[j]]
-		      resscope += [actRecordSt[-1], actRecordSt[-1]]
-		  if (j == len(code_so_far)):
+		      resscope += [scope_so_far[j]]
+		  if j == len(code_so_far):
 		    res += [this_code]
 		    resscope += [actRecordSt[-1]]
 		p[0]['code'] = res
