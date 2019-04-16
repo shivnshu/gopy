@@ -25,7 +25,7 @@ def get_register(name):
         print("Debug: mapping", register_mapping)
         print("Error: out of registers")
         sys.exit(0)
-    # print("Debug: get", name)
+    print("Debug: get", name)
     for reg in free_registers:
         if reg not in reserved_registers:
             register_mapping[name] = reg
@@ -72,19 +72,19 @@ unary_op_list = ["+", "-", "!"]
 
 def isAssOrStruct(l_tok, r_tok):
     toks = r_tok.split(".")
-    flag = False
-    if len(toks) == 1:
-        flag = True
-    if not flag:
+    if len(toks) > 1:
         try:
             int(toks[1])
-            return True
         except:
-            pass
+            return False
     toks = l_tok.split(".")
-    if len(toks) == 1 and flag:
-        return True
-    return False
+    if len(toks) > 1:
+        try:
+            int(toks[1])
+        except:
+            return False
+
+    return True
 
 
 def getCodeType(code):

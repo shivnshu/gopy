@@ -16,4 +16,9 @@ func main() {
   fmt.printf("tmp: %d\nb: %d\n", tmp, b)
   *z = tmp
   fmt.printf("b: %d\n", b)
+  fp := 1.3
+  fp_p := &fp
+  fmt.printf("%x\n", fp_p)
+  *fp_p = 2.3
+  fmt.float_print(fp)
 }

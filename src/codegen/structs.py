@@ -3,7 +3,7 @@ from common import get_register, free_register, getTokType, reserve_register, un
 
 size_of = {'int': '4', 'float': '4', 'char': '1', "*int": '4', "*float": '4', "*char": '4', "string": '4'}
 
-def asm_gen(line, activation_record, activation_records):
+def asm_gen(line, activation_record, context, activation_records, data_section):
     res = []
     toks = line.split()
     if ("." in toks[0]):
@@ -72,10 +72,21 @@ def asm_gen(line, activation_record, activation_records):
                 res += ["movl " + reg2 + ", (" + reg + ")"]
                 free_register("_tmp2")
             free_register("_tmp")
+        elif right_type == "float":
+            float_name = "float_" + str(context["counter"])
+            context["counter"] += 1
+            data_section += [float_name + ": .float " + toks[2]]
+            res += ["fld" + " " + float_name]
+            reg = get_register("_tmp")
+            res += ["movl " + str(offset) + "(%ebp)" + ", " + reg]
+            res += ["add $" + str(field_offset) + ", " + reg]
+            res += ["fstp (" + reg + ")"]
+            free_register("_tmp")
+            context["float_vals"].append(toks[0])
         else:
             print("Error: unknown type", right_type, "of", toks[-1])
             sys.exit(0)
-        return res
+        return res, context
 
     # Struct is on right side
     var_field = toks[2].split(".")
@@ -107,4 +118,4 @@ def asm_gen(line, activation_record, activation_records):
     else:
         print("Error: Unsupported type", left_type, "of", left_param)
         sys.exit(0)
-    return res
+    return res, context

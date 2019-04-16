@@ -67,7 +67,8 @@ def asm_gen(code_line, func_name, scope, data_section):
     if (code_type == "struct_decl"):
         return struct_decl.asm_gen(code_line, activation_record, activation_records)
     if (code_type == "structs"):
-        return structs.asm_gen(code_line, activation_record, activation_records)
+        res, context = structs.asm_gen(code_line, activation_record, context, activation_records, data_section)
+        return res
     if (code_type == "unary-op"):
         res, context = unaryop.asm_gen(code_line, activation_record, context, activation_records)
         return res

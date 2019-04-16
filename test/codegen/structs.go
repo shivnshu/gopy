@@ -10,10 +10,12 @@ type person struct {
   name string
   k *int
   g int
+  fp float
 }
 
 func test(p person) {
   p.age = 20
+  p.fp = 5.5
 }
 
 func main() {
@@ -32,6 +34,8 @@ func main() {
   p.k = s
   fmt.printf("Age: %d, Name:%s\n", age, name)
   s = p.k
-  fmt.printf("%x", s)
+  fmt.printf("%x\n", s)
   p.g = gg
+  p_fp := p.fp
+  fmt.float_print(p_fp)
 }
