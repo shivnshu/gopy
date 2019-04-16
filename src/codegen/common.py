@@ -70,12 +70,29 @@ def unreserve_register(reg):
 binary_op_list = ["+", "-", "*", "/", "&&", "||", "==", "!=", "<", ">", "<=", ">=", "|", "^", "%"]
 unary_op_list = ["+", "-", "!"]
 
+def isAssOrStruct(l_tok, r_tok):
+    toks = r_tok.split(".")
+    flag = False
+    if len(toks) == 1:
+        flag = True
+    if not flag:
+        try:
+            int(toks[1])
+            return True
+        except:
+            pass
+    toks = l_tok.split(".")
+    if len(toks) == 1 and flag:
+        return True
+    return False
+
+
 def getCodeType(code):
     code = re.sub(r'".*"', 'string', code)
     toks = code.split()
-    print(toks, "IN GETCODETYPE")
-    if (len(toks) == 3 and ":=" in code and (toks[2][0] not in unary_op_list or getTokType(toks[2][1:]) != "variable")):
+    if (len(toks) == 3 and ":=" in code and (toks[2][0] not in unary_op_list or getTokType(toks[2][1:]) != "variable") and isAssOrStruct(toks[0], toks[2])):
         return "assignments"
+    print(toks, "OMGIN GETCODETYPE")
     if (len(toks) == 3 and ("." in toks[0] or "." in toks[2])):
         return "structs"
     if (len(toks) == 2 and ("call" in toks or "push_param" in toks or "ret_param" in toks or "ret" in toks or "ret_alloc" in toks)):
