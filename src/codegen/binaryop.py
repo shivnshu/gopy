@@ -140,6 +140,24 @@ def asm_gen(line, activation_record, context):
         elif(toks[3][0] == "/"):
             res += ["fdiv " + "%st1, " + "%st0"]
             res += ["fstp " + "%st0"]
+        elif(toks[3][0:2] == "==" or toks[3][0:2] == "!=" or toks[3][0] == "<" or toks[3][0] == ">" or toks[3][0:2] == "<=" or toks[3][0:2] == ">="):
+            jmp_instr = {"==": "je", "<": "jb", ">": "ja", "<=": "jbe", ">=": "jae", "!=": "jne"}
+            if (toks[3][0] in jmp_instr):
+                jmp_stmt = jmp_instr[toks[3][0]]
+            if (toks[3][0:2] in jmp_instr):
+                jmp_stmt = jmp_instr[toks[3][0:2]]
+            res += ["fxch " + "%st1" ]
+            res += ["fcomip"]
+            res += ["fstp   %st(0)"]
+            res.append(jmp_stmt + " _rel_op_" + str(context["rel_op_num"]) + "_true")
+            res.append("fldz")
+            res.append("jmp _rel_op_" + str(context["rel_op_num"]) + "_end")
+            res.append("_rel_op_" + str(context["rel_op_num"]) + "_true:")
+            res.append("fld1")
+            res.append("_rel_op_" + str(context["rel_op_num"]) + "_end:")
+            context["rel_op_num"] += 1
+
+            
         context["float_stack"].pop()
         context["float_stack"].pop()
         context["float_stack"].append(toks[0])
@@ -149,6 +167,7 @@ def asm_gen(line, activation_record, context):
     elif (ty2 == 'float' and len(toks) == 6):
         #print("GGGGGGGGGGGGGGGGGGGGGGGGGGGGG")
         cast = 1
+        oper = toks[3][0]
         #print(op)
         if(toks[4] == "cast-to-float"):
             cast = 2
@@ -164,6 +183,7 @@ def asm_gen(line, activation_record, context):
                 op = "imul "
         else:
             r0 = get_register(toks[5]) 
+
             #print(op)
     
 
@@ -171,8 +191,8 @@ def asm_gen(line, activation_record, context):
             print(1)
             res += ["fiadd " + r0]
         elif(op == "subl "):
-            print("HEL")
-            print(2)
+            #print("HEL")
+            #print(2)
             if cast == 1:
                 res += ["fchs"]
                 res += ["fiadd " + r0]
@@ -182,8 +202,11 @@ def asm_gen(line, activation_record, context):
         elif(op == "imul "):
             print(3)
             res += ["fimul"]            
-        
-
+        elif(oper == "/"):
+            if cast == 1:
+                res += ["fidivr " + r0]
+            else:
+                res += ["fidiv " + r0]
         context["float_stack"].pop()
         context["float_stack"].append(toks[0])    
 
