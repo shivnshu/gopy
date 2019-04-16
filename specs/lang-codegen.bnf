@@ -108,8 +108,8 @@ TopLevelDecl  : Declaration
 p[0]['dict_code'] = {}
 >>
 <<1
-p[0]['dict_code']['global_decl'] = code_optimization(p[1]['global_decl'], p[1]['scopelist'])
-p[0]['dict_code']['const_decl'] = code_optimization(p[1]['const_decl'], p[1]['scopelist'])
+p[0]['dict_code']['global_decl'] = code_optimization(p[1]['global_decl'], p[1]['scope_global_decl'])
+p[0]['dict_code']['const_decl'] = code_optimization(p[1]['const_decl'], p[1]['scope_const_decl'])
 >>
 <<2
 p[0]['dict_code'].update(p[1]['dict_code'])
@@ -274,7 +274,7 @@ p[0]['ret_types'] = []
 p[0]['namelist'] = []
 #actRecordSt += [actRecordSt[-1]]
 #actRecordSt += ["root"]
-print(actRecordSt)
+#print(actRecordSt)
 >>
 <<1
 b = False
@@ -353,14 +353,18 @@ Declaration : ConstDecl
 <<0
 p[0]['code'] = p[1]['code']
 p[0]['scopelist'] = p[1]['scopelist']
+p[0]['scope_global_decl'] = []
+p[0]['scope_const_decl'] = []
 p[0]['const_decl'] = []
 p[0]['global_decl'] = []
 >>
 <<1
 p[0]['const_decl'] = p[1]['code']
+p[0]['scope_const_decl'] = p[1]['scopelist']
 >>
 <<3
 p[0]['global_decl'] = p[1]['code']
+p[0]['scope_global_decl'] = p[1]['scopelist']
 >>
 
 ConstDecl  : CONST ConstSpecTopList
@@ -1124,6 +1128,8 @@ if (p[2]['len'] == 1):
     if q[0] in ['*']:
        q = q[1:]
     left_elem_type = verifyCalType(q, p.lexer.lineno)
+    if i[0] in ['*']:
+       left_elem_type = left_elem_type[1:]
     if left_elem_type != k:
       print("Error type mismatch in line " +str(p.lexer.lineno) +". Expected type " +left_elem_type+", got type "+ k)
       sys.exit(0)
@@ -1219,7 +1225,7 @@ else:
 p[0]['code'] += [p[4]['label'] + ':'] + p[4]['code'] + ["goto " + p[0]['lastlabel']]
 p[0]['scopelist'] += [actRecordSt[-1]] + p[4]['scopelist'] + [actRecordSt[-1]]
 p[0]['code'] += p[5]['code'] + [p[0]['lastlabel'] +": "]
-p[0]['scopelist'] = p[5]['scopelist'] + [actRecordSt[-1]]
+p[0]['scopelist'] += p[5]['scopelist'] + [actRecordSt[-1]]
 p[0]['ret_typelist'] = p[4]['ret_typelist']
 >>
 
@@ -1314,7 +1320,7 @@ if not b:
   print("Switch variable", p[2], "not declared on line number", p.lexer.lineno)
   sys.exit(0)
 p[0]['code'] = p[4]['expcodelist']
-p[0]['scopelist'] = p[4]['scopelist']
+p[0]['scopelist'] = p[4]['expscopelist']
 for exp, label in zip(p[4]['explist'], p[4]['labellist'][:-1]):
   exp_var = newVar()
   var = newVar()
@@ -1329,7 +1335,7 @@ for exp, label in zip(p[4]['explist'], p[4]['labellist'][:-1]):
   p[0]['scopelist'] += [actRecordSt[-1]]
 for label, codeblock in zip(p[4]['labellist'][:-1], p[4]['code']):
   p[0]['code'] += codeblock
-  p[0]['scopelist'] += [actRecordSt[-1]]
+  p[0]['scopelist'] += [actRecordSt[-1]]*len(codeblock)
   p[0]['code'] += ['goto ' + p[4]['labellist'][-1]]
   p[0]['scopelist'] += [actRecordSt[-1]]
 p[0]['code'] += [p[4]['labellist'][-1] + ':']
@@ -1342,14 +1348,16 @@ ExprCaseClauseList : ExprCaseClause ExprCaseClauseList
 <<1
 p[0]['explist'] = [p[1]['exp']] + p[2]['explist']
 p[0]['expcodelist'] = p[1]['expcode'] + p[2]['expcodelist']
+p[0]['expscopelist'] = p[1]['expscope'] + p[2]['expscopelist']
 p[0]['labellist'] = [p[1]['label']] + p[2]['labellist']
 p[0]['code'] = [p[1]['code']] + p[2]['code']
-p[0]['scopelist'] = p[1]['scopelist'] + p[2]['scopelist']
+p[0]['scopelist'] = [actRecordSt[-1]] + p[2]['scopelist']
 p[0]['ret_typelist'] = [p[1]['ret_typelist']] + p[2]['ret_typelist']
 >>
 <<2
 p[0]['explist'] = []
 p[0]['expcodelist'] = []
+p[0]['expscopelist'] = []
 p[0]['labellist'] = [newLabel()]
 p[0]['code'] = []
 p[0]['scopelist'] = []
@@ -1360,6 +1368,7 @@ ExprCaseClause : ExprSwitchCase COLON keyword_lcurly StatementList keyword_rcurl
 <<0
 p[0]['exp'] = p[1]['exp']
 p[0]['expcode'] = p[1]['code']
+p[0]['expscope'] = p[1]['scopelist']
 p[0]['label'] = newLabel()
 p[0]['code'] = [p[0]['label'] + ' : '] + p[4]['code']
 p[0]['scopelist'] = [actRecordSt[-1]] + p[4]['scopelist']
@@ -1422,13 +1431,11 @@ ReturnStmt : RETURN ExpressionListBot
 p[0]['typelist'] = p[2]['typelist']
 p[0]['code'] = p[2]['code']
 p[0]['scopelist'] = p[2]['scopelist']
-#if len(p[2]['typelist']) == 0:
-#   p[0]['code'] += ["ret"]
 for name in p[2]['namelist']:
       p[0]['code'] += ["ret " + name]
-      p[0]['code'] += [actRecordSt[-1]]
+      p[0]['scopelist'] += [actRecordSt[-1]]
 p[0]['code'] += ['func_end']
-p[0]['code'] += [actRecordSt[-1]]
+p[0]['scopelist'] += [actRecordSt[-1]]
 >>
 
 ExpressionListBot : ExpressionList
@@ -1566,7 +1573,7 @@ p[0]['type'] = p[2]['type']
 if (p[1]['symbol'] == "&"):
   p[0]['type'] = "*" + p[0]['type']
 p[0]['code'] = p[2]['code'] + [p[0]['place'] + ' := ' + p[1]['symbol'] + p[2]['place']]
-p[0]['scopelist'] = p[1]['scopelist'] + [actRecordSt[-1]]
+p[0]['scopelist'] = p[2]['scopelist'] + [actRecordSt[-1]]
 >>
 <<2
 p[0]['place'] = p[1]['place']

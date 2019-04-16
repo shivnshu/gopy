@@ -161,7 +161,8 @@ for grammer in grammers:
         output += ":\n"
         output += tmp_out
 
-
+    output += "\tif len(p[0]['code']) != len(p[0]['scopelist']):\n"
+    output += "\t\tprint(len(p[0]['code']), len(p[0]['scopelist']), '" + clause_name + "')\n"
     output += "\n"
 
 

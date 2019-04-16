@@ -183,7 +183,10 @@ def code_optimization(code_list, scope_list):
     # print()
     # for c in code_list:
     #     print(c)
+    # for s in scope_list:
+    #     print(s)
     # print()
+    # print(len(code_list), len(scope_list))
     assert(len(code_list) == len(scope_list))
     res = []
     scope_res = []

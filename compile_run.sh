@@ -8,4 +8,4 @@ else
 	out="$2";
 fi
 
-$GoPyPATH/src/codegen/link-run.sh $out
+$GoPyPATH/src/codegen/run.sh $out

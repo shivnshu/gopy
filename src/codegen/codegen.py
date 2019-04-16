@@ -3,7 +3,8 @@ import sys
 import os
 import argparse
 
-sys.path.insert(0, os.environ['GoPyPATH'] + '/src/ir')
+#sys.path.insert(0, os.environ['GoPyPATH'] + '/src/ir')
+sys.path.insert(0, '../ir')
 from ir_gen import ir_gen
 from common import getCodeType, getLitType, free_all_regs
 import assignments
@@ -88,8 +89,9 @@ def main(dict_code):
 
     if 'global_decl' in dict_code:
         code_list = dict_code['global_decl'][0]
-        for code_line in code_list:
-            gen_code = asm_gen(code_line, "root", data_section)
+        scope_list = dict_code['global_decl'][1]
+        for code_line, scope in zip(code_list, scope_list):
+            gen_code = asm_gen(code_line, "root", scope, data_section)
             if (gen_code != None):
                 res += gen_code
             else:
