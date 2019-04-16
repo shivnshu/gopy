@@ -20,7 +20,7 @@ def asm_gen(line, activation_records, func_name, context):
             res += ["push " + get_register(toks[1])]
             free_register(toks[1])
         elif (param_type == "variable"):
-            (offset, size), typ = activation_record.getVarTuple(toks[1])
+            (offset, size), typ = activation_record.getVarTuple(toks[1], activation_records)
             if typ == "global" or typ == "const":
                 print("Error: unsupported code", line)
                 sys.exit(0)
@@ -39,7 +39,7 @@ def asm_gen(line, activation_records, func_name, context):
         if (param_type == "register"):
             res += ["movl " + str(offset - 8) + "(%esp), " + get_register(toks[1])]
         elif (param_type == "variable"):
-            (offset, _), typ = activation_record.getVarTuple(toks[1])
+            (offset, _), typ = activation_record.getVarTuple(toks[1], activation_records)
             if typ == "global" or typ == "const":
                 print("Error: unsupported code", line)
                 sys.exit(0)

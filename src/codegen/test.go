@@ -7,25 +7,20 @@ type person struct {
 	name string
 }
 
-func test(s person) {
-	s.age = 10
-}
-
-func test2(a int, name string) {
-  fmt.printf("Age: %d, Name: %s\n", a, name)
+func test(a int, b int, c int, d int, e int, f int, g int, h int){
+	fmt.printf("a=%d\n", a)
+	fmt.printf("b=%d\n", b)
+	fmt.printf("c=%d\n", c)
 }
 
 func main() {
-	//var sahil person
-	sahil := person{name: "Sahil", age: 20}
-	age := sahil.age
-	fmt.printf("Age: %d\n", age)
-	sahil.age = 30
-	age = sahil.age
-	fmt.printf("New Age: %d\n", age)
-	test(sahil)
-	age = sahil.age
-  name := sahil.name
-	fmt.printf("Age: %d\n", age)
-  test2(age, name)
+	a := 1
+	b := 2
+	c := 3
+	d := 4
+	e := 5
+	f := 6
+	g := 7
+	h := 8
+	test(a,b,c,d,e,f,g,h)
 }

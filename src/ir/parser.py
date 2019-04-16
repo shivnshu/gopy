@@ -16,7 +16,7 @@ from code_optimization import code_optimization
 
 symTableDict = {'rootSymTable': SymbolTable(None, 'rootSymTable')}
 symTableSt = ['rootSymTable']
-actRecordDict = {'root': ActivationRecord('root')}
+actRecordDict = {'root': ActivationRecord('root', None)}
 actRecordSt = ['root']
 counter = 0
 label_counter = 0
@@ -83,7 +83,11 @@ def p_keyword_lcurly(p):
 	symtab = SymbolTable(symTableDict[symTableSt[-1]], key)
 	symTableDict[key] = symtab
 	symTableSt += [key]
-	actRecord = ActivationRecord(key)
+	if (actRecordSt == []):
+	  pname = None
+	else:
+	  pname = actRecordSt[-1]
+	actRecord = ActivationRecord(key, pname)
 	actRecordDict[key] = actRecord
 	actRecordSt += [actRecord.getName()]
 
@@ -1748,7 +1752,11 @@ def p_function_name(p):
 	symtab = SymbolTable(symTableDict[symTableSt[-1]], key)
 	symTableDict[key] = symtab
 	symTableSt += [key]
-	actRecord = ActivationRecord(p[1])
+	if (actRecordSt == []):
+	  pname = None
+	else:
+	  pname = actRecordSt[-1]
+	actRecord = ActivationRecord(p[1], pname)
 	actRecordDict[p[1]] = actRecord
 	actRecordSt += [actRecord.getName()]
 
