@@ -137,9 +137,13 @@ def asm_gen(line, activation_record, context):
             res += ["fadd"]
         elif(op == "imul"):
             res += ["fmul"]
+        elif(toks[3][0] == "/"):
+            res += ["fdiv " + "%st1, " + "%st0"]
+            res += ["fstp " + "%st0"]
         context["float_stack"].pop()
         context["float_stack"].pop()
         context["float_stack"].append(toks[0])
+
         return res, context
 
     elif (ty2 == 'float' and len(toks) == 6):
@@ -161,9 +165,7 @@ def asm_gen(line, activation_record, context):
         else:
             r0 = get_register(toks[5]) 
             #print(op)
-        
-
-
+    
 
         if (op == "add "):
             print(1)
