@@ -1,7 +1,9 @@
 #!/usr/bin/env python3
 import sys
+import os
 import argparse
 
+#sys.path.insert(0, os.environ['GoPyPATH'] + '/src/ir')
 sys.path.insert(0, '../ir')
 from ir_gen import ir_gen
 from common import getCodeType, getLitType, free_all_regs
@@ -11,7 +13,9 @@ import binaryop
 import ifstmt
 import gotostmt
 import arr_decl
+import struct_decl
 import structs
+import unaryop
 
 arg_parser = argparse.ArgumentParser()
 arg_parser.add_argument("input", nargs="*")
@@ -35,31 +39,36 @@ def get_data_section(const_decl):
         res += [toks[0] + ": ." + lit_type + " " + toks[2]]
     return res
 
-def asm_gen(code_line, func_name, data_section):
+def asm_gen(code_line, func_name, scope, data_section):
     global context
+    global activation_records
+    activation_record = activation_records[scope]
     code_type = getCodeType(code_line)
-    #print("AAA:" + code_type)
+
     if (code_type == "assignments"):
-        res, context = assignments.asm_gen(code_line, activation_records[func_name], context, data_section)
+        res, context = assignments.asm_gen(code_line, activation_record, context, data_section, activation_records)
         return res
     if (code_type == "function-call"):
-        res, context = func_calls.asm_gen(code_line, activation_records, func_name, context)
+        res, context = func_calls.asm_gen(code_line, activation_record, func_name, context, data_section, activation_records)
         return res
     if (code_type == "binary-op"):
-        #print("HELPHELPHELP")
-        res, context = binaryop.asm_gen(code_line, activation_records[func_name], context)
+        res, context = binaryop.asm_gen(code_line, activation_record, context, activation_records)
         return res
     if (code_type == "ifstmt"):
         res = ifstmt.asm_gen(code_line, activation_records)
         return res
     if (code_type == "gotostmt"):
-        return gotostmt.asm_gen(code_line)
+        return gotostmt.asm_gen(code_line,activation_record, activation_records)
     if (code_type == "arr_decl"):
-        res, context = arr_decl.asm_gen(code_line, activation_records[func_name], context)
+        res, context = arr_decl.asm_gen(code_line, activation_record, context, activation_records)
         return res
-    #if (code_type == "structs"):
-    #    return structs.asm_gen(code_line, activation_records[func_name])
-    # return None
+    if (code_type == "struct_decl"):
+        return struct_decl.asm_gen(code_line, activation_record, activation_records)
+    if (code_type == "structs"):
+        return structs.asm_gen(code_line, activation_record, activation_records)
+    if (code_type == "unary-op"):
+        res, context = unaryop.asm_gen(code_line, activation_record, context, activation_records)
+        return res
     return [code_line]
 
 def alloc_st_code(func_name):
@@ -72,14 +81,18 @@ def alloc_st_code(func_name):
     return ["subl $" + str(abs(min_offset)) + ", %esp"]
 
 def main(dict_code):
+    global activation_records
+    data_section = [".section .data"]
+
     res = [".section .text", ".globl main", ""]
     res += ["main:", "push %ebp", "movl %esp, %ebp", "movl %ebp, %esi"]
     res += alloc_st_code("root")
 
     if 'global_decl' in dict_code:
-        code_list = dict_code['global_decl']
-        for code_line in code_list:
-            gen_code = asm_gen(code_line, "root")
+        code_list = dict_code['global_decl'][0]
+        scope_list = dict_code['global_decl'][1]
+        for code_line, scope in zip(code_list, scope_list):
+            gen_code = asm_gen(code_line, "root", scope, data_section)
             if (gen_code != None):
                 res += gen_code
             else:
@@ -88,10 +101,9 @@ def main(dict_code):
     res += ["call func_main", "push $0", "call exit", ""]
     func_init = ["push %ebp", "mov %esp, %ebp"]
     func_end = ["mov %ebp, %esp", "pop %ebp", "ret", ""]
-    data_section = [".section .data"]
 
     if 'const_decl' in dict_code:
-        data_section += get_data_section(dict_code['const_decl'])
+        data_section += get_data_section(dict_code['const_decl'][0])
 
     for func_name in dict_code:
         free_all_regs() # Free if new function comes
@@ -102,16 +114,22 @@ def main(dict_code):
         else:
             res += [func_name + ":"]
         res += func_init
-        code_list = dict_code[func_name]
+        code_list = dict_code[func_name][0]
+        scope_list = dict_code[func_name][1]
         res += alloc_st_code(func_name)
-        for code_line in code_list:
-            #print("AAA" + code_line)
-            gen_code = asm_gen(code_line, func_name, data_section)
-            if (gen_code != None):
+        ret_added = False
+        for code_line, scope in zip(code_list, scope_list):
+            gen_code = asm_gen(code_line, func_name, scope, data_section)
+            if (code_line == "func_end"):
+                res += func_end
+                ret_added = True
+            elif (gen_code != None):
                 res += gen_code
+                ret_added = False
             else:
                 print("Code generation error for line: ", code_line)
-        res += func_end
+        if not ret_added:
+            res += func_end
     res += data_section
     return res
 

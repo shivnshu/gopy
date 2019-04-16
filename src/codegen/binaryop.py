@@ -1,7 +1,7 @@
 import common
 from common import get_register, free_register, getTokType, reserve_register, unreserve_register
 
-def asm_gen(line, activation_record, context):
+def asm_gen(line, activation_record, context, activation_records):
     res = []
     toks = line.split()
     #print(toks)
@@ -10,22 +10,60 @@ def asm_gen(line, activation_record, context):
     Some niggas like pow are left out
     '''
     op = "null"
-    if (toks[3][0] == "+"):
-        op = "add "
-    elif (toks[3][0] == "-"):
-        op = "subl "
-    elif (toks[3][0] == "*"):
-        op = "imul "
+    op_ind = 3
+    type_casting = 0
+    op1 = ""
+    op2 = ""
+    if(len(toks) == 6):
+        type_casting = 1
+
+    if(type_casting == 0):    
+        if (toks[op_ind][0] == "+"):
+            op = "add "
+            ty = str(toks[op_ind][1:])
+        elif (toks[op_ind][0] == "-"):
+            op = "subl "
+            ty = str(toks[op_ind][1:])
+        elif (toks[op_ind][0] == "*"):
+            op = "imul "
+            ty = str(toks[op_ind][1:])
+        elif (toks[op_ind][0] == "/" or toks[op_ind][0] == "%" or toks[op_ind][0] == "<" or toks[op_ind][0] == ">")
+            op = "handled"
+            ty = str(toks[op_ind][1:])
+        if op == "null":
+            ty = str(toks[op_ind][2:])
+    else:
+        op2 = toks[5]
+        op1 = toks[2]
+        if "cast-to" in toks[2]:
+            op_ind = 4
+            op1 = toks[3]
+        if (toks[op_ind][0] == "+"):
+            op = "add"
+            ty = str(toks[op_ind][1:])
+        elif (toks[op_ind][0] == "-"):
+            op = "subl"
+            ty = str(toks[op_ind][1:])
+        elif (toks[op_ind][0] == "*"):
+            op = "mul"
+            ty = str(toks[op_ind][1:])
+        elif (toks[op_ind][0] == "/"):
+            op = "div"
+            ty = str(toks[op_ind][1:])
+        elif (toks[op_ind][0] == "<" or toks[op_ind][0] == ">")
+            op = "inequality"
+            ty = str(toks[op_ind][1:])
+        if op == "null":
+            op = "inequality"
+            ty = str(toks[op_ind][2:])
     
-    ty1 = str(toks[3][1:])
-    ty2 = str(toks[4][1:])
     #print(ty)
     #print(op)
     #print(ty1)
     #print(ty2)
     #print(len(toks))
 
-    if (ty1 == "int" or ty2 == "int"):
+    if (ty == "int"):
         r0 = get_register(toks[0])
         r1 = get_register(toks[2])
         r2 = get_register(toks[4])
@@ -129,13 +167,13 @@ def asm_gen(line, activation_record, context):
 
         return res, context
 
-    elif (ty1 == 'float' and len(toks) == 5):       
-        if (op == "add"):
+    elif (ty == 'float' and type_casting == 0):       
+        if (op == "add "):
             res += ["fadd"]
-        elif(op == "subl"):
+        elif(op == "subl "):
             res += ["fchs"]
             res += ["fadd"]
-        elif(op == "imul"):
+        elif(op == "imul "):
             res += ["fmul"]
         elif(toks[3][0] == "/"):
             res += ["fdiv " + "%st1, " + "%st0"]
@@ -164,51 +202,77 @@ def asm_gen(line, activation_record, context):
 
         return res, context
 
-    elif (ty2 == 'float' and len(toks) == 6):
-        #print("GGGGGGGGGGGGGGGGGGGGGGGGGGGGG")
-        cast = 1
-        oper = toks[3][0]
+    elif (ty == 'float' and type_casting == 1):
+        #cast = 1
+        #oper = toks[op_ind][0]
         #print(op)
-        if(toks[4] == "cast-to-float"):
-            cast = 2
-        if cast == 1:
+        #if(toks[4] == "cast-to-float"):
+        #    cast = 2
+        #if cast == 1:
+        #    r0 = get_register(toks[3])
+        #    oper = toks[4][0]
+        #    #print(oper)
+        #    if (oper == "+"):
+        #        op = "add "
+        #    elif (oper == "-"):
+        #        op = "subl "
+        #    elif (oper == "*"):
+        #        op = "imul "
+        #else:
+        #    r0 = get_register(toks[5]) 
+        op_tobe_cast = -1
+        if op_ind == 3:
+            r0 = get_register(toks[5])
+            op_tobe_cast = 2
+        else :
             r0 = get_register(toks[3])
-            oper = toks[4][0]
-            #print(oper)
-            if (oper == "+"):
-                op = "add "
-            elif (oper == "-"):
-                op = "subl "
-            elif (oper == "*"):
-                op = "imul "
-        else:
-            r0 = get_register(toks[5]) 
-
+            op_tobe_cast = 1
             #print(op)
-    
-
-        if (op == "add "):
-            print(1)
+        if (op == "add"):
             res += ["fiadd " + r0]
-        elif(op == "subl "):
-            #print("HEL")
-            #print(2)
-            if cast == 1:
+        elif(op == "subl"):
+            if op_tobe_cast == 1:
                 res += ["fchs"]
                 res += ["fiadd " + r0]
             else:
                 res += ["neg " + r0]
                 res += ["fiadd " + r0]
-        elif(op == "imul "):
-            print(3)
-            res += ["fimul"]            
-        elif(oper == "/"):
-            if cast == 1:
+        elif(op == "mul"):
+            res += ["fimul " + r0]            
+        elif(op == "div"):
+            if op_tobe_cast == 1:
                 res += ["fidivr " + r0]
             else:
                 res += ["fidiv " + r0]
+        elif(op == "inequality"):
+            jmp_instr = {"==": "je", "<": "jb", ">": "ja", "<=": "jbe", ">=": "jae", "!=": "jne"}
+            if (toks[op_ind][0] in jmp_instr):
+                jmp_stmt = jmp_instr[toks[op_ind][0]]
+            if (toks[op_ind][0:2] in jmp_instr):
+                jmp_stmt = jmp_instr[toks[op_ind][0:2]]
+
+            res += ["fld1"]
+            res += ["fimul" + r0]
+            if op_tobe_cast == 2:    
+                res += ["fxch " + "%st1" ]
+
+            res += ["fcomip"]
+            res += ["fstp   %st(0)"]
+            res.append(jmp_stmt + " _rel_op_" + str(context["rel_op_num"]) + "_true")
+            res.append("fldz")
+            res.append("jmp _rel_op_" + str(context["rel_op_num"]) + "_end")
+            res.append("_rel_op_" + str(context["rel_op_num"]) + "_true:")
+            res.append("fld1")
+            res.append("_rel_op_" + str(context["rel_op_num"]) + "_end:")
+            context["rel_op_num"] += 1
+
+
+
+
+
         context["float_stack"].pop()
         context["float_stack"].append(toks[0])    
+
 
             #elif(getTokType(toks[2]) == "variable" and getTokType(toks[4]) == "variable")
         #es+= ["FAIL"]

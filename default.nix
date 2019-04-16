@@ -12,4 +12,5 @@ in
             pkgs.python36Packages.graphviz
             pkgs.gcc_multi
         ];
+        #GOPY_PATH="${HOME}/Projects/gopy";
     }

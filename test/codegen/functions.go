@@ -19,4 +19,5 @@ func main () {
   str, s = test2("my string")
   fmt.printf("Returned str: %s\n", str)
   fmt.printf("Returned s: %d\n", s)
+  return
 }

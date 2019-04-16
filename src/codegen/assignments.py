@@ -8,13 +8,13 @@ from common import reserve_register, unreserve_register
 reserved_words = {"true": "1", "false": "0"}
 
 
-def cal_array_offset(arr_idx, offset, reg, activation_record):
+def cal_array_offset(arr_idx, offset, reg, activation_record, dimentions, activation_records):
     res = []
     num_dims = len(arr_idx) - 1
-    dim_offset = offset + num_dims * 4
     reg2 = get_register("_tmp2")
     res += ["movl $1, " + reg2]
     res += ["movl $0, " + reg]
+    index = len(dimentions) - 1
     for i in range(num_dims):
         idx_name = arr_idx[num_dims - i]
         if (getTokType(idx_name) == "register"):
@@ -28,24 +28,30 @@ def cal_array_offset(arr_idx, offset, reg, activation_record):
             res += ["add " + reg3 + ", "  + reg]
             free_register("_tmp3")
         elif (getTokType(idx_name) == "variable"):
-            (offset, size), typ = activation_record.getVarTuple(idx_name)
+            (offset, jmp), typ = activation_record.getVarTuple(idx_name, activation_records)
+            reg_ = get_register("_pqr1")
+            res += ["movl %ebp, " + reg_]
+            while (jmp > 0):
+                res += ["movl ("+reg_+"), " + reg_]
+                jmp -= 1
             if typ in ["global", "const"]:
                 print("Error: type", typ, "for", idx_name, "is not yet supported")
                 sys.exit(0)
             reg3 = get_register("_tmp3")
-            res += ["movl " + str(offset) + "(%ebp), " + reg3]
+            res += ["movl " + str(offset) + "(" + reg_ + "), " + reg3]
             res += ["imul " + reg2 + ", " + reg3]
             res += ["add " + reg3 + ", " + reg]
+            free_register("_pqr1")
             free_register("_tmp3")
         else:
             print("Error: unknown type", getTokType(idx_name), "of index", idx_name)
             sys.exit(0)
-        res += ["imul " + str(dim_offset) + "(%ebp), " + reg2]
-        dim_offset -= 4
+        res += ["imul $" + dimentions[index] + ", " + reg2]
+        index -= 1
     free_register("_tmp2")
     return res
 
-def asm_gen(line, activation_record, context, data_section):
+def asm_gen(line, activation_record, context, data_section, activation_records):
     global reserved_words
     res = []
     toks = line.split(" ", 2) # string support
@@ -62,111 +68,497 @@ def asm_gen(line, activation_record, context, data_section):
 
     if (left_type == "register"):
         dst_entry = get_register(toks[0])
-    elif (left_type == "variable"):
-        (offset, size), typ = activation_record.getVarTuple(toks[0])
-        if typ == "global":
-            dst_entry = str(offset) + "(%esi)"
-        elif typ == "const":
-            print("Error: const", toks[0], "can not be assigned")
-            sys.exit(0)
-        else:
-            dst_entry = str(offset) + "(%ebp)"
-    elif (left_type == "dereference"):
-        if (getTokType(toks[0][1:]) != "variable"):
-            print("Error: invalid dereference", toks[0])
-            sys.exit(0)
-        (offset, size), typ = activation_record.getVarTuple(toks[0][1:])
-        if typ == "global":
-            dst_entry = str(offset) + "(%esi)"
-        elif typ == "const":
-            print("Error: const", toks[0], "can not be assigned")
-            sys.exit(0)
-        else:
-            dst_entry = str(offset) + "(%ebp)"
-        reg = get_register("_tmp2")
-        res += ["movl " + dst_entry + ", " + reg]
-        dst_entry = "(" + reg + ")"
-    elif (left_type == "array"):
-        arr_idx = re.split("\[|\]", toks[0])
-        arr_idx = list(filter(None, arr_idx))
-        # print(arr_idx)
-        (offset, size), typ = activation_record.getVarTuple(arr_idx[0])
-        if (size != 4 * len(arr_idx)):
-            print("Error: dimension mismatch for array", arr_idx[0])
-            sys.exit(0)
-        idx_offset = offset + 4
-        if (typ == "global" or typ == "const"):
-            print("Error: unsupported code", line)
-            sys.exit(0)
-        reg = get_register("_tmp_left")
-        res += cal_array_offset(arr_idx, offset, reg, activation_record)
-        res += ["imul $" + context["array_decl"][arr_idx[0]] + ", " + reg]
-        res += ["add " + str(offset) + "(%ebp), " + reg]
-        dst_entry = "0(" + reg + ")"
-        pass
-    else:
-        print("Error: unknown type of", toks[0])
-        sys.exit(0)
-
-
-    if (right_type == "register"):
-        src_entry = get_register(toks[2])
-        free_register(toks[2])
-        res.append("movl " + src_entry + ", " + dst_entry)
-    elif (right_type == "positive-integer"):
-        src_entry = "$" + toks[2]
-        res.append("movl " + src_entry + ", " + dst_entry)
-    elif (right_type == "negative-integer"):
-        src_entry = "$" + toks[2][1:]
-        res.append("movl " + src_entry + ", " + dst_entry)
-        res.append("negl " + dst_entry)
-    elif (right_type == "variable"):
-        (offset, size), typ = activation_record.getVarTuple(toks[2])
-        # print(toks, "with offset", offset)
-        if typ == "global":
-            src_entry = str(offset) + "(%esi)"
-        elif typ == "const":
-            src_entry = "$" + toks[2]
-        else:
-            src_entry = str(offset) + "(%ebp)"
-        if (left_type != "variable" and left_type != "dereference" and left_type != "array"):
+        if (right_type == "register"):
+            src_entry = get_register(toks[2])
+            free_register(toks[2])
+            free_register(toks[0])
             res.append("movl " + src_entry + ", " + dst_entry)
-        else:
-            reg = get_register("_tmp")
-            res.append("movl " + src_entry + ", " + reg)
-            res.append("movl " + reg + ", " + dst_entry)
-            free_register("_tmp")
-        if (left_type == "register" and typ == "const" and context["const_decl"][toks[2]] != "string"): # Why
-            res.append("movl (" + dst_entry + "), " + dst_entry)
-    elif (right_type == "string"):
-        string_lit = toks[2][1:-1].encode().decode('unicode_escape') # Allow newline etc.
-        if (left_type == "register"):
+        elif (right_type == "positive-integer"):
+            src_entry = "$" + toks[2]
+            free_register(toks[0])
+            res.append("movl " + src_entry + ", " + dst_entry)
+        elif (right_type == "negative-integer"):
+            src_entry = "$" + toks[2][1:]
+            free_register(toks[0])
+            res.append("movl " + src_entry + ", " + dst_entry)
+            res.append("negl " + dst_entry)
+        elif (right_type == "variable"):
+            (offset, jmp), typ = activation_record.getVarTuple(toks[2], activation_records)
+            # print(toks, "with offset", offset)
+            reg_ = get_register("_pqr")
+            res += ["movl %ebp, " + reg_]
+            while (jmp > 0):
+                res += ["movl ("+reg_+"), " + reg_]
+                jmp -= 1
+            if typ == "global":
+                src_entry = str(offset) + "(%esi)"
+            elif typ == "const":
+                src_entry = "$" + toks[2]
+            else:
+                src_entry = str(offset) + "("+reg_+")"
+            res.append("movl " + src_entry + ", " + dst_entry)
+            if (typ == "const" and context["const_decl"][toks[2]] != "string"): # Why
+                res.append("movl (" + dst_entry + "), " + dst_entry)
+            free_register(toks[0])
+            free_register("_pqr")
+        elif (right_type == "string"):
+            string_lit = toks[2][1:-1].encode().decode('unicode_escape') # Allow newline etc.
             free_register(toks[0])
             reserve_register("%eax")
             dst_entry = get_register(toks[0])
             unreserve_register("%eax")
-        res += ["push $" + str(len(string_lit) + 1)]
-        res += ["call malloc"]
-        index = 0
-        for ch_lit in string_lit:
-            res += ["movb $" + hex(ord(ch_lit)) + ", " + str(index) + "(%eax)"]
-            index += 1
-        res += ["movb $0x0, " + str(index) + "(%eax)"]
-        res += ["movl %eax, " + dst_entry]
-    elif (right_type == "const"):
-        res += ["movl " + "$" + reserved_words[toks[2]] + ", " + dst_entry]
-    elif (right_type == "address"):
-        if (getTokType(toks[2][1:]) != "variable"):
-            print("Error: Address of " + toks[2][1:] + " does not exist")
+            free_register(toks[0])
+            res += ["push $" + str(len(string_lit) + 1)]
+            print("inside ass", line)
+            res += ["call malloc"]
+            index = 0
+            for ch_lit in string_lit:
+                res += ["movb $" + hex(ord(ch_lit)) + ", " + str(index) + "(%eax)"]
+                index += 1
+            res += ["movb $0x0, " + str(index) + "(%eax)"]
+            res += ["movl %eax, " + dst_entry]
+        elif (right_type == "const"):
+            res += ["movl " + "$" + reserved_words[toks[2]] + ", " + dst_entry]
+            free_register(toks[0])
+        elif (right_type == "address"):
+            if (getTokType(toks[2][1:]) != "variable"):
+                print("Error: Address of " + toks[2][1:] + " does not exist")
+            else:
+                (offset, jmp), typ = activation_record.getVarTuple(toks[2][1:], activation_records)
+                reg_ = get_register("_pqr")
+                res += ["movl %ebp, " + reg_]
+                while (jmp > 0):
+                    res += ["movl ("+reg_+"), " + reg_]
+                    jmp -= 1
+                free_register(toks[0])
+                free_register("_pqr")
+                res.append("lea " + str(offset) + "("+reg_+") ," + dst_entry)
+        elif (right_type == "float"):
+            # res.append("mov $" + toks[2] + " ," + reg)
+            # res.append("fld " + "$" + toks[2] + "")
+            # res.append("fstp " + dst_entry)
+            float_name = "float_" + str(context["counter"])
+            context["counter"] += 1
+            data_section += [float_name + ": .float " + toks[2]]
+            free_register(toks[0])
+        elif (right_type == "array"):
+            arr_idx = re.split("\[|\]", toks[2])
+            arr_idx = list(filter(None, arr_idx))
+            (offset, jmp), typ = activation_record.getVarTuple(arr_idx[0], activation_records)
+            reg = get_register("_tmp_right")
+            dimentions = context["array_decl"][arr_idx[0]]["dimentions"]
+            res += cal_array_offset(arr_idx, offset, reg, activation_record, dimentions, activation_records)
+
+            reg_ = get_register("_pqr")
+            res += ["movl %ebp, " + reg_]
+            while (jmp > 0):
+                res += ["movl ("+reg_+"), " + reg_]
+                jmp -= 1
+            if (typ != "global" and typ != "const"):
+                pass
+            res += ["imul $" + context["array_decl"][arr_idx[0]]["size"] + ", " + reg]
+            res += ["add " + str(offset) + "("+reg_+"), " + reg]
+            if "(" in dst_entry:
+                reg10 = get_register("_tmp10")
+                res += ["movl 0(" + reg + "), " + reg10]
+                res += ["movl " + reg10 + ", " + dst_entry]
+                free_register("_tmp10")
+            else:
+                res += ["movl 0(" + reg + "), " + dst_entry]
+            free_register("_pqr")
+            free_register(toks[0])
+        elif (right_type == "dereference"):
+            if (getTokType(toks[2][1:]) != "variable"):
+                print("Error: dereference of non variable", toks[2][1:])
+                sys.exit(0)
+            reg_ = get_register("_pqr")
+            (offset, jmp), typ = activation_record.getVarTuple(toks[2][1:], activation_records)
+            res += ["movl %ebp, " + reg_]
+            while (jmp > 0):
+                res += ["movl ("+reg_+"), " + reg_]
+                jmp -= 1
+            if (typ == "global" or typ == "const"):
+                print("Error: unsupported code", line)
+                sys.exit(0)
+            reg = get_register("_tmp")
+            res += ["movl " + str(offset) + "("+reg_+"), " + reg]
+            res += ["movl 0(" + reg + "), " + reg]
+            res += ["movl " + reg + ", " + dst_entry]
+            free_register("_tmp")
+            free_register("_pqr")
+            free_register(toks[0])
         else:
-            (offset, size), typ = activation_record.getVarTuple(toks[2][1:])
-            if (left_type != "variable"):
-                res.append("lea " + str(offset) + "(%ebp) ," + dst_entry)
+            print("Error: Unknown right hand type", toks[2])
+            sys.exit(0)
+
+    elif (left_type == "variable"):
+        (offset, jmp), typ = activation_record.getVarTuple(toks[0], activation_records)
+        reg_ = get_register("_pqr1")
+        res += ["movl %ebp, " + reg_]
+        while (jmp > 0):
+            res += ["movl ("+reg_+"), " + reg_]
+            jmp -= 1
+        if typ == "global":
+            dst_entry = str(offset) + "(%esi)"
+        elif typ == "const":
+            print("Error: const", toks[0], "can not be assigned")
+            sys.exit(0)
+        else:
+            dst_entry = str(offset) + "("+reg_+")"
+
+        if (right_type == "register"):
+            src_entry = get_register(toks[2])
+            free_register(toks[2])
+            free_register("_pqr1")
+            res.append("movl " + src_entry + ", " + dst_entry)
+        elif (right_type == "positive-integer"):
+            free_register("_pqr1")
+            src_entry = "$" + toks[2]
+            res.append("movl " + src_entry + ", " + dst_entry)
+        elif (right_type == "negative-integer"):
+            free_register("_pqr1")
+            src_entry = "$" + toks[2][1:]
+            res.append("movl " + src_entry + ", " + dst_entry)
+            res.append("negl " + dst_entry)
+        elif (right_type == "variable"):
+            (offset, jmp), typ = activation_record.getVarTuple(toks[2], activation_records)
+            # print(toks, "with offset", offset)
+            reg_ = get_register("_pqr")
+            res += ["movl %ebp, " + reg_]
+            while (jmp > 0):
+                res += ["movl ("+reg_+"), " + reg_]
+                jmp -= 1
+            if typ == "global":
+                src_entry = str(offset) + "(%esi)"
+            elif typ == "const":
+                src_entry = "$" + toks[2]
+            else:
+                src_entry = str(offset) + "("+reg_+")"
+            if (left_type != "variable" and left_type != "dereference" and left_type != "array"):
+                res.append("movl " + src_entry + ", " + dst_entry)
             else:
                 reg = get_register("_tmp")
-                res.append("lea " + str(offset) + "(%ebp) ," + reg)
+                res.append("movl " + src_entry + ", " + reg)
                 res.append("movl " + reg + ", " + dst_entry)
                 free_register("_tmp")
+            free_register("_pqr")
+            free_register("_pqr1")
+        elif (right_type == "string"):
+            string_lit = toks[2][1:-1].encode().decode('unicode_escape') # Allow newline etc.
+            res += ["push $" + str(len(string_lit) + 1)]
+            print("inside ass", line)
+            res += ["call malloc"]
+            index = 0
+            for ch_lit in string_lit:
+                res += ["movb $" + hex(ord(ch_lit)) + ", " + str(index) + "(%eax)"]
+                index += 1
+            res += ["movb $0x0, " + str(index) + "(%eax)"]
+            res += ["movl %eax, " + dst_entry]
+            free_register("_pqr1")
+        elif (right_type == "const"):
+            res += ["movl " + "$" + reserved_words[toks[2]] + ", " + dst_entry]
+            free_register("_pqr1")
+        elif (right_type == "address"):
+            if (getTokType(toks[2][1:]) != "variable"):
+                print("Error: Address of " + toks[2][1:] + " does not exist")
+            else:
+                (offset, jmp), typ = activation_record.getVarTuple(toks[2][1:], activation_records)
+                reg_ = get_register("_pqr")
+                res += ["movl %ebp, " + reg_]
+                while (jmp > 0):
+                    res += ["movl ("+reg_+"), " + reg_]
+                    jmp -= 1
+                if (left_type != "variable"):
+                    res.append("lea " + str(offset) + "("+reg_+") ," + dst_entry)
+                else:
+                    reg = get_register("_tmp")
+                    res.append("lea " + str(offset) + "("+reg_+") ," + reg)
+                    res.append("movl " + reg + ", " + dst_entry)
+                    free_register("_tmp")
+                free_register("_pqr")
+            free_register("_pqr1")
+        elif (right_type == "float"):
+            # res.append("mov $" + toks[2] + " ," + reg)
+            # res.append("fld " + "$" + toks[2] + "")
+            # res.append("fstp " + dst_entry)
+            float_name = "float_" + str(context["counter"])
+            context["counter"] += 1
+            data_section += [float_name + ": .float " + toks[2]]
+            free_register("_pqr1")
+        elif (right_type == "array"):
+            arr_idx = re.split("\[|\]", toks[2])
+            arr_idx = list(filter(None, arr_idx))
+            (offset, jmp), typ = activation_record.getVarTuple(arr_idx[0], activation_records)
+            reg = get_register("_tmp_right")
+            dimentions = context["array_decl"][arr_idx[0]]["dimentions"]
+            res += cal_array_offset(arr_idx, offset, reg, activation_record, dimentions, activation_records)
+
+            reg_ = get_register("_pqr")
+            res += ["movl %ebp, " + reg_]
+            while (jmp > 0):
+                res += ["movl ("+reg_+"), " + reg_]
+                jmp -= 1
+            if (typ != "global" and typ != "const"):
+                pass
+            res += ["imul $" + context["array_decl"][arr_idx[0]]["size"] + ", " + reg]
+            res += ["add " + str(offset) + "("+reg_+"), " + reg]
+            free_register("_pqr")
+            if "(" in dst_entry:
+                reg10 = get_register("_tmp10")
+                res += ["movl 0(" + reg + "), " + reg10]
+                res += ["movl " + reg10 + ", " + dst_entry]
+                free_register("_tmp10")
+            else:
+                res += ["movl 0(" + reg + "), " + dst_entry]
+            free_register("_pqr1")
+        elif (right_type == "dereference"):
+            if (getTokType(toks[2][1:]) != "variable"):
+                print("Error: dereference of non variable", toks[2][1:])
+                sys.exit(0)
+            reg_ = get_register("_pqr")
+            (offset, jmp), typ = activation_record.getVarTuple(toks[2][1:], activation_records)
+            res += ["movl %ebp, " + reg_]
+            while (jmp > 0):
+                res += ["movl ("+reg_+"), " + reg_]
+                jmp -= 1
+            if (typ == "global" or typ == "const"):
+                print("Error: unsupported code", line)
+                sys.exit(0)
+            reg = get_register("_tmp")
+            res += ["movl " + str(offset) + "("+reg_+"), " + reg]
+            res += ["movl 0(" + reg + "), " + reg]
+            res += ["movl " + reg + ", " + dst_entry]
+            free_register("_tmp")
+            free_register("_pqr")
+            free_register("_pqr1")
+        else:
+            print("Error: Unknown right hand type", toks[2])
+            sys.exit(0)
+
+
+    elif (left_type == "dereference"):
+        if (getTokType(toks[0][1:]) != "variable"):
+            print("Error: invalid dereference", toks[0])
+            sys.exit(0)
+        (offset, jmp), typ = activation_record.getVarTuple(toks[0][1:], activation_records)
+        reg_ = get_register("_pqr1")
+        res += ["movl %ebp, " + reg_]
+        while (jmp > 0):
+            res += ["movl ("+reg_+"), " + reg_]
+            jmp -= 1
+        if typ == "global":
+            dst_entry = str(offset) + "(%esi)"
+        elif typ == "const":
+            print("Error: const", toks[0], "can not be assigned")
+            sys.exit(0)
+        else:
+            dst_entry = str(offset) + "("+reg_+")"
+        reg = get_register("_tmp2")
+        res += ["movl " + dst_entry + ", " + reg]
+        dst_entry = "(" + reg + ")"
+
+        if (right_type == "register"):
+            src_entry = get_register(toks[2])
+            free_register(toks[2])
+            free_register("_pqr1")
+            res.append("movl " + src_entry + ", " + dst_entry)
+        elif (right_type == "positive-integer"):
+            free_register("_pqr1")
+            src_entry = "$" + toks[2]
+            res.append("movl " + src_entry + ", " + dst_entry)
+        elif (right_type == "negative-integer"):
+            free_register("_pqr1")
+            src_entry = "$" + toks[2][1:]
+            res.append("movl " + src_entry + ", " + dst_entry)
+            res.append("negl " + dst_entry)
+        elif (right_type == "variable"):
+            (offset, jmp), typ = activation_record.getVarTuple(toks[2], activation_records)
+            # print(toks, "with offset", offset)
+            reg_ = get_register("_pqr")
+            res += ["movl %ebp, " + reg_]
+            while (jmp > 0):
+                res += ["movl ("+reg_+"), " + reg_]
+                jmp -= 1
+            if typ == "global":
+                src_entry = str(offset) + "(%esi)"
+            elif typ == "const":
+                src_entry = "$" + toks[2]
+            else:
+                src_entry = str(offset) + "("+reg_+")"
+            if (left_type != "variable" and left_type != "dereference" and left_type != "array"):
+                res.append("movl " + src_entry + ", " + dst_entry)
+            else:
+                reg = get_register("_tmp")
+                res.append("movl " + src_entry + ", " + reg)
+                res.append("movl " + reg + ", " + dst_entry)
+                free_register("_tmp")
+            if (left_type == "register" and typ == "const" and context["const_decl"][toks[2]] != "string"): # Why
+                res.append("movl (" + dst_entry + "), " + dst_entry)
+            free_register("_pqr1")
+            free_register("_pqr")
+        elif (right_type == "string"):
+            string_lit = toks[2][1:-1].encode().decode('unicode_escape') # Allow newline etc.
+            if (left_type == "register"):
+                free_register(toks[0])
+                reserve_register("%eax")
+                dst_entry = get_register(toks[0])
+                unreserve_register("%eax")
+            res += ["push $" + str(len(string_lit) + 1)]
+            print("inside ass", line)
+            res += ["call malloc"]
+            index = 0
+            for ch_lit in string_lit:
+                res += ["movb $" + hex(ord(ch_lit)) + ", " + str(index) + "(%eax)"]
+                index += 1
+            res += ["movb $0x0, " + str(index) + "(%eax)"]
+            res += ["movl %eax, " + dst_entry]
+            free_register("_pqr1")
+        elif (right_type == "const"):
+            res += ["movl " + "$" + reserved_words[toks[2]] + ", " + dst_entry]
+            free_register("_pqr1")
+        elif (right_type == "address"):
+            if (getTokType(toks[2][1:]) != "variable"):
+                print("Error: Address of " + toks[2][1:] + " does not exist")
+            else:
+                (offset, jmp), typ = activation_record.getVarTuple(toks[2][1:], activation_records)
+                reg_ = get_register("_pqr")
+                res += ["movl %ebp, " + reg_]
+                while (jmp > 0):
+                    res += ["movl ("+reg_+"), " + reg_]
+                    jmp -= 1
+                if (left_type != "variable"):
+                    res.append("lea " + str(offset) + "("+reg_+") ," + dst_entry)
+                else:
+                    reg = get_register("_tmp")
+                    res.append("lea " + str(offset) + "("+reg_+") ," + reg)
+                    res.append("movl " + reg + ", " + dst_entry)
+                    free_register("_tmp")
+                free_register("_pqr")
+            free_register("_pqr1")
+        elif (right_type == "float"):
+            # res.append("mov $" + toks[2] + " ," + reg)
+            # res.append("fld " + "$" + toks[2] + "")
+            # res.append("fstp " + dst_entry)
+            free_register("_pqr1")
+            float_name = "float_" + str(context["counter"])
+            context["counter"] += 1
+            data_section += [float_name + ": .float " + toks[2]]
+
+
+
+
+            
+        elif (right_type == "array"):
+            arr_idx = re.split("\[|\]", toks[2])
+            arr_idx = list(filter(None, arr_idx))
+            (offset, jmp), typ = activation_record.getVarTuple(arr_idx[0], activation_records)
+            reg = get_register("_tmp_right")
+            dimentions = context["array_decl"][arr_idx[0]]["dimentions"]
+            res += cal_array_offset(arr_idx, offset, reg, activation_record, dimentions, activation_records)
+
+            reg_ = get_register("_pqr")
+            res += ["movl %ebp, " + reg_]
+            while (jmp > 0):
+                res += ["movl ("+reg_+"), " + reg_]
+                jmp -= 1
+            if (typ != "global" and typ != "const"):
+                pass
+            res += ["imul $" + context["array_decl"][arr_idx[0]]["size"] + ", " + reg]
+            res += ["add " + str(offset) + "("+reg_+"), " + reg]
+            if "(" in dst_entry:
+                reg10 = get_register("_tmp10")
+                res += ["movl 0(" + reg + "), " + reg10]
+                res += ["movl " + reg10 + ", " + dst_entry]
+                free_register("_tmp10")
+            else:
+                res += ["movl 0(" + reg + "), " + dst_entry]
+            free_register("_pqr1")
+            free_register("_pqr")
+        elif (right_type == "dereference"):
+            if (getTokType(toks[2][1:]) != "variable"):
+                print("Error: dereference of non variable", toks[2][1:])
+                sys.exit(0)
+            reg_ = get_register("_pqr")
+            (offset, jmp), typ = activation_record.getVarTuple(toks[2][1:], activation_records)
+            res += ["movl %ebp, " + reg_]
+            while (jmp > 0):
+                res += ["movl ("+reg_+"), " + reg_]
+                jmp -= 1
+            if (typ == "global" or typ == "const"):
+                print("Error: unsupported code", line)
+                sys.exit(0)
+            reg = get_register("_tmp")
+            res += ["movl " + str(offset) + "("+reg_+"), " + reg]
+            res += ["movl 0(" + reg + "), " + reg]
+            res += ["movl " + reg + ", " + dst_entry]
+            free_register("_tmp")
+            free_register("_pqr")
+            free_register("_pqr1")
+        else:
+            print("Error: Unknown right hand type", toks[2])
+            sys.exit(0)
+
+
+
+    elif (left_type == "array"):
+        arr_idx = re.split("\[|\]", toks[0])
+        arr_idx = list(filter(None, arr_idx))
+        dimentions = context["array_decl"][arr_idx[0]]["dimentions"]
+        if (len(dimentions) != len(arr_idx)-1):
+            print("Error: dimentions mismatch for array", arr_idx[0])
+            sys.exit(0)
+        (offset, jmp), typ = activation_record.getVarTuple(arr_idx[0], activation_records)
+        reg_ = get_register("_pqr1")
+        res += ["movl %ebp, " + reg_]
+        while (jmp > 0):
+            res += ["movl ("+reg_+"), " + reg_]
+            jmp -= 1
+        if (typ == "global" or typ == "const"):
+            print("Error: unsupported code", line)
+            sys.exit(0)
+        reg = get_register("_tmp_left")
+        res += cal_array_offset(arr_idx, offset, reg, activation_record, dimentions, activation_records)
+        res += ["imul $" + context["array_decl"][arr_idx[0]]["size"] + ", " + reg]
+        res += ["add " + str(offset) + "("+reg_+"), " + reg]
+        free_register("_pqr1")
+        dst_entry = "0(" + reg + ")"
+        
+        if (right_type == "register"):
+            src_entry = get_register(toks[2])
+            free_register(toks[2])
+            free_register("_tmp_left")
+            res.append("movl " + src_entry + ", " + dst_entry)
+        elif (right_type == "positive-integer"):
+            src_entry = "$" + toks[2]
+            free_register("_tmp_left")
+            res.append("movl " + src_entry + ", " + dst_entry)
+        elif (right_type == "negative-integer"):
+            src_entry = "$" + toks[2][1:]
+            free_register("_tmp_left")
+            res.append("movl " + src_entry + ", " + dst_entry)
+            res.append("negl " + dst_entry)
+        elif (right_type == "variable"):
+            (offset, jmp), typ = activation_record.getVarTuple(toks[2], activation_records)
+            # print(toks, "with offset", offset)
+            reg_ = get_register("_pqr")
+            res += ["movl %ebp, " + reg_]
+            while (jmp > 0):
+                res += ["movl ("+reg_+"), " + reg_]
+                jmp -= 1
+            if typ == "global":
+                src_entry = str(offset) + "(%esi)"
+            elif typ == "const":
+                src_entry = "$" + toks[2]
+            else:
+                src_entry = str(offset) + "("+reg_+")"
+            if (left_type != "variable" and left_type != "dereference" and left_type != "array"):
+                res.append("movl " + src_entry + ", " + dst_entry)
+            else:
+                reg = get_register("_tmp")
+                res.append("movl " + src_entry + ", " + reg)
+                res.append("movl " + reg + ", " + dst_entry)
+                free_register("_tmp")
+<<<<<<< HEAD
     elif (right_type == "float"):
         #print("HELLO")
         #print(toks)
@@ -231,21 +623,107 @@ def asm_gen(line, activation_record, context, data_section):
         (offset, size), typ = activation_record.getVarTuple(toks[2][1:])
         if (typ == "global" or typ == "const"):
             print("Error: unsupported code", line)
+=======
+            if (left_type == "register" and typ == "const" and context["const_decl"][toks[2]] != "string"): # Why
+                res.append("movl (" + dst_entry + "), " + dst_entry)
+            free_register("_tmp_left")
+            free_register("_pqr")
+        elif (right_type == "string"):
+            string_lit = toks[2][1:-1].encode().decode('unicode_escape') # Allow newline etc.
+            res += ["push $" + str(len(string_lit) + 1)]
+            print("inside ass", line)
+            res += ["call malloc"]
+            index = 0
+            for ch_lit in string_lit:
+                res += ["movb $" + hex(ord(ch_lit)) + ", " + str(index) + "(%eax)"]
+                index += 1
+            res += ["movb $0x0, " + str(index) + "(%eax)"]
+            res += ["movl %eax, " + dst_entry]
+            free_register("_tmp_left")
+        elif (right_type == "const"):
+            res += ["movl " + "$" + reserved_words[toks[2]] + ", " + dst_entry]
+            free_register("_tmp_left")
+        elif (right_type == "address"):
+            if (getTokType(toks[2][1:]) != "variable"):
+                print("Error: Address of " + toks[2][1:] + " does not exist")
+            else:
+                (offset, jmp), typ = activation_record.getVarTuple(toks[2][1:], activation_records)
+                reg_ = get_register("_pqr")
+                res += ["movl %ebp, " + reg_]
+                while (jmp > 0):
+                    res += ["movl ("+reg_+"), " + reg_]
+                    jmp -= 1
+                if (left_type != "variable"):
+                    res.append("lea " + str(offset) + "("+reg_+") ," + dst_entry)
+                else:
+                    reg = get_register("_tmp")
+                    res.append("lea " + str(offset) + "("+reg_+") ," + reg)
+                    res.append("movl " + reg + ", " + dst_entry)
+                    free_register("_tmp")
+                free_register("_pqr")
+                free_register("_tmp_left")
+        elif (right_type == "float"):
+            # res.append("mov $" + toks[2] + " ," + reg)
+            # res.append("fld " + "$" + toks[2] + "")
+            # res.append("fstp " + dst_entry)
+            free_register("_tmp_left")
+            float_name = "float_" + str(context["counter"])
+            context["counter"] += 1
+            data_section += [float_name + ": .float " + toks[2]]
+        elif (right_type == "array"):
+            arr_idx = re.split("\[|\]", toks[2])
+            arr_idx = list(filter(None, arr_idx))
+            (offset, jmp), typ = activation_record.getVarTuple(arr_idx[0], activation_records)
+            reg = get_register("_tmp_right")
+            dimentions = context["array_decl"][arr_idx[0]]["dimentions"]
+            res += cal_array_offset(arr_idx, offset, reg, activation_record, dimentions, activation_records)
+
+            reg_ = get_register("_pqr")
+            res += ["movl %ebp, " + reg_]
+            while (jmp > 0):
+                res += ["movl ("+reg_+"), " + reg_]
+                jmp -= 1
+            if (typ != "global" and typ != "const"):
+                pass
+            res += ["imul $" + context["array_decl"][arr_idx[0]]["size"] + ", " + reg]
+            res += ["add " + str(offset) + "("+reg_+"), " + reg]
+            if "(" in dst_entry:
+                reg10 = get_register("_tmp10")
+                res += ["movl 0(" + reg + "), " + reg10]
+                res += ["movl " + reg10 + ", " + dst_entry]
+                free_register("_tmp10")
+            else:
+                res += ["movl 0(" + reg + "), " + dst_entry]
+            free_register("_tmp_left")
+            free_register("_pqr")
+            free_register("_tmp_right")
+        elif (right_type == "dereference"):
+            if (getTokType(toks[2][1:]) != "variable"):
+                print("Error: dereference of non variable", toks[2][1:])
+                sys.exit(0)
+            reg_ = get_register("_pqr")
+            (offset, jmp), typ = activation_record.getVarTuple(toks[2][1:], activation_records)
+            res += ["movl %ebp, " + reg_]
+            while (jmp > 0):
+                res += ["movl ("+reg_+"), " + reg_]
+                jmp -= 1
+            if (typ == "global" or typ == "const"):
+                print("Error: unsupported code", line)
+                sys.exit(0)
+            reg = get_register("_tmp")
+            res += ["movl " + str(offset) + "("+reg_+"), " + reg]
+            res += ["movl 0(" + reg + "), " + reg]
+            res += ["movl " + reg + ", " + dst_entry]
+            free_register("_tmp")
+            free_register("_pqr")
+            free_register("_tmp_left")
+        else:
+            print("Error: Unknown right hand type", toks[2])
+>>>>>>> sahil
             sys.exit(0)
-        reg = get_register("_tmp")
-        res += ["movl " + str(offset) + "(%ebp), " + reg]
-        res += ["movl 0(" + reg + "), " + reg]
-        res += ["movl " + reg + ", " + dst_entry]
-        free_register("_tmp")
     else:
-        print("Error: Unknown right hand type", toks[2])
+        print("Error: unknown type of", toks[0])
         sys.exit(0)
 
-    if (left_type == "dereference"):
-        free_register("_tmp2")
-    if (left_type == "array"):
-        free_register("_tmp_left")
-    if (right_type == "array"):
-        free_register("_tmp_right")
     # print(toks, left_type, right_type, res)
     return res, context

@@ -26,7 +26,11 @@ def insertActionsHelper(prod_num, grammer_list, i, tabs_num):
         out += "\n"
         i += 1
         # print(grammer_list)
-        line = grammer_list[i]
+        try:
+            line = grammer_list[i]
+        except:
+            print(grammer_list[i-10:i-1])
+            sys.exit(0)
     return (out, i)
 
 output = ''
@@ -70,6 +74,8 @@ output += "\tlabel_counter += 1\n"
 output += "\treturn res\n\n"
 
 output += "def verifyCalType(name, lineno):\n"
+output += "\ttoks = name.split('.')\n"
+output += "\tname = toks[0]\n"
 output += "\tflag = False\n"
 output += "\tfor n in symTableSt[::-1]:\n"
 output += "\t\tif name in symTableDict[n].symbols:\n"
@@ -80,7 +86,13 @@ output += "\tif not flag:\n"
 output += "\t\tprint('Type of', name, 'not found on line number', lineno)\n"
 output += "\t\treturn 'Unknown'\n"
 output += "\tentry = table.get(name)\n"
-output += "\treturn entry.getType()\n\n"
+output += "\tif len(toks) == 1:\n"
+output += "\t\treturn entry.getType()\n"
+output += "\tfields = entry.getSign()\n"
+output += '\tfield = toks[1]\n' # Assuming max(len(toks)) == 2
+output += "\tif field not in fields:\n"
+output += "\t\treturn 'Unknown'\n"
+output += "\treturn fields[field][2]\n\n"
 
 output += "def flatten_list(l):\n"
 output += "\toutput = []\n"
@@ -125,6 +137,7 @@ for grammer in grammers:
     output += "\tglobal actRecordSt\n\tglobal actRecordDict\n"
     output += "\tp[0] = {}\n"
     output += "\tp[0]['code'] = []\n"
+    output += "\tp[0]['scopelist'] = []\n"
     output += "\tp[0]['dict_code'] = {}\n"
     output += tmp_out
     if (len(tmp_out) == 0):
@@ -148,7 +161,8 @@ for grammer in grammers:
         output += ":\n"
         output += tmp_out
 
-
+    output += "\tif len(p[0]['code']) != len(p[0]['scopelist']):\n"
+    output += "\t\tprint(len(p[0]['code']), len(p[0]['scopelist']), '" + clause_name + "')\n"
     output += "\n"
 
 

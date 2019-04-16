@@ -1,9 +1,10 @@
 import sys
-from common import get_register, free_register, getTokType
+from common import get_register, free_register, getTokType, reserve_register, unreserve_register
 
 size_of = {'int': '4', 'float': '4', 'char': '1', "*int": '4', "*float": '4', "*char": '4', "string": '4'}
 
-def asm_gen(line, activation_record, context):
+def asm_gen(line, activation_record, context, activation_records):
+    print("Inside arr_del", line)
     global size_of
     res = []
     toks = line.split()
@@ -11,33 +12,41 @@ def asm_gen(line, activation_record, context):
     arr_var = toks[3]
     type_size = size_of[toks[2]]
 
-    (offset, size), typ = activation_record.getVarTuple(arr_var)
-    dim_offset = offset + 4
+    dimentions = []
+    for i in range(4, len(toks)):
+        d = toks[i]
+        if getTokType(d) != "positive-integer":
+            print("Error(arr_decl): only const indexes are allowed")
+            sys.exit(0)
+        dimentions += [d]
 
-    if typ == "global" or type == "const":
+    context['array_decl'][toks[3]] = {"size": type_size, "dimentions": dimentions}
+
+    (offset, jmp), typ = activation_record.getVarTuple(arr_var, activation_records)
+    if (offset >= 0):
+        return res, context # Variable is not local
+    if typ == "global" or typ == "const":
         print("Error: unsupported code:", line)
         sys.exit(0)
 
-    res += ["movl " + get_register(toks[4]) + ", " + str(dim_offset) + "(%ebp)"]
-    dim_offset += 4  # Assumption: toks always register
-    free_register(toks[4])
-    for i in range(5, len(toks)):
-        res += ["movl " + get_register(toks[i]) + ", " + str(dim_offset) + "(%ebp)"]
-        free_register(toks[i])
-
     reg = get_register("_tmp")
-
-    dim_offset = offset + 4
-    res += ["movl " + str(dim_offset) + "(%ebp)" + ", " + reg]
-    dim_offset += 4
+    res += ["movl $" + toks[4] + ", " + reg]
     for i in range(5, len(toks)):
-        res += ["imul " + str(dim_offset) + "(%ebp)" + ", " + reg]
+        res += ["imul $" + toks[i] + ", " + reg]
     res += ["imul $" + type_size + ", " + reg]
+    reserve_register("%eax")
+    reg_ = get_register("_pqr")
+    res += ["movl %ebp, " + reg_]
+    while (jmp > 0):
+        res += ["movl ("+reg_+"), " + reg_]
+        jmp -= 1
     res += ["push %eax"]
     res += ["push " + reg]
     res += ["call malloc"]
-    res += ["movl %eax, " + str(offset) + "(%ebp)"]
+    res += ["movl %eax, " + str(offset) + "("+reg_+")"]
     res += ["pop %eax"]
+
+    unreserve_register("%eax")
     free_register("_tmp")
-    context['array_decl'][toks[3]] = type_size
+    free_register("_pqr")
     return res, context

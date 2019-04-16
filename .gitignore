@@ -6,3 +6,9 @@ tmp.*
 __pycache__/
 .gdb_history
 peda-session-tmp.out.txt
+
+test_suite/*
+!test_suite/go_codes
+!test_suite/go_out
+!test_suite/inputs
+!test_suite/test_all
