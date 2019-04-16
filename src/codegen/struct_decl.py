@@ -11,7 +11,12 @@ def asm_gen(line, activation_record, activation_records):
     if (struct_type in lang_datatypes):
         return res
     var_name = toks[2]
-    (offset, size), typ = activation_record.getVarTuple(var_name, activation_records)
+    (offset, jmp), typ = activation_record.getVarTuple(var_name, activation_records)
+    reg_ = get_register("_pqr")
+    res += ["movl %ebp, " + reg_]
+    while (jmp > 0):
+        res += ["movl ("+reg_+"), " + reg_]
+        jmp -= 1
     if (typ == "global" or typ == "const"):
         print("Error: unsupported", typ, "for", var_name)
         sys.exit(0)
@@ -24,8 +29,9 @@ def asm_gen(line, activation_record, activation_records):
     res += ["push %eax"]
     res += ["push $" + str(var_size)]
     res += ["call malloc"]
-    res += ["movl %eax, " + str(offset) + "(%ebp)"]
+    res += ["movl %eax, " + str(offset) + "("+reg_+")"]
     res += ["pop %eax"]
+    free_register("_pqr")
     unreserve_register("%eax")
     return res
 

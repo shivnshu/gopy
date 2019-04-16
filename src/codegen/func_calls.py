@@ -21,22 +21,34 @@ def asm_gen(line, activation_records, func_name, context, data_section):
             res += ["push " + get_register(toks[1])]
             free_register(toks[1])
         elif (param_type == "variable"):
-            (offset, size), typ = activation_record.getVarTuple(toks[1], activation_records)
+            (offset, jmp), typ = activation_record.getVarTuple(toks[1], activation_records)
+            reg_ = get_register("_pqr")
+            res += ["movl %ebp, " + reg_]
+            while (jmp > 0):
+                res += ["movl ("+reg_+"), " + reg_]
+                jmp -= 1
             if typ == "global" or typ == "const":
                 print("Error: unsupported code", line)
                 sys.exit(0)
             else:
-                res += ["push " + str(offset) + "(%ebp)"]
+                res += ["push " + str(offset) + "("+reg_+")"]
+            free_register("_pqr")
         elif (param_type == "positive-integer"):
             res += ["push " + "$" + toks[1]]
         elif (param_type == "address"):
             assert(getTokType(toks[1][1:]) == "variable")
-            (offset, size), typ = activation_record.getVarTuple(toks[1][1:], activation_records)
+            (offset, jmp), typ = activation_record.getVarTuple(toks[1][1:], activation_records)
+            reg_ = get_register("_pqr")
+            res += ["movl %ebp, " + reg_]
+            while (jmp > 0):
+                res += ["movl ("+reg_+"), " + reg_]
+                jmp -= 1
             reg = get_register("_push_param")
-            res += ["movl %ebp, " + reg]
+            res += ["movl "+reg_+", " + reg]
             res += ["add $" + str(offset) + ", " + reg]
             res += ["push " + reg]
             free_register("_push_param")
+            free_register("_pqr")
         elif (param_type == "string"):
             reserve_register("%eax")
             reg = get_register("_push_param")

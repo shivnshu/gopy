@@ -21,7 +21,12 @@ def asm_gen(line, activation_record, context, activation_records):
 
     context['array_decl'][toks[3]] = {"size": type_size, "dimentions": dimentions}
 
-    (offset, size), typ = activation_record.getVarTuple(arr_var, activation_records)
+    (offset, jmp), typ = activation_record.getVarTuple(arr_var, activation_records)
+    reg_ = get_register("_pqr")
+    res += ["movl %ebp, " + reg_]
+    while (jmp > 0):
+        res += ["movl ("+reg_+"), " + reg_]
+        jmp -= 1
     if (offset >= 0):
         return res, context # Variable is not local
 
@@ -38,8 +43,9 @@ def asm_gen(line, activation_record, context, activation_records):
     res += ["push %eax"]
     res += ["push " + reg]
     res += ["call malloc"]
-    res += ["movl %eax, " + str(offset) + "(%ebp)"]
+    res += ["movl %eax, " + str(offset) + "("+reg_+")"]
     res += ["pop %eax"]
 
     free_register("_tmp")
+    free_register("_pqr")
     return res, context

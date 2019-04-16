@@ -11,7 +11,12 @@ def asm_gen(line, activation_record, activation_records):
         var_name = var_field[0]
         field_name = var_field[1]
         assert(getTokType(var_name) == "variable")
-        (offset, size), typ = activation_record.getVarTuple(var_name, activation_records)
+        (offset, jmp), typ = activation_record.getVarTuple(var_name, activation_records)
+        reg_ = get_register("_pqr")
+        res += ["movl %ebp, " + reg_]
+        while (jmp > 0):
+            res += ["movl ("+reg_+"), " + reg_]
+            jmp -= 1
         if (typ == "global" or typ == "const"):
             print("Error: unsupported type", type, "of", var_name)
             sys.exit(0)
@@ -20,19 +25,19 @@ def asm_gen(line, activation_record, activation_records):
         right_type = getTokType(right_param)
         if (right_type == "register"):
             reg = get_register("_tmp")
-            res += ["movl " + str(offset) + "(%ebp)" + ", " + reg]
+            res += ["movl " + str(offset) + "("+reg_+")" + ", " + reg]
             res += ["add $" + str(field_offset) + ", " + reg]
             res += ["movl " + get_register(right_param) + ", (" + reg + ")"]
             free_register("_tmp")
         elif (right_type == "positive-integer" or right_type == "const"):
             reg = get_register("_tmp")
-            res += ["movl " + str(offset) + "(%ebp)" + ", " + reg]
+            res += ["movl " + str(offset) + "("+reg_+")" + ", " + reg]
             res += ["add $" + str(field_offset) + ", " + reg]
             res += ["movl $" + str(right_param) + ", (" + reg + ")"]
             free_register("_tmp")
         elif (right_type == "negative-integer"):
             reg = get_register("_tmp")
-            res += ["movl " + str(offset) + "(%ebp)" + ", " + reg]
+            res += ["movl " + str(offset) + "("+reg_+")" + ", " + reg]
             res += ["add $" + str(field_offset) + ", " + reg]
             res += ["movl $" + str(right_param[1:]) + ", (" + reg + ")"]
             res += ["negl (" + reg + ")"]
@@ -41,7 +46,7 @@ def asm_gen(line, activation_record, activation_records):
             string_lit = right_param[1:-1].encode().decode('unicode_escape') # Allow newline etc.
             reserve_register("%eax")
             reg = get_register("_tmp")
-            res += ["movl " + str(offset) + "(%ebp)" + ", " + reg]
+            res += ["movl " + str(offset) + "("+reg_+")" + ", " + reg]
             res += ["add $" + str(field_offset) + ", " + reg]
             res += ["push %eax"]
             res += ["push $" + str(len(right_param) + 1)]
@@ -57,6 +62,7 @@ def asm_gen(line, activation_record, activation_records):
         else:
             print("Error: unknown type", right_type, "of", toks[-1])
             sys.exit(0)
+        free_register("_pqr")
         return res
 
     # Struct is on right side
@@ -66,7 +72,12 @@ def asm_gen(line, activation_record, activation_records):
     left_param = toks[0]
     left_type = getTokType(left_param)
     assert(getTokType(var_name) == "variable")
-    (offset, size), typ = activation_record.getVarTuple(var_name, activation_records)
+    (offset, jmp), typ = activation_record.getVarTuple(var_name, activation_records)
+    reg_ = get_register("_pqr")
+    res += ["movl %ebp, " + reg_]
+    while (jmp > 0):
+        res += ["movl ("+reg_+"), " + reg_]
+        jmp -= 1
     if (typ == "global" or typ == "const"):
         print("Error: unsupported type", type, "of", var_name)
         sys.exit(0)
@@ -74,19 +85,20 @@ def asm_gen(line, activation_record, activation_records):
 
     if (left_type == "register"):
             reg = get_register("_tmp")
-            res += ["movl " + str(offset) + "(%ebp)" + ", " + reg]
+            res += ["movl " + str(offset) + "("+reg_+")" + ", " + reg]
             res += ["add $" + str(field_offset) + ", " + reg]
             res += ["movl (" + reg + "), " + get_register(left_param)]
             free_register("_tmp")
     elif (left_type == "variable"):
         (var_offset, _), typ = activation_record.getVarTuple(left_param, activation_records)
         reg = get_register("_tmp")
-        res += ["movl " + str(offset) + "(%ebp)" + ", " + reg]
+        res += ["movl " + str(offset) + "("+reg_+")" + ", " + reg]
         res += ["add $" + str(field_offset) + ", " + reg]
         res += ["movl (" + reg + "), " + reg]
-        res += ["movl " + reg + ", " + str(var_offset) + "(%ebp)"]
+        res += ["movl " + reg + ", " + str(var_offset) + "("+reg_+")"]
         free_register("_tmp")
     else:
         print("Error: Unsupported type", left_type, "of", left_param)
         sys.exit(0)
+    free_register("_pqr")
     return res
