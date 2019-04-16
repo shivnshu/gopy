@@ -16,10 +16,13 @@ def asm_gen(line, activation_record, func_name, context, data_section, activatio
         res += [toks[0] + " " + toks[1]]
     elif (toks[0] == "push_param"):
         param_type = getTokType(toks[1])
-        print("aaa", activation_record.getName())
         if (param_type == "register"):
-            res += ["push " + get_register(toks[1])]
-            free_register(toks[1])
+            if toks[1] in context["float_stack"]:
+                res += ["subl $4, %esp"]
+                res += ["fstp (%esp)"]
+            else:
+                res += ["push " + get_register(toks[1])]
+                free_register(toks[1])
         elif (param_type == "variable"):
             (offset, size), typ = activation_record.getVarTuple(toks[1], activation_records)
             if typ == "global":

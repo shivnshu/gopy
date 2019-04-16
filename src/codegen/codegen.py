@@ -56,7 +56,7 @@ def asm_gen(code_line, func_name, scope, data_section):
         res, context = binaryop.asm_gen(code_line, activation_record, context, activation_records)
         return res
     if (code_type == "ifstmt"):
-        res = ifstmt.asm_gen(code_line, activation_records)
+        res = ifstmt.asm_gen(code_line, context, activation_records)
         return res
     if (code_type == "gotostmt"):
         return gotostmt.asm_gen(code_line,activation_record, activation_records)

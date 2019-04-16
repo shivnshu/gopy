@@ -181,14 +181,15 @@ def asm_gen(line, activation_record, context, data_section, activation_records):
             res += ["fstp " + dst_entry]
             context["float_vals"].append(toks[0])
     elif (right_type == 'float-register'):
-        #ind = context["float_stack"].index(toks[2])
-        if (context["float_stack"][-1] != toks[2]):
+        if left_type == 'register':
+            context["float_stack"].append(toks[0])
+        elif (context["float_stack"][-1] != toks[2]):
             l = len(context["float_stack"])
             ind = context["float_stack"].index(toks[2])
             reg = "%st(" + str(l - ind) + ")"
             res += ["fld" + " "+reg]
-        res += ["fstp " + dst_entry]
-        context["float_vals"].append(toks[0])
+            res += ["fstp " + dst_entry]
+            context["float_vals"].append(toks[0])
         #context["float_vals"][toks[0]] = context["float_vals"][toks[2]]
     elif (right_type == 'float-variable'):
         if left_type == "register":

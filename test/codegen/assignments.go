@@ -10,4 +10,6 @@ func main() {
   g = a
   fmt.printf("a = %d, b = %d, c = %d\n", a, b, c)
   fmt.printf("d = %d, e = %d, f = %d, g = %d\n", d, e, f, g)
+  cd := 1.2
+  fmt.float_print(cd)
 }
