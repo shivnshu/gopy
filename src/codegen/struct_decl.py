@@ -21,6 +21,7 @@ def asm_gen(line, activation_record, activation_records):
         tupl = var_sign[field]
         var_size = max(var_size, tupl[0]+tupl[1])
     reserve_register("%eax")
+    res += ["subl $4, %esp"]
     res += ["push %eax"]
     res += ["push $" + str(var_size)]
     res += ["call malloc"]

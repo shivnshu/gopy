@@ -136,6 +136,7 @@ def asm_gen(line, activation_record, context, data_section, activation_records):
             reserve_register("%eax")
             dst_entry = get_register(toks[0])
             unreserve_register("%eax")
+        res += ["subl $4, %esp"]
         res += ["push $" + str(len(string_lit) + 1)]
         res += ["call malloc"]
         index = 0

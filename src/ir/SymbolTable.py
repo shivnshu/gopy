@@ -238,6 +238,9 @@ class ActivationRecord:
     def getName(self):
         return self.name
 
+    def setParent(self, name):
+        self.parent = parent
+
     # def storeOldStPtr(self, name):
     #     self.old_st_ptrs[name] = (self.pos_offset, 4)
     #     self.pos_offset += 4
@@ -302,6 +305,8 @@ class ActivationRecord:
             return (off, 0), ""
         if var_name in self.const_vars:
             return (None, None), "const"
+        if var_name in self.global_vars:
+            return self.global_vars[var_name], "global"
         if self.parent == None:
             print("Error(actRecord):", var_name, "could not be found in activation record")
             sys.exit(0)
@@ -309,10 +314,6 @@ class ActivationRecord:
         if precord is not None:
             (off, jmp), typ = precord.getVarTuple(var_name, actRecordDict)
             return (off, jmp+1), typ
-        '''
-        if var_name in self.global_vars:
-            return self.global_vars[var_name], "global"
-        '''
 
         print("Error(actRecord):", var_name, "could not be found in activation record")
         sys.exit(0)

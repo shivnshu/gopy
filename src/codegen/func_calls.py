@@ -23,8 +23,11 @@ def asm_gen(line, activation_record, func_name, context, data_section, activatio
         elif (param_type == "variable"):
             (offset, size), typ = activation_record.getVarTuple(toks[1], activation_records)
             if typ == "global":
-                print("Error: unsupported code", line)
-                sys.exit(0)
+                reg = get_register("_qwerty")
+                res += ["movl " + str(offset) + "(%esi), " + reg]
+                res += ["push " + reg]
+                free_register("_qwerty")
+                return res, context
             elif typ == "const":
                 if context["const_decl"][toks[1]] == "string":
                     res += ["push $" + toks[1]]
@@ -49,6 +52,7 @@ def asm_gen(line, activation_record, func_name, context, data_section, activatio
             reg = get_register("_push_param")
             string_lit = toks[1].encode().decode('unicode_escape') # Allow newline etc.
             res += ["push %eax"]
+            res += ["subl $4, %esp"]
             res += ["push $" + str(len(string_lit) + 1)]
             res += ["call malloc"]
             index = 0

@@ -299,12 +299,12 @@ def p_top_level_decl_list(p):
 		final_dict_code = {}
 		for key in p[1]['dict_code']:
 		  if key in p[2]['dict_code']:
-		    final_dict_code[key] = p[1]['dict_code'][key] + p[2]['dict_code'][key]
+		    final_dict_code[key] = (p[1]['dict_code'][key][0] + p[2]['dict_code'][key][0], p[1]['dict_code'][key][1] + p[2]['dict_code'][key][1])
 		  else:
-		    final_dict_code[key] = p[1]['dict_code'][key]
+		    final_dict_code[key] = (p[1]['dict_code'][key][0], p[1]['dict_code'][key][1])
 		for key in p[2]['dict_code']:
 		  if not key in p[1]['dict_code']:
-		    final_dict_code[key] = p[2]['dict_code'][key]
+		    final_dict_code[key] = (p[2]['dict_code'][key][0], p[2]['dict_code'][key][1])
 		p[0]['dict_code'] = final_dict_code
 	if len(p)==2 and p.slice[1].type=="empty":
 		sym_table = symTableDict[symTableSt[-1]]
@@ -2919,6 +2919,7 @@ def p_expression(p):
 		p[0]['type'] = p[1]
 		p[0]['field_ass'] = p[3]['field_ass']
 		code_so_far = p[0]['code'] # Following code is little optimization for saving registers
+		scope_so_far = p[0]['scopelist']
 		i = 0
 		j = 0
 		res = []
@@ -2929,12 +2930,12 @@ def p_expression(p):
 		  for j in range(i, len(code_so_far)):
 		    if tmp_name in code_so_far[j]:
 		      res += [code_so_far[j], this_code]
-		      resscope += [actRecordSt[-1], actRecordSt[-1]]
+		      resscope += [scope_so_far[j], actRecordSt[-1]]
 		      i = j + 1
 		      break
 		    else:
 		      res += [code_so_far[j]]
-		      resscope += [actRecordSt[-1], actRecordSt[-1]]
+		      resscope += [scope_so_far[j]]
 		  if (j == len(code_so_far)):
 		    res += [this_code]
 		    resscope += [actRecordSt[-1]]

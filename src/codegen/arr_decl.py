@@ -35,6 +35,7 @@ def asm_gen(line, activation_record, context, activation_records):
     for i in range(5, len(toks)):
         res += ["imul $" + toks[i] + ", " + reg]
     res += ["imul $" + type_size + ", " + reg]
+    res += ["subl $4, %esp"]
     res += ["push %eax"]
     res += ["push " + reg]
     res += ["call malloc"]

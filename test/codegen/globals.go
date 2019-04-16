@@ -16,6 +16,7 @@ func test() {
   fmt.printf("d = %d\n", d)
   e = "string2"
   fmt.printf("aa = %d, aaa = %d\n", aa, aaa)
+  fmt.printf("b:%d\n", b)
 }
 
 func main() {
