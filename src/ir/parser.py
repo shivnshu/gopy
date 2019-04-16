@@ -91,6 +91,8 @@ def p_keyword_lcurly(p):
 	actRecord = ActivationRecord(key, pname)
 	actRecordDict[key] = actRecord
 	actRecordSt += [actRecord.getName()]
+	if len(p[0]['code']) != len(p[0]['scopelist']):
+		print(len(p[0]['code']), len(p[0]['scopelist']), 'keyword_lcurly')
 
 def p_keyword_rcurly(p):
 	'''
@@ -109,6 +111,8 @@ def p_keyword_rcurly(p):
 	act_record.setLocalVarsInputArgs(sym_table)
 	symTableSt = symTableSt[:-1]
 	actRecordSt = actRecordSt[:-1]
+	if len(p[0]['code']) != len(p[0]['scopelist']):
+		print(len(p[0]['code']), len(p[0]['scopelist']), 'keyword_rcurly')
 
 def p_source_file(p):
 	'''
@@ -141,6 +145,8 @@ def p_source_file(p):
 	  for code, scope in zip(p[0]['dict_code'][key][0], p[0]['dict_code'][key][1]):
 	    print(code, "           | Scope:", scope)
 	  print()
+	if len(p[0]['code']) != len(p[0]['scopelist']):
+		print(len(p[0]['code']), len(p[0]['scopelist']), 'SourceFile')
 
 def p_package_clause(p):
 	'''
@@ -154,6 +160,8 @@ def p_package_clause(p):
 	p[0]['code'] = []
 	p[0]['scopelist'] = []
 	p[0]['dict_code'] = {}
+	if len(p[0]['code']) != len(p[0]['scopelist']):
+		print(len(p[0]['code']), len(p[0]['scopelist']), 'PackageClause')
 
 def p_import_decl_list(p):
 	'''
@@ -168,6 +176,8 @@ def p_import_decl_list(p):
 	p[0]['code'] = []
 	p[0]['scopelist'] = []
 	p[0]['dict_code'] = {}
+	if len(p[0]['code']) != len(p[0]['scopelist']):
+		print(len(p[0]['code']), len(p[0]['scopelist']), 'ImportDeclList')
 
 def p_import_decl(p):
 	'''
@@ -181,6 +191,8 @@ def p_import_decl(p):
 	p[0]['code'] = []
 	p[0]['scopelist'] = []
 	p[0]['dict_code'] = {}
+	if len(p[0]['code']) != len(p[0]['scopelist']):
+		print(len(p[0]['code']), len(p[0]['scopelist']), 'ImportDecl')
 
 def p_import_spec_top_list(p):
 	'''
@@ -195,6 +207,8 @@ def p_import_spec_top_list(p):
 	p[0]['code'] = []
 	p[0]['scopelist'] = []
 	p[0]['dict_code'] = {}
+	if len(p[0]['code']) != len(p[0]['scopelist']):
+		print(len(p[0]['code']), len(p[0]['scopelist']), 'ImportSpecTopList')
 
 def p_import_spec_list(p):
 	'''
@@ -209,6 +223,8 @@ def p_import_spec_list(p):
 	p[0]['code'] = []
 	p[0]['scopelist'] = []
 	p[0]['dict_code'] = {}
+	if len(p[0]['code']) != len(p[0]['scopelist']):
+		print(len(p[0]['code']), len(p[0]['scopelist']), 'ImportSpecList')
 
 def p_import_spec(p):
 	'''
@@ -222,6 +238,8 @@ def p_import_spec(p):
 	p[0]['code'] = []
 	p[0]['scopelist'] = []
 	p[0]['dict_code'] = {}
+	if len(p[0]['code']) != len(p[0]['scopelist']):
+		print(len(p[0]['code']), len(p[0]['scopelist']), 'ImportSpec')
 
 def p_import_spec_init(p):
 	'''
@@ -237,6 +255,8 @@ def p_import_spec_init(p):
 	p[0]['code'] = []
 	p[0]['scopelist'] = []
 	p[0]['dict_code'] = {}
+	if len(p[0]['code']) != len(p[0]['scopelist']):
+		print(len(p[0]['code']), len(p[0]['scopelist']), 'ImportSpecInit')
 
 def p_import_path(p):
 	'''
@@ -257,6 +277,8 @@ def p_import_path(p):
 	if (symTable.put(entry) == False):
 	     print("Error:", name, "redeclared on line number", p.lexer.lineno)
 	     sys.exit(0)
+	if len(p[0]['code']) != len(p[0]['scopelist']):
+		print(len(p[0]['code']), len(p[0]['scopelist']), 'ImportPath')
 
 def p_top_level_decl_list(p):
 	'''
@@ -289,6 +311,8 @@ def p_top_level_decl_list(p):
 		act_record = actRecordDict[actRecordSt[-1]]
 		act_record.setLocalVarsInputArgs(sym_table)
 		act_record.setGlobalVars(act_record.getLocalVars())
+	if len(p[0]['code']) != len(p[0]['scopelist']):
+		print(len(p[0]['code']), len(p[0]['scopelist']), 'TopLevelDeclList')
 
 def p_top_level_decl(p):
 	'''
@@ -309,12 +333,14 @@ def p_top_level_decl(p):
 	p[0]['dict_code'] = {}
 	p[0]['dict_code'] = {}
 	if len(p)==2 and p.slice[1].type=="Declaration":
-		p[0]['dict_code']['global_decl'] = code_optimization(p[1]['global_decl'], p[1]['scopelist'])
-		p[0]['dict_code']['const_decl'] = code_optimization(p[1]['const_decl'], p[1]['scopelist'])
+		p[0]['dict_code']['global_decl'] = code_optimization(p[1]['global_decl'], p[1]['scope_global_decl'])
+		p[0]['dict_code']['const_decl'] = code_optimization(p[1]['const_decl'], p[1]['scope_const_decl'])
 	if len(p)==2 and p.slice[1].type=="FunctionDecl":
 		p[0]['dict_code'].update(p[1]['dict_code'])
 	if len(p)==2 and p.slice[1].type=="MethodDecl":
 		p[0]['dict_code'].update(p[1]['dict_code'])
+	if len(p[0]['code']) != len(p[0]['scopelist']):
+		print(len(p[0]['code']), len(p[0]['scopelist']), 'TopLevelDecl')
 
 def p_struct_def(p):
 	'''
@@ -336,6 +362,8 @@ def p_struct_def(p):
 	if (symTable.put(struc) == False):
 	     print("Error:", p[2], "redeclared on line number", p.lexer.lineno)
 	     sys.exit(0)
+	if len(p[0]['code']) != len(p[0]['scopelist']):
+		print(len(p[0]['code']), len(p[0]['scopelist']), 'StructDef')
 
 def p_parameter_decl_list2(p):
 	'''
@@ -355,6 +383,8 @@ def p_parameter_decl_list2(p):
 		p[0]['fields'].update(p[2]['fields'])
 	if len(p)==2 and p.slice[1].type=="empty":
 		p[0]['fields'] = {}
+	if len(p[0]['code']) != len(p[0]['scopelist']):
+		print(len(p[0]['code']), len(p[0]['scopelist']), 'ParameterDeclList2')
 
 def p_parameter_decl2(p):
 	'''
@@ -372,6 +402,8 @@ def p_parameter_decl2(p):
 		p[0]['fields'] = {}
 		for id in p[1]['idlist']:
 		  p[0]['fields'][id] = p[2]['type']
+	if len(p[0]['code']) != len(p[0]['scopelist']):
+		print(len(p[0]['code']), len(p[0]['scopelist']), 'ParameterDecl2')
 
 def p_interface_decl(p):
 	'''
@@ -391,6 +423,8 @@ def p_interface_decl(p):
 	if (symTable.put(interfc) == False):
 	    print("Error:", p[2], "redeclared on line number", p.lexer.lineno)
 	    sys.exit(0)
+	if len(p[0]['code']) != len(p[0]['scopelist']):
+		print(len(p[0]['code']), len(p[0]['scopelist']), 'InterfaceDecl')
 
 def p_interface_block(p):
 	'''
@@ -404,6 +438,8 @@ def p_interface_block(p):
 	p[0]['code'] = []
 	p[0]['scopelist'] = []
 	p[0]['dict_code'] = {}
+	if len(p[0]['code']) != len(p[0]['scopelist']):
+		print(len(p[0]['code']), len(p[0]['scopelist']), 'interfaceBlock')
 
 def p_i_func_dec_list(p):
 	'''
@@ -418,6 +454,8 @@ def p_i_func_dec_list(p):
 	p[0]['code'] = []
 	p[0]['scopelist'] = []
 	p[0]['dict_code'] = {}
+	if len(p[0]['code']) != len(p[0]['scopelist']):
+		print(len(p[0]['code']), len(p[0]['scopelist']), 'IFuncDecList')
 
 def p_i_func_dec(p):
 	'''
@@ -437,6 +475,8 @@ def p_i_func_dec(p):
 	if (symTable.put(fn) == False):
 	    print("Error:", p[1], "redeclared on line number", p.lexer.lineno)
 	    sys.exit(0)
+	if len(p[0]['code']) != len(p[0]['scopelist']):
+		print(len(p[0]['code']), len(p[0]['scopelist']), 'IFuncDec')
 
 def p_i_func_def(p):
 	'''
@@ -450,6 +490,8 @@ def p_i_func_def(p):
 	p[0]['code'] = []
 	p[0]['scopelist'] = []
 	p[0]['dict_code'] = {}
+	if len(p[0]['code']) != len(p[0]['scopelist']):
+		print(len(p[0]['code']), len(p[0]['scopelist']), 'IFuncDef')
 
 def p_block(p):
 	'''
@@ -466,6 +508,8 @@ def p_block(p):
 	p[0]['code'] = p[2]['code']
 	p[0]['scopelist'] = p[2]['scopelist']
 	p[0]['ret_typelist'] = p[2]['ret_typelist']
+	if len(p[0]['code']) != len(p[0]['scopelist']):
+		print(len(p[0]['code']), len(p[0]['scopelist']), 'Block')
 
 def p_statement_list(p):
 	'''
@@ -485,6 +529,8 @@ def p_statement_list(p):
 		p[0]['code'] = p[1]['code'] + p[2]['code']
 		p[0]['scopelist'] = p[1]['scopelist'] + p[2]['scopelist']
 		p[0]['ret_typelist'] = [p[1]['typelist']] + p[2]['ret_typelist']
+	if len(p[0]['code']) != len(p[0]['scopelist']):
+		print(len(p[0]['code']), len(p[0]['scopelist']), 'StatementList')
 
 def p_statement(p):
 	'''
@@ -524,6 +570,8 @@ def p_statement(p):
 		    p[0]['typelist'] += typ
 	if len(p)==2 and p.slice[1].type=="GoFunc":
 		actRecordSt = actRecordSt[:-1]
+	if len(p[0]['code']) != len(p[0]['scopelist']):
+		print(len(p[0]['code']), len(p[0]['scopelist']), 'Statement')
 
 def p_continue_stmt(p):
 	'''
@@ -544,6 +592,8 @@ def p_continue_stmt(p):
 	if len(p)==3 and p.slice[2].type=="IDENTIFIER" and p.slice[1].type=="CONTINUE":
 		p[0]['code'] = ["goto " + p[2]]
 		p[0]['scopelist'] = [actRecordSt[-1]]
+	if len(p[0]['code']) != len(p[0]['scopelist']):
+		print(len(p[0]['code']), len(p[0]['scopelist']), 'ContinueStmt')
 
 def p_break_stmt(p):
 	'''
@@ -559,6 +609,8 @@ def p_break_stmt(p):
 	p[0]['dict_code'] = {}
 	p[0]['code'] = ["goto endlabel"]
 	p[0]['scopelist'] = [actRecordSt[-1]]
+	if len(p[0]['code']) != len(p[0]['scopelist']):
+		print(len(p[0]['code']), len(p[0]['scopelist']), 'BreakStmt')
 
 def p_go_func(p):
 	'''
@@ -590,6 +642,8 @@ def p_go_func(p):
 		if (symTable.put(fn) == False):
 		    print("Error:", p[2], "redeclared on line number", p.lexer.lineno)
 		    sys.exit(0)
+	if len(p[0]['code']) != len(p[0]['scopelist']):
+		print(len(p[0]['code']), len(p[0]['scopelist']), 'GoFunc')
 
 def p_func_call_stmt(p):
 	'''
@@ -609,7 +663,7 @@ def p_func_call_stmt(p):
 	p[0]['namelist'] = []
 	#actRecordSt += [actRecordSt[-1]]
 	#actRecordSt += ["root"]
-	print(actRecordSt)
+	#print(actRecordSt)
 	if len(p)==4 and p.slice[3].type=="FuncCallStmt" and p.slice[2].type=="DOT" and p.slice[1].type=="IDENTIFIER":
 		b = False
 		for scope in symTableSt:
@@ -675,6 +729,8 @@ def p_func_call_stmt(p):
 		if entry.getInputArgs() != p[3]['typelist']:
 		   print("Function", p[1], "arguments mismatch at line num", p.lexer.lineno)
 		   sys.exit(0)
+	if len(p[0]['code']) != len(p[0]['scopelist']):
+		print(len(p[0]['code']), len(p[0]['scopelist']), 'FuncCallStmt')
 
 def p_object_method(p):
 	'''
@@ -688,6 +744,8 @@ def p_object_method(p):
 	p[0]['code'] = []
 	p[0]['scopelist'] = []
 	p[0]['dict_code'] = {}
+	if len(p[0]['code']) != len(p[0]['scopelist']):
+		print(len(p[0]['code']), len(p[0]['scopelist']), 'ObjectMethod')
 
 def p_declaration(p):
 	'''
@@ -705,12 +763,18 @@ def p_declaration(p):
 	p[0]['dict_code'] = {}
 	p[0]['code'] = p[1]['code']
 	p[0]['scopelist'] = p[1]['scopelist']
+	p[0]['scope_global_decl'] = []
+	p[0]['scope_const_decl'] = []
 	p[0]['const_decl'] = []
 	p[0]['global_decl'] = []
 	if len(p)==2 and p.slice[1].type=="ConstDecl":
 		p[0]['const_decl'] = p[1]['code']
+		p[0]['scope_const_decl'] = p[1]['scopelist']
 	if len(p)==2 and p.slice[1].type=="VarDecl":
 		p[0]['global_decl'] = p[1]['code']
+		p[0]['scope_global_decl'] = p[1]['scopelist']
+	if len(p[0]['code']) != len(p[0]['scopelist']):
+		print(len(p[0]['code']), len(p[0]['scopelist']), 'Declaration')
 
 def p_const_decl(p):
 	'''
@@ -726,6 +790,8 @@ def p_const_decl(p):
 	p[0]['dict_code'] = {}
 	p[0]['code'] = p[2]['code']
 	p[0]['scopelist'] = p[2]['scopelist']
+	if len(p[0]['code']) != len(p[0]['scopelist']):
+		print(len(p[0]['code']), len(p[0]['scopelist']), 'ConstDecl')
 
 def p_const_spec_top_list(p):
 	'''
@@ -746,6 +812,8 @@ def p_const_spec_top_list(p):
 	if len(p)==4 and p.slice[3].type=="RPAREN" and p.slice[2].type=="ConstSpecList" and p.slice[1].type=="LPAREN":
 		p[0]['code'] = p[2]['code']
 		p[0]['scopelist'] = p[2]['scopelist']
+	if len(p[0]['code']) != len(p[0]['scopelist']):
+		print(len(p[0]['code']), len(p[0]['scopelist']), 'ConstSpecTopList')
 
 def p_const_spec_list(p):
 	'''
@@ -763,6 +831,8 @@ def p_const_spec_list(p):
 	if len(p)==3 and p.slice[2].type=="ConstSpecList" and p.slice[1].type=="ConstSpec":
 		p[0]['code'] = p[1]['code'] + p[2]['code']
 		p[0]['scopelist'] = p[1]['scopelist'] + p[2]['scopelist']
+	if len(p[0]['code']) != len(p[0]['scopelist']):
+		print(len(p[0]['code']), len(p[0]['scopelist']), 'ConstSpecList')
 
 def p_const_spec(p):
 	'''
@@ -792,6 +862,8 @@ def p_const_spec(p):
 	    if (symTable.put(lit) == False):
 	      print("Error:", i, "redeclared on line number", p.lexer.lineno)
 	      sys.exit(0)
+	if len(p[0]['code']) != len(p[0]['scopelist']):
+		print(len(p[0]['code']), len(p[0]['scopelist']), 'ConstSpec')
 
 def p_const_spec_tail(p):
 	'''
@@ -811,6 +883,8 @@ def p_const_spec_tail(p):
 		p[0]['typelist'] = p[3]['typelist']
 		p[0]['code'] = p[3]['code']
 		p[0]['scopelist'] = p[3]['scopelist']
+	if len(p[0]['code']) != len(p[0]['scopelist']):
+		print(len(p[0]['code']), len(p[0]['scopelist']), 'ConstSpecTail')
 
 def p_type_top(p):
 	'''
@@ -825,6 +899,8 @@ def p_type_top(p):
 	p[0]['code'] = []
 	p[0]['scopelist'] = []
 	p[0]['dict_code'] = {}
+	if len(p[0]['code']) != len(p[0]['scopelist']):
+		print(len(p[0]['code']), len(p[0]['scopelist']), 'TypeTop')
 
 def p_identifier_list1(p):
 	'''
@@ -843,6 +919,8 @@ def p_identifier_list1(p):
 		p[0]['idlist'] = [p[1]] + p[2]['idlist']
 	if len(p)==4 and p.slice[3].type=="IdentifierBotList1" and p.slice[2].type=="IDENTIFIER" and p.slice[1].type=="MULT":
 		p[0]['idlist'] = [p[1]+p[2]] + p[3]['idlist']
+	if len(p[0]['code']) != len(p[0]['scopelist']):
+		print(len(p[0]['code']), len(p[0]['scopelist']), 'IdentifierList1')
 
 def p_identifier_bot_list1(p):
 	'''
@@ -864,6 +942,8 @@ def p_identifier_bot_list1(p):
 		p[0]['idlist'] = p[1]['idlist'] + [p[3]+p[4]]
 	if len(p)==2 and p.slice[1].type=="empty":
 		p[0]['idlist'] = []
+	if len(p[0]['code']) != len(p[0]['scopelist']):
+		print(len(p[0]['code']), len(p[0]['scopelist']), 'IdentifierBotList1')
 
 def p_identifier_list3(p):
 	'''
@@ -885,6 +965,8 @@ def p_identifier_list3(p):
 		p[0]['idlist'] = [p[1] + p[2]] + p[3]['idlist']
 	if len(p)==5 and p.slice[4].type=="IdentifierBotList3" and p.slice[3].type=="IDENTIFIER" and p.slice[2].type=="DOT" and p.slice[1].type=="IDENTIFIER":
 		p[0]['idlist'] = [p[1] + p[2] + p[3]] + p[4]['idlist']
+	if len(p[0]['code']) != len(p[0]['scopelist']):
+		print(len(p[0]['code']), len(p[0]['scopelist']), 'IdentifierList3')
 
 def p_identifier_bot_list3(p):
 	'''
@@ -909,6 +991,8 @@ def p_identifier_bot_list3(p):
 		p[0]['idlist'] = p[1]['idlist'] + [p[3] + p[4] + p[5]]
 	if len(p)==2 and p.slice[1].type=="empty":
 		p[0]['idlist'] = []
+	if len(p[0]['code']) != len(p[0]['scopelist']):
+		print(len(p[0]['code']), len(p[0]['scopelist']), 'IdentifierBotList3')
 
 def p_id_or_array_elem_list(p):
 	'''
@@ -926,6 +1010,8 @@ def p_id_or_array_elem_list(p):
 	p[0]['idxlists'] = [p[1]['idxlist']] + p[2]['idxlists']
 	p[0]['code'] = p[1]['code'] + p[2]['code']
 	p[0]['scopelist'] = p[1]['scopelist'] + p[2]['scopelist']
+	if len(p[0]['code']) != len(p[0]['scopelist']):
+		print(len(p[0]['code']), len(p[0]['scopelist']), 'IdOrArrayElemList')
 
 def p_id_or_array_elem_bot_list(p):
 	'''
@@ -948,6 +1034,8 @@ def p_id_or_array_elem_bot_list(p):
 	if len(p)==2 and p.slice[1].type=="empty":
 		p[0]['idlist'] = []
 		p[0]['idxlists'] = []
+	if len(p[0]['code']) != len(p[0]['scopelist']):
+		print(len(p[0]['code']), len(p[0]['scopelist']), 'IdOrArrayElemBotList')
 
 def p_id_or_array_elem(p):
 	'''
@@ -965,6 +1053,8 @@ def p_id_or_array_elem(p):
 	p[0]['idxlist'] = p[2]['idxlist']
 	p[0]['code'] = p[2]['code']
 	p[0]['scopelist'] = p[2]['scopelist']
+	if len(p[0]['code']) != len(p[0]['scopelist']):
+		print(len(p[0]['code']), len(p[0]['scopelist']), 'IdOrArrayElem')
 
 def p_more_dims(p):
 	'''
@@ -985,6 +1075,8 @@ def p_more_dims(p):
 		p[0]['scopelist'] = p[2]['scopelist'] + p[4]['scopelist']
 	if len(p)==2 and p.slice[1].type=="empty":
 		p[0]['idxlist']  = []
+	if len(p[0]['code']) != len(p[0]['scopelist']):
+		print(len(p[0]['code']), len(p[0]['scopelist']), 'MoreDims')
 
 def p_expression_list(p):
 	'''
@@ -1008,6 +1100,8 @@ def p_expression_list(p):
 		p[0]['namelist'] = p[1]['namelist'] + p[2]['namelist']
 		p[0]['typelist'] = p[1]['ret_types'] + p[2]['typelist']
 		#actRecordSt = actRecordSt[:-1]
+	if len(p[0]['code']) != len(p[0]['scopelist']):
+		print(len(p[0]['code']), len(p[0]['scopelist']), 'ExpressionList')
 
 def p_expression_bot_list(p):
 	'''
@@ -1030,6 +1124,8 @@ def p_expression_bot_list(p):
 	if len(p)==2 and p.slice[1].type=="empty":
 		p[0]['namelist'] = []
 		p[0]['typelist'] = []
+	if len(p[0]['code']) != len(p[0]['scopelist']):
+		print(len(p[0]['code']), len(p[0]['scopelist']), 'ExpressionBotList')
 
 def p_type_decl(p):
 	'''
@@ -1043,6 +1139,8 @@ def p_type_decl(p):
 	p[0]['code'] = []
 	p[0]['scopelist'] = []
 	p[0]['dict_code'] = {}
+	if len(p[0]['code']) != len(p[0]['scopelist']):
+		print(len(p[0]['code']), len(p[0]['scopelist']), 'TypeDecl')
 
 def p_type_spec_top_list(p):
 	'''
@@ -1057,6 +1155,8 @@ def p_type_spec_top_list(p):
 	p[0]['code'] = []
 	p[0]['scopelist'] = []
 	p[0]['dict_code'] = {}
+	if len(p[0]['code']) != len(p[0]['scopelist']):
+		print(len(p[0]['code']), len(p[0]['scopelist']), 'TypeSpecTopList')
 
 def p_type_spec_list(p):
 	'''
@@ -1071,6 +1171,8 @@ def p_type_spec_list(p):
 	p[0]['code'] = []
 	p[0]['scopelist'] = []
 	p[0]['dict_code'] = {}
+	if len(p[0]['code']) != len(p[0]['scopelist']):
+		print(len(p[0]['code']), len(p[0]['scopelist']), 'TypeSpecList')
 
 def p_type_spec(p):
 	'''
@@ -1085,6 +1187,8 @@ def p_type_spec(p):
 	p[0]['code'] = []
 	p[0]['scopelist'] = []
 	p[0]['dict_code'] = {}
+	if len(p[0]['code']) != len(p[0]['scopelist']):
+		print(len(p[0]['code']), len(p[0]['scopelist']), 'TypeSpec')
 
 def p_alias_decl(p):
 	'''
@@ -1098,6 +1202,8 @@ def p_alias_decl(p):
 	p[0]['code'] = []
 	p[0]['scopelist'] = []
 	p[0]['dict_code'] = {}
+	if len(p[0]['code']) != len(p[0]['scopelist']):
+		print(len(p[0]['code']), len(p[0]['scopelist']), 'AliasDecl')
 
 def p_type_def(p):
 	'''
@@ -1120,6 +1226,8 @@ def p_type_def(p):
 	if (symTable.put(var) == False):
 	    print("Error:", p[1], "redeclared on line number", p.lexer.lineno)
 	    sys.exit(0)
+	if len(p[0]['code']) != len(p[0]['scopelist']):
+		print(len(p[0]['code']), len(p[0]['scopelist']), 'TypeDef')
 
 def p_type(p):
 	'''
@@ -1151,6 +1259,8 @@ def p_type(p):
 		p[0]['type'] = p[2]['type']
 		p[0]['code'] = p[2]['code']
 		p[0]['scopelist'] = p[2]['scopelist'] 
+	if len(p[0]['code']) != len(p[0]['scopelist']):
+		print(len(p[0]['code']), len(p[0]['scopelist']), 'Type')
 
 def p_type_name(p):
 	'''
@@ -1172,6 +1282,8 @@ def p_type_name(p):
 		p[0]['type'] = "*" + p[2]
 	if len(p)==2 and p.slice[1].type=="QualifiedIdent":
 		p[0]['type'] = p[1]['type']
+	if len(p[0]['code']) != len(p[0]['scopelist']):
+		print(len(p[0]['code']), len(p[0]['scopelist']), 'TypeName')
 
 def p_qualified_ident(p):
 	'''
@@ -1186,6 +1298,8 @@ def p_qualified_ident(p):
 	p[0]['scopelist'] = []
 	p[0]['dict_code'] = {}
 	p[0]['type'] = verifyCalType(p[3], p.lexer.lineno)
+	if len(p[0]['code']) != len(p[0]['scopelist']):
+		print(len(p[0]['code']), len(p[0]['scopelist']), 'QualifiedIdent')
 
 def p_type_lit(p):
 	'''
@@ -1208,6 +1322,8 @@ def p_type_lit(p):
 	if len(p)==2 and p.slice[1].type=="ArrayType":
 		p[0]['dims'] = p[1]['dims']
 		p[0]['dimrange'] = p[1]['dimrange']
+	if len(p[0]['code']) != len(p[0]['scopelist']):
+		print(len(p[0]['code']), len(p[0]['scopelist']), 'TypeLit')
 
 def p_array_type(p):
 	'''
@@ -1229,6 +1345,8 @@ def p_array_type(p):
 	p[0]['dimrange'] = [p[2]['place']] + p[4]['dimrange']
 	p[0]['code'] = p[2]['code'] + p[4]['code']
 	p[0]['scopelist'] = p[2]['scopelist'] + p[4]['scopelist']
+	if len(p[0]['code']) != len(p[0]['scopelist']):
+		print(len(p[0]['code']), len(p[0]['scopelist']), 'ArrayType')
 
 def p_array_length(p):
 	'''
@@ -1251,6 +1369,8 @@ def p_array_length(p):
 	if len(p)==2 and p.slice[1].type=="empty":
 		p[0]['type'] = ''
 		p[0]['place'] = ''
+	if len(p[0]['code']) != len(p[0]['scopelist']):
+		print(len(p[0]['code']), len(p[0]['scopelist']), 'ArrayLength')
 
 def p_element_type(p):
 	'''
@@ -1267,6 +1387,8 @@ def p_element_type(p):
 	p[0]['type'] = p[1]['type']
 	p[0]['dims'] = p[1]['dim']
 	p[0]['dimrange'] = p[1]['dimrange']
+	if len(p[0]['code']) != len(p[0]['scopelist']):
+		print(len(p[0]['code']), len(p[0]['scopelist']), 'ElementType')
 
 def p_struct_type(p):
 	'''
@@ -1280,6 +1402,8 @@ def p_struct_type(p):
 	p[0]['code'] = []
 	p[0]['scopelist'] = []
 	p[0]['dict_code'] = {}
+	if len(p[0]['code']) != len(p[0]['scopelist']):
+		print(len(p[0]['code']), len(p[0]['scopelist']), 'StructType')
 
 def p_field_decl_list(p):
 	'''
@@ -1294,6 +1418,8 @@ def p_field_decl_list(p):
 	p[0]['code'] = []
 	p[0]['scopelist'] = []
 	p[0]['dict_code'] = {}
+	if len(p[0]['code']) != len(p[0]['scopelist']):
+		print(len(p[0]['code']), len(p[0]['scopelist']), 'FieldDeclList')
 
 def p_field_decl(p):
 	'''
@@ -1307,6 +1433,8 @@ def p_field_decl(p):
 	p[0]['code'] = []
 	p[0]['scopelist'] = []
 	p[0]['dict_code'] = {}
+	if len(p[0]['code']) != len(p[0]['scopelist']):
+		print(len(p[0]['code']), len(p[0]['scopelist']), 'FieldDecl')
 
 def p_tag_top(p):
 	'''
@@ -1321,6 +1449,8 @@ def p_tag_top(p):
 	p[0]['code'] = []
 	p[0]['scopelist'] = []
 	p[0]['dict_code'] = {}
+	if len(p[0]['code']) != len(p[0]['scopelist']):
+		print(len(p[0]['code']), len(p[0]['scopelist']), 'TagTop')
 
 def p_field_decl_head(p):
 	'''
@@ -1335,6 +1465,8 @@ def p_field_decl_head(p):
 	p[0]['code'] = []
 	p[0]['scopelist'] = []
 	p[0]['dict_code'] = {}
+	if len(p[0]['code']) != len(p[0]['scopelist']):
+		print(len(p[0]['code']), len(p[0]['scopelist']), 'FieldDeclHead')
 
 def p_embedded_field(p):
 	'''
@@ -1348,6 +1480,8 @@ def p_embedded_field(p):
 	p[0]['code'] = []
 	p[0]['scopelist'] = []
 	p[0]['dict_code'] = {}
+	if len(p[0]['code']) != len(p[0]['scopelist']):
+		print(len(p[0]['code']), len(p[0]['scopelist']), 'EmbeddedField')
 
 def p_star_top(p):
 	'''
@@ -1362,6 +1496,8 @@ def p_star_top(p):
 	p[0]['code'] = []
 	p[0]['scopelist'] = []
 	p[0]['dict_code'] = {}
+	if len(p[0]['code']) != len(p[0]['scopelist']):
+		print(len(p[0]['code']), len(p[0]['scopelist']), 'starTop')
 
 def p_tag(p):
 	'''
@@ -1375,6 +1511,8 @@ def p_tag(p):
 	p[0]['code'] = []
 	p[0]['scopelist'] = []
 	p[0]['dict_code'] = {}
+	if len(p[0]['code']) != len(p[0]['scopelist']):
+		print(len(p[0]['code']), len(p[0]['scopelist']), 'Tag')
 
 def p_function_type(p):
 	'''
@@ -1388,6 +1526,8 @@ def p_function_type(p):
 	p[0]['code'] = []
 	p[0]['scopelist'] = []
 	p[0]['dict_code'] = {}
+	if len(p[0]['code']) != len(p[0]['scopelist']):
+		print(len(p[0]['code']), len(p[0]['scopelist']), 'FunctionType')
 
 def p_result_top(p):
 	'''
@@ -1406,6 +1546,8 @@ def p_result_top(p):
 		p[0]['ret_types'] = p[1]['ret_types']
 	if len(p)==2 and p.slice[1].type=="empty":
 		p[0]['ret_types'] = []
+	if len(p[0]['code']) != len(p[0]['scopelist']):
+		print(len(p[0]['code']), len(p[0]['scopelist']), 'ResultTop')
 
 def p_result(p):
 	'''
@@ -1424,6 +1566,8 @@ def p_result(p):
 		p[0]['ret_types'] = p[1]['ret_types']
 	if len(p)==2 and p.slice[1].type=="Type":
 		p[0]['ret_types'] = [p[1]['type']]
+	if len(p[0]['code']) != len(p[0]['scopelist']):
+		print(len(p[0]['code']), len(p[0]['scopelist']), 'Result')
 
 def p_ret__types(p):
 	'''
@@ -1438,6 +1582,8 @@ def p_ret__types(p):
 	p[0]['scopelist'] = []
 	p[0]['dict_code'] = {}
 	p[0]['ret_types'] = p[2]['types']
+	if len(p[0]['code']) != len(p[0]['scopelist']):
+		print(len(p[0]['code']), len(p[0]['scopelist']), 'Ret_Types')
 
 def p_type_list(p):
 	'''
@@ -1456,6 +1602,8 @@ def p_type_list(p):
 		p[0]['types'] = [p[1]['type']] + p[2]['types']
 	if len(p)==2 and p.slice[1].type=="empty":
 		p[0]['types'] = []
+	if len(p[0]['code']) != len(p[0]['scopelist']):
+		print(len(p[0]['code']), len(p[0]['scopelist']), 'TypeList')
 
 def p_type_list_bot(p):
 	'''
@@ -1474,6 +1622,8 @@ def p_type_list_bot(p):
 		p[0]['types'] = [p[2]['type']] + p[3]['types']
 	if len(p)==2 and p.slice[1].type=="empty":
 		p[0]['types'] = []
+	if len(p[0]['code']) != len(p[0]['scopelist']):
+		print(len(p[0]['code']), len(p[0]['scopelist']), 'TypeListBot')
 
 def p_parameters(p):
 	'''
@@ -1505,11 +1655,15 @@ def p_parameters(p):
 	    for dr in dimrange:
 	        decl_tail += " " + dr
 	    decl += decl_tail
-	    p[0]['code'] += [decl]
-	    p[0]['scopelist'] += [actRecordSt[-1]]
+	    toks = decl.split()
+	    if len(toks) > 4:
+	      p[0]['code'] += [decl]
+	      p[0]['scopelist'] += [actRecordSt[-1]]
 	    if (table.put(entry) == False):
 	        print("Error:", param, "redeclared on line number", p.lexer.lineno)
 	        sys.exit(0)
+	if len(p[0]['code']) != len(p[0]['scopelist']):
+		print(len(p[0]['code']), len(p[0]['scopelist']), 'Parameters')
 
 def p_parameter_list_top(p):
 	'''
@@ -1536,6 +1690,8 @@ def p_parameter_list_top(p):
 		p[0]['idlist'] = []
 		p[0]['dims'] = []
 		p[0]['dimranges'] = []
+	if len(p[0]['code']) != len(p[0]['scopelist']):
+		print(len(p[0]['code']), len(p[0]['scopelist']), 'ParameterListTop')
 
 def p_comma_top(p):
 	'''
@@ -1550,6 +1706,8 @@ def p_comma_top(p):
 	p[0]['code'] = []
 	p[0]['scopelist'] = []
 	p[0]['dict_code'] = {}
+	if len(p[0]['code']) != len(p[0]['scopelist']):
+		print(len(p[0]['code']), len(p[0]['scopelist']), 'commaTop')
 
 def p_parameter_list(p):
 	'''
@@ -1569,6 +1727,8 @@ def p_parameter_list(p):
 	p[0]['dimranges'] = [p[1]['dimrange']] + p[2]['dimranges']
 	p[0]['code'] = p[1]['code'] + p[2]['code']
 	p[0]['scopelist'] = p[1]['scopelist'] + p[2]['scopelist']
+	if len(p[0]['code']) != len(p[0]['scopelist']):
+		print(len(p[0]['code']), len(p[0]['scopelist']), 'ParameterList')
 
 def p_parameter_decl_list(p):
 	'''
@@ -1595,6 +1755,8 @@ def p_parameter_decl_list(p):
 		p[0]['idlist'] = []
 		p[0]['dims'] = []
 		p[0]['dimranges'] = []
+	if len(p[0]['code']) != len(p[0]['scopelist']):
+		print(len(p[0]['code']), len(p[0]['scopelist']), 'ParameterDeclList')
 
 def p_parameter_decl(p):
 	'''
@@ -1614,6 +1776,8 @@ def p_parameter_decl(p):
 	p[0]['dimrange'] = p[3]['dimrange']
 	p[0]['code'] = p[1]['code'] + p[3]['code']
 	p[0]['scopelist'] = p[1]['scopelist'] + p[3]['scopelist']
+	if len(p[0]['code']) != len(p[0]['scopelist']):
+		print(len(p[0]['code']), len(p[0]['scopelist']), 'ParameterDecl')
 
 def p_tripledot_top(p):
 	'''
@@ -1632,6 +1796,8 @@ def p_tripledot_top(p):
 		p[0]['symbol'] = '...'
 	if len(p)==2 and p.slice[1].type=="empty":
 		p[0]['symbol'] = ''
+	if len(p[0]['code']) != len(p[0]['scopelist']):
+		print(len(p[0]['code']), len(p[0]['scopelist']), 'tripledotTop')
 
 def p_parameter_decl_head(p):
 	'''
@@ -1650,6 +1816,8 @@ def p_parameter_decl_head(p):
 		p[0]['idlist'] = p[1]['idlist']
 	if len(p)==2 and p.slice[1].type=="empty":
 		p[0]['idlist'] = []
+	if len(p[0]['code']) != len(p[0]['scopelist']):
+		print(len(p[0]['code']), len(p[0]['scopelist']), 'ParameterDeclHead')
 
 def p_var_decl(p):
 	'''
@@ -1684,6 +1852,8 @@ def p_var_decl(p):
 	  var_entry.setType(type, sym_table)
 	  p[0]['code'] += [decl]
 	  p[0]['scopelist'] += [actRecordSt[-1]]
+	if len(p[0]['code']) != len(p[0]['scopelist']):
+		print(len(p[0]['code']), len(p[0]['scopelist']), 'VarDecl')
 
 def p_var_spec_top_list(p):
 	'''
@@ -1706,6 +1876,8 @@ def p_var_spec_top_list(p):
 		p[0]['code'] = p[2]['code']
 		p[0]['scopelist'] = p[2]['scopelist']
 		p[0]['idlist'] = p[2]['idlist']
+	if len(p[0]['code']) != len(p[0]['scopelist']):
+		print(len(p[0]['code']), len(p[0]['scopelist']), 'VarSpecTopList')
 
 def p_var_spec_list(p):
 	'''
@@ -1726,6 +1898,8 @@ def p_var_spec_list(p):
 		p[0]['idlist'] = p[1]['idlist'] + p[2]['idlist']
 	if len(p)==2 and p.slice[1].type=="empty":
 		p[0]['idlist'] = []
+	if len(p[0]['code']) != len(p[0]['scopelist']):
+		print(len(p[0]['code']), len(p[0]['scopelist']), 'VarSpecList')
 
 def p_var_spec(p):
 	'''
@@ -1768,6 +1942,8 @@ def p_var_spec(p):
 	    if (symTable.put(var) == False):
 	        print("Error:", i, "redeclared on line number", p.lexer.lineno)
 	        sys.exit(0)
+	if len(p[0]['code']) != len(p[0]['scopelist']):
+		print(len(p[0]['code']), len(p[0]['scopelist']), 'VarSpec')
 
 def p_var_spec_tail(p):
 	'''
@@ -1791,6 +1967,8 @@ def p_var_spec_tail(p):
 	if len(p)==3 and p.slice[2].type=="ExpressionList" and p.slice[1].type=="EQ":
 		p[0]['typelist'] = p[2]['typelist']
 		p[0]['type_used'] = False
+	if len(p[0]['code']) != len(p[0]['scopelist']):
+		print(len(p[0]['code']), len(p[0]['scopelist']), 'VarSpecTail')
 
 def p_var_spec_mid(p):
 	'''
@@ -1813,6 +1991,8 @@ def p_var_spec_mid(p):
 	if len(p)==2 and p.slice[1].type=="empty":
 		p[0]['namelist'] = []
 		p[0]['typelist'] = []
+	if len(p[0]['code']) != len(p[0]['scopelist']):
+		print(len(p[0]['code']), len(p[0]['scopelist']), 'VarSpecMid')
 
 def p_function_decl(p):
 	'''
@@ -1847,6 +2027,8 @@ def p_function_decl(p):
 	      if (len(ret_actual) > 0 and p[2]['ret_types'] != ret_actual):
 	           print("Error:", func_name, "return types mismatch on line number", p.lexer.lineno)
 	           sys.exit(0)
+	if len(p[0]['code']) != len(p[0]['scopelist']):
+		print(len(p[0]['code']), len(p[0]['scopelist']), 'FunctionDecl')
 
 def p_signature(p):
 	'''
@@ -1869,6 +2051,8 @@ def p_signature(p):
 	entry = symTableDict[symTableSt[-2]].get(func_name)
 	entry.setInputArgs(p[0]['input_args'])
 	entry.setReturnTypes(p[0]['ret_types'])
+	if len(p[0]['code']) != len(p[0]['scopelist']):
+		print(len(p[0]['code']), len(p[0]['scopelist']), 'Signature')
 
 def p_function_body_top(p):
 	'''
@@ -1888,6 +2072,8 @@ def p_function_body_top(p):
 		p[0]['code'] = p[1]['code']
 		p[0]['scopelist'] = p[1]['scopelist']
 		p[0]['ret_actual_types'] = p[1]['ret_typelist']
+	if len(p[0]['code']) != len(p[0]['scopelist']):
+		print(len(p[0]['code']), len(p[0]['scopelist']), 'FunctionBodyTop')
 
 def p_function_decl_tail(p):
 	'''
@@ -1909,6 +2095,8 @@ def p_function_decl_tail(p):
 	p[0]['ret_actual_types'] = []
 	if len(p)==2 and p.slice[1].type=="Function":
 		p[0]['ret_actual_types'] = p[1]['ret_actual_types']
+	if len(p[0]['code']) != len(p[0]['scopelist']):
+		print(len(p[0]['code']), len(p[0]['scopelist']), 'FunctionDeclTail')
 
 def p_function_name(p):
 	'''
@@ -1939,6 +2127,8 @@ def p_function_name(p):
 	actRecord = ActivationRecord(p[1], pname)
 	actRecordDict[p[1]] = actRecord
 	actRecordSt += [actRecord.getName()]
+	if len(p[0]['code']) != len(p[0]['scopelist']):
+		print(len(p[0]['code']), len(p[0]['scopelist']), 'FunctionName')
 
 def p_function(p):
 	'''
@@ -1957,6 +2147,8 @@ def p_function(p):
 	p[0]['input_args'] = p[1]['input_args']
 	p[0]['ret_types'] = p[1]['ret_types']
 	p[0]['ret_actual_types'] = p[2]['ret_typelist']
+	if len(p[0]['code']) != len(p[0]['scopelist']):
+		print(len(p[0]['code']), len(p[0]['scopelist']), 'Function')
 
 def p_function_body(p):
 	'''
@@ -1973,6 +2165,8 @@ def p_function_body(p):
 	p[0]['code'] = p[2]['code']
 	p[0]['scopelist'] = p[2]['scopelist']
 	p[0]['ret_typelist'] = p[2]['ret_typelist']
+	if len(p[0]['code']) != len(p[0]['scopelist']):
+		print(len(p[0]['code']), len(p[0]['scopelist']), 'FunctionBody')
 
 def p_method_decl(p):
 	'''
@@ -1989,6 +2183,8 @@ def p_method_decl(p):
 	p[0]['code'] = p[2]['code'] + p[3]['code'] + p[4]['code']
 	p[0]['scopelist'] = p[2]['scopelist'] + p[3]['scopelist'] + p[4]['scopelist']
 	p[0]['dict_code'] = { p[3]: code_optimization(p[0]['code'], p[0]['scopelist']) }
+	if len(p[0]['code']) != len(p[0]['scopelist']):
+		print(len(p[0]['code']), len(p[0]['scopelist']), 'MethodDecl')
 
 def p_method_name(p):
 	'''
@@ -2008,6 +2204,8 @@ def p_method_name(p):
 	if (symTable.put(fn) == False):
 	    print("Error:", p[1], "redeclared on line number", p.lexer.lineno)
 	    sys.exit(0)
+	if len(p[0]['code']) != len(p[0]['scopelist']):
+		print(len(p[0]['code']), len(p[0]['scopelist']), 'MethodName')
 
 def p_receiver(p):
 	'''
@@ -2021,6 +2219,8 @@ def p_receiver(p):
 	p[0]['code'] = []
 	p[0]['scopelist'] = []
 	p[0]['dict_code'] = {}
+	if len(p[0]['code']) != len(p[0]['scopelist']):
+		print(len(p[0]['code']), len(p[0]['scopelist']), 'Receiver')
 
 def p_simple_stmt(p):
 	'''
@@ -2042,6 +2242,8 @@ def p_simple_stmt(p):
 	p[0]['place'] = ''
 	if len(p)==2 and p.slice[1].type=="ExpressionStmt":
 		p[0]['place'] = p[1]['place']
+	if len(p[0]['code']) != len(p[0]['scopelist']):
+		print(len(p[0]['code']), len(p[0]['scopelist']), 'SimpleStmt')
 
 def p_simple_stmt_bot(p):
 	'''
@@ -2062,6 +2264,8 @@ def p_simple_stmt_bot(p):
 		p[0]['place'] = p[1]['place']
 	if len(p)==2 and p.slice[1].type=="empty":
 		p[0]['place'] = ""
+	if len(p[0]['code']) != len(p[0]['scopelist']):
+		print(len(p[0]['code']), len(p[0]['scopelist']), 'SimpleStmtBot')
 
 def p_expression_stmt(p):
 	'''
@@ -2078,6 +2282,8 @@ def p_expression_stmt(p):
 	p[0]['code'] = p[1]['code']
 	p[0]['scopelist'] = p[1]['scopelist']
 	p[0]['place'] = p[1]['place']
+	if len(p[0]['code']) != len(p[0]['scopelist']):
+		print(len(p[0]['code']), len(p[0]['scopelist']), 'ExpressionStmt')
 
 def p_short_var_decl(p):
 	'''
@@ -2109,6 +2315,8 @@ def p_short_var_decl(p):
 	  if (table.put(entry) == False):
 	     print("Error:", i, "redeclared on line number", p.lexer.lineno)
 	     sys.exit(0)
+	if len(p[0]['code']) != len(p[0]['scopelist']):
+		print(len(p[0]['code']), len(p[0]['scopelist']), 'ShortVarDecl')
 
 def p_assignment(p):
 	'''
@@ -2142,6 +2350,8 @@ def p_assignment(p):
 	    if q[0] in ['*']:
 	       q = q[1:]
 	    left_elem_type = verifyCalType(q, p.lexer.lineno)
+	    if i[0] in ['*']:
+	       left_elem_type = left_elem_type[1:]
 	    if left_elem_type != k:
 	      print("Error type mismatch in line " +str(p.lexer.lineno) +". Expected type " +left_elem_type+", got type "+ k)
 	      sys.exit(0)
@@ -2164,6 +2374,8 @@ def p_assignment(p):
 	    p[0]['code'] += [var_dest + ' :=  '+ var + " " + p[2]['symbol'] + k + " " + j]
 	    p[0]['code'] += [i + " := " + var_dest]
 	    p[0]['scopelist'] += [actRecordSt[-1], actRecordSt[-1], actRecordSt[-1]]
+	if len(p[0]['code']) != len(p[0]['scopelist']):
+		print(len(p[0]['code']), len(p[0]['scopelist']), 'Assignment')
 
 def p_assignment_gen(p):
 	'''
@@ -2205,6 +2417,8 @@ def p_assignment_gen(p):
 	else:
 	    p[0]['code'] += [i + ' := ' + i + str(idx) + p2['symbol'] + j]
 	    p[0]['scopelist'] += [actRecordSt[-1]]
+	if len(p[0]['code']) != len(p[0]['scopelist']):
+		print(len(p[0]['code']), len(p[0]['scopelist']), 'AssignmentGen')
 
 def p_assign_op(p):
 	'''
@@ -2220,6 +2434,8 @@ def p_assign_op(p):
 	p[0]['dict_code'] = {}
 	p[0]['len'] = 1 + p[1]['len']
 	p[0]['symbol'] = p[1]['symbol']
+	if len(p[0]['code']) != len(p[0]['scopelist']):
+		print(len(p[0]['code']), len(p[0]['scopelist']), 'assign_op')
 
 def p_addmul_op(p):
 	'''
@@ -2244,6 +2460,8 @@ def p_addmul_op(p):
 	if len(p)==2 and p.slice[1].type=="empty":
 		p[0]['len'] = 0
 		p[0]['symbol'] = ''
+	if len(p[0]['code']) != len(p[0]['scopelist']):
+		print(len(p[0]['code']), len(p[0]['scopelist']), 'addmul_op')
 
 def p_if_stmt(p):
 	'''
@@ -2272,8 +2490,10 @@ def p_if_stmt(p):
 	p[0]['code'] += [p[4]['label'] + ':'] + p[4]['code'] + ["goto " + p[0]['lastlabel']]
 	p[0]['scopelist'] += [actRecordSt[-1]] + p[4]['scopelist'] + [actRecordSt[-1]]
 	p[0]['code'] += p[5]['code'] + [p[0]['lastlabel'] +": "]
-	p[0]['scopelist'] = p[5]['scopelist'] + [actRecordSt[-1]]
+	p[0]['scopelist'] += p[5]['scopelist'] + [actRecordSt[-1]]
 	p[0]['ret_typelist'] = p[4]['ret_typelist']
+	if len(p[0]['code']) != len(p[0]['scopelist']):
+		print(len(p[0]['code']), len(p[0]['scopelist']), 'IfStmt')
 
 def p_if_stmt2(p):
 	'''
@@ -2304,6 +2524,8 @@ def p_if_stmt2(p):
 	p[0]['code'] += p[5]['code']
 	p[0]['scopelist'] += p[5]['scopelist']
 	p[0]['ret_typelist'] = p[4]['ret_typelist']
+	if len(p[0]['code']) != len(p[0]['scopelist']):
+		print(len(p[0]['code']), len(p[0]['scopelist']), 'IfStmt2')
 
 def p_simple_stmt_bot(p):
 	'''
@@ -2332,6 +2554,8 @@ def p_simple_stmt_bot(p):
 		p[0]['place'] = 'false'
 	if len(p)==2 and p.slice[1].type=="empty":
 		p[0]['place'] = ''
+	if len(p[0]['code']) != len(p[0]['scopelist']):
+		print(len(p[0]['code']), len(p[0]['scopelist']), 'SimpleStmtBot')
 
 def p_else_bot(p):
 	'''
@@ -2357,6 +2581,8 @@ def p_else_bot(p):
 		p[0]['code'] = []
 		p[0]['scopelist'] = []
 		p[0]['lastlabel'] = newLabel()
+	if len(p[0]['code']) != len(p[0]['scopelist']):
+		print(len(p[0]['code']), len(p[0]['scopelist']), 'elseBot')
 
 def p_else_tail(p):
 	'''
@@ -2377,6 +2603,8 @@ def p_else_tail(p):
 		p[0]['lastlabel'] = p[1]['lastlabel']
 	if len(p)==2 and p.slice[1].type=="Block":
 		p[0]['lastlabel'] = newLabel()
+	if len(p[0]['code']) != len(p[0]['scopelist']):
+		print(len(p[0]['code']), len(p[0]['scopelist']), 'elseTail')
 
 def p_switch_stmt(p):
 	'''
@@ -2393,6 +2621,8 @@ def p_switch_stmt(p):
 	p[0]['code'] = p[1]['code']
 	p[0]['scopelist'] = p[1]['scopelist']
 	p[0]['ret_typelist'] = p[1]['ret_typelist']
+	if len(p[0]['code']) != len(p[0]['scopelist']):
+		print(len(p[0]['code']), len(p[0]['scopelist']), 'SwitchStmt')
 
 def p_expr_switch_stmt(p):
 	'''
@@ -2415,7 +2645,7 @@ def p_expr_switch_stmt(p):
 	  print("Switch variable", p[2], "not declared on line number", p.lexer.lineno)
 	  sys.exit(0)
 	p[0]['code'] = p[4]['expcodelist']
-	p[0]['scopelist'] = p[4]['scopelist']
+	p[0]['scopelist'] = p[4]['expscopelist']
 	for exp, label in zip(p[4]['explist'], p[4]['labellist'][:-1]):
 	  exp_var = newVar()
 	  var = newVar()
@@ -2430,12 +2660,14 @@ def p_expr_switch_stmt(p):
 	  p[0]['scopelist'] += [actRecordSt[-1]]
 	for label, codeblock in zip(p[4]['labellist'][:-1], p[4]['code']):
 	  p[0]['code'] += codeblock
-	  p[0]['scopelist'] += [actRecordSt[-1]]
+	  p[0]['scopelist'] += [actRecordSt[-1]]*len(codeblock)
 	  p[0]['code'] += ['goto ' + p[4]['labellist'][-1]]
 	  p[0]['scopelist'] += [actRecordSt[-1]]
 	p[0]['code'] += [p[4]['labellist'][-1] + ':']
 	p[0]['scopelist'] += [actRecordSt[-1]]
 	p[0]['ret_typelist'] = p[4]['ret_typelist']
+	if len(p[0]['code']) != len(p[0]['scopelist']):
+		print(len(p[0]['code']), len(p[0]['scopelist']), 'ExprSwitchStmt')
 
 def p_expr_case_clause_list(p):
 	'''
@@ -2453,17 +2685,21 @@ def p_expr_case_clause_list(p):
 	if len(p)==3 and p.slice[2].type=="ExprCaseClauseList" and p.slice[1].type=="ExprCaseClause":
 		p[0]['explist'] = [p[1]['exp']] + p[2]['explist']
 		p[0]['expcodelist'] = p[1]['expcode'] + p[2]['expcodelist']
+		p[0]['expscopelist'] = p[1]['expscope'] + p[2]['expscopelist']
 		p[0]['labellist'] = [p[1]['label']] + p[2]['labellist']
 		p[0]['code'] = [p[1]['code']] + p[2]['code']
-		p[0]['scopelist'] = p[1]['scopelist'] + p[2]['scopelist']
+		p[0]['scopelist'] = [actRecordSt[-1]] + p[2]['scopelist']
 		p[0]['ret_typelist'] = [p[1]['ret_typelist']] + p[2]['ret_typelist']
 	if len(p)==2 and p.slice[1].type=="empty":
 		p[0]['explist'] = []
 		p[0]['expcodelist'] = []
+		p[0]['expscopelist'] = []
 		p[0]['labellist'] = [newLabel()]
 		p[0]['code'] = []
 		p[0]['scopelist'] = []
 		p[0]['ret_typelist'] = []
+	if len(p[0]['code']) != len(p[0]['scopelist']):
+		print(len(p[0]['code']), len(p[0]['scopelist']), 'ExprCaseClauseList')
 
 def p_expr_case_clause(p):
 	'''
@@ -2479,10 +2715,13 @@ def p_expr_case_clause(p):
 	p[0]['dict_code'] = {}
 	p[0]['exp'] = p[1]['exp']
 	p[0]['expcode'] = p[1]['code']
+	p[0]['expscope'] = p[1]['scopelist']
 	p[0]['label'] = newLabel()
 	p[0]['code'] = [p[0]['label'] + ' : '] + p[4]['code']
 	p[0]['scopelist'] = [actRecordSt[-1]] + p[4]['scopelist']
 	p[0]['ret_typelist'] = p[4]['ret_typelist']
+	if len(p[0]['code']) != len(p[0]['scopelist']):
+		print(len(p[0]['code']), len(p[0]['scopelist']), 'ExprCaseClause')
 
 def p_expr_switch_case(p):
 	'''
@@ -2501,6 +2740,8 @@ def p_expr_switch_case(p):
 		p[0]['exp'] = p[2]['place']
 		p[0]['code'] = p[2]['code']
 		p[0]['scopelist'] = p[2]['scopelist']
+	if len(p[0]['code']) != len(p[0]['scopelist']):
+		print(len(p[0]['code']), len(p[0]['scopelist']), 'ExprSwitchCase')
 
 def p_for_stmt(p):
 	'''
@@ -2545,6 +2786,8 @@ def p_for_stmt(p):
 		  p[0]['scopelist'] += [actRecordSt[-1]]
 		p[0]['code'] += [endlabel + ":"]
 		p[0]['scopelist'] += [actRecordSt[-1]]
+	if len(p[0]['code']) != len(p[0]['scopelist']):
+		print(len(p[0]['code']), len(p[0]['scopelist']), 'ForStmt')
 
 def p_expression_bot(p):
 	'''
@@ -2563,6 +2806,8 @@ def p_expression_bot(p):
 		p[0]['symbol'] = p[1]['code'][-1] 
 	if len(p)==2 and p.slice[1].type=="empty":
 		p[0]['symbol'] = ''
+	if len(p[0]['code']) != len(p[0]['scopelist']):
+		print(len(p[0]['code']), len(p[0]['scopelist']), 'ExpressionBot')
 
 def p_return_stmt(p):
 	'''
@@ -2579,13 +2824,13 @@ def p_return_stmt(p):
 	p[0]['typelist'] = p[2]['typelist']
 	p[0]['code'] = p[2]['code']
 	p[0]['scopelist'] = p[2]['scopelist']
-	#if len(p[2]['typelist']) == 0:
-	#   p[0]['code'] += ["ret"]
 	for name in p[2]['namelist']:
 	      p[0]['code'] += ["ret " + name]
-	      p[0]['code'] += [actRecordSt[-1]]
+	      p[0]['scopelist'] += [actRecordSt[-1]]
 	p[0]['code'] += ['func_end']
-	p[0]['code'] += [actRecordSt[-1]]
+	p[0]['scopelist'] += [actRecordSt[-1]]
+	if len(p[0]['code']) != len(p[0]['scopelist']):
+		print(len(p[0]['code']), len(p[0]['scopelist']), 'ReturnStmt')
 
 def p_expression_list_bot(p):
 	'''
@@ -2608,6 +2853,8 @@ def p_expression_list_bot(p):
 	if len(p)==2 and p.slice[1].type=="empty":
 		p[0]['typelist'] = []
 		p[0]['namelist'] = []
+	if len(p[0]['code']) != len(p[0]['scopelist']):
+		print(len(p[0]['code']), len(p[0]['scopelist']), 'ExpressionListBot')
 
 def p_expression(p):
 	'''
@@ -2693,6 +2940,8 @@ def p_expression(p):
 		    resscope += [actRecordSt[-1]]
 		p[0]['code'] = res
 		p[0]['scopelist'] = resscope 
+	if len(p[0]['code']) != len(p[0]['scopelist']):
+		print(len(p[0]['code']), len(p[0]['scopelist']), 'Expression')
 
 def p_object_param_list(p):
 	'''
@@ -2710,6 +2959,8 @@ def p_object_param_list(p):
 		p[0]['code'] = p[1]['code'] + p[2]['code']
 		p[0]['scopelist'] = p[1]['scopelist'] + p[2]['scopelist']
 		p[0]['field_ass'] = p[1]['field_ass'] + p[2]['field_ass']
+	if len(p[0]['code']) != len(p[0]['scopelist']):
+		print(len(p[0]['code']), len(p[0]['scopelist']), 'ObjectParamList')
 
 def p_object_param_top(p):
 	'''
@@ -2737,6 +2988,8 @@ def p_object_param_top(p):
 		p[0]['code'] = []
 		p[0]['scopelist'] = []
 		p[0]['field_ass'] = []
+	if len(p[0]['code']) != len(p[0]['scopelist']):
+		print(len(p[0]['code']), len(p[0]['scopelist']), 'ObjectParamTop')
 
 def p_object_param(p):
 	'''
@@ -2754,6 +3007,8 @@ def p_object_param(p):
 		p[0]['code'] = p[3]['code']
 		p[0]['scopelist'] = p[3]['scopelist']
 		p[0]['field_ass'] = [(p[1], p[3]['place'])]
+	if len(p[0]['code']) != len(p[0]['scopelist']):
+		print(len(p[0]['code']), len(p[0]['scopelist']), 'ObjectParam')
 
 def p_unary_expr(p):
 	'''
@@ -2775,7 +3030,7 @@ def p_unary_expr(p):
 		if (p[1]['symbol'] == "&"):
 		  p[0]['type'] = "*" + p[0]['type']
 		p[0]['code'] = p[2]['code'] + [p[0]['place'] + ' := ' + p[1]['symbol'] + p[2]['place']]
-		p[0]['scopelist'] = p[1]['scopelist'] + [actRecordSt[-1]]
+		p[0]['scopelist'] = p[2]['scopelist'] + [actRecordSt[-1]]
 	if len(p)==2 and p.slice[1].type=="PrimaryExpr":
 		p[0]['place'] = p[1]['place']
 		p[0]['type'] = p[1]['type']
@@ -2786,6 +3041,8 @@ def p_unary_expr(p):
 		p[0]['type'] = verifyCalType(p[2], p.lexer.lineno)[1:]
 		p[0]['code'] = [p[0]['place'] + " := " + "*" + p[2]]
 		p[0]['scopelist'] = [actRecordSt[-1]]
+	if len(p[0]['code']) != len(p[0]['scopelist']):
+		print(len(p[0]['code']), len(p[0]['scopelist']), 'UnaryExpr')
 
 def p_binary_op(p):
 	'''
@@ -2816,6 +3073,8 @@ def p_binary_op(p):
 		p[0]['symbol'] = p[1]['symbol']
 	if len(p)==2 and p.slice[1].type=="MOD":
 		p[0]['symbol'] = p[1]
+	if len(p[0]['code']) != len(p[0]['scopelist']):
+		print(len(p[0]['code']), len(p[0]['scopelist']), 'binary_op')
 
 def p_rel_op(p):
 	'''
@@ -2835,6 +3094,8 @@ def p_rel_op(p):
 	p[0]['scopelist'] = []
 	p[0]['dict_code'] = {}
 	p[0]['symbol'] = p[1]
+	if len(p[0]['code']) != len(p[0]['scopelist']):
+		print(len(p[0]['code']), len(p[0]['scopelist']), 'rel_op')
 
 def p_add_op(p):
 	'''
@@ -2852,6 +3113,8 @@ def p_add_op(p):
 	p[0]['scopelist'] = []
 	p[0]['dict_code'] = {}
 	p[0]['symbol'] = p[1]
+	if len(p[0]['code']) != len(p[0]['scopelist']):
+		print(len(p[0]['code']), len(p[0]['scopelist']), 'add_op')
 
 def p_mul_op(p):
 	'''
@@ -2871,6 +3134,8 @@ def p_mul_op(p):
 	p[0]['scopelist'] = []
 	p[0]['dict_code'] = {}
 	p[0]['symbol'] = p[1]
+	if len(p[0]['code']) != len(p[0]['scopelist']):
+		print(len(p[0]['code']), len(p[0]['scopelist']), 'mul_op')
 
 def p_unary_op(p):
 	'''
@@ -2891,6 +3156,8 @@ def p_unary_op(p):
 	p[0]['scopelist'] = []
 	p[0]['dict_code'] = {}
 	p[0]['symbol'] = p[1]
+	if len(p[0]['code']) != len(p[0]['scopelist']):
+		print(len(p[0]['code']), len(p[0]['scopelist']), 'unary_op')
 
 def p_primary_expr(p):
 	'''
@@ -2931,6 +3198,8 @@ def p_primary_expr(p):
 		p[0]['type'] = p[1]['type']
 		p[0]['code'] += [p[0]['place'] + ' := ' + p[1]['place'] + p[2]['symbol']]
 		p[0]['scopelist'] += [actRecordSt[-1]]
+	if len(p[0]['code']) != len(p[0]['scopelist']):
+		print(len(p[0]['code']), len(p[0]['scopelist']), 'PrimaryExpr')
 
 def p_operand(p):
 	'''
@@ -2981,6 +3250,8 @@ def p_operand(p):
 		p[0]['type'] = ""
 		if len(p[1]['ret_types']) > 0:
 		  p[0]['type'] = p[1]['ret_types'][0]
+	if len(p[0]['code']) != len(p[0]['scopelist']):
+		print(len(p[0]['code']), len(p[0]['scopelist']), 'Operand')
 
 def p_literal(p):
 	'''
@@ -2998,6 +3269,8 @@ def p_literal(p):
 	if len(p)==2 and p.slice[1].type=="BasicLit":
 		p[0]['type'] = p[1]['type']
 		p[0]['symbol'] = p[1]['symbol']
+	if len(p[0]['code']) != len(p[0]['scopelist']):
+		print(len(p[0]['code']), len(p[0]['scopelist']), 'Literal')
 
 def p_basic_lit(p):
 	'''
@@ -3020,6 +3293,8 @@ def p_basic_lit(p):
 		p[0]['type'] = 'float'
 	if len(p)==2 and p.slice[1].type=="STRINGLIT":
 		p[0]['type'] = 'string'
+	if len(p[0]['code']) != len(p[0]['scopelist']):
+		print(len(p[0]['code']), len(p[0]['scopelist']), 'BasicLit')
 
 def p_operand_name(p):
 	'''
@@ -3038,6 +3313,8 @@ def p_operand_name(p):
 	#print(actRecordSt)
 	p[0]['scopelist'] = [actRecordSt[-1]]
 	p[0]['type'] = verifyCalType(p[1], p.lexer.lineno)
+	if len(p[0]['code']) != len(p[0]['scopelist']):
+		print(len(p[0]['code']), len(p[0]['scopelist']), 'OperandName')
 
 def p_function_lit(p):
 	'''
@@ -3051,6 +3328,8 @@ def p_function_lit(p):
 	p[0]['code'] = []
 	p[0]['scopelist'] = []
 	p[0]['dict_code'] = {}
+	if len(p[0]['code']) != len(p[0]['scopelist']):
+		print(len(p[0]['code']), len(p[0]['scopelist']), 'FunctionLit')
 
 def p_method_expr(p):
 	'''
@@ -3064,6 +3343,8 @@ def p_method_expr(p):
 	p[0]['code'] = []
 	p[0]['scopelist'] = []
 	p[0]['dict_code'] = {}
+	if len(p[0]['code']) != len(p[0]['scopelist']):
+		print(len(p[0]['code']), len(p[0]['scopelist']), 'MethodExpr')
 
 def p_receiver_type(p):
 	'''
@@ -3079,6 +3360,8 @@ def p_receiver_type(p):
 	p[0]['code'] = []
 	p[0]['scopelist'] = []
 	p[0]['dict_code'] = {}
+	if len(p[0]['code']) != len(p[0]['scopelist']):
+		print(len(p[0]['code']), len(p[0]['scopelist']), 'ReceiverType')
 
 def p_selector(p):
 	'''
@@ -3093,6 +3376,8 @@ def p_selector(p):
 	p[0]['scopelist'] = []
 	p[0]['dict_code'] = {}
 	p[0]['symbol'] = '.' + p[2]
+	if len(p[0]['code']) != len(p[0]['scopelist']):
+		print(len(p[0]['code']), len(p[0]['scopelist']), 'Selector')
 
 def p_index(p):
 	'''
@@ -3109,6 +3394,8 @@ def p_index(p):
 	p[0]['symbol'] = '[' + p[2]['place'] + ']'
 	p[0]['code'] = p[2]['code']
 	p[0]['scopelist'] = p[2]['scopelist']
+	if len(p[0]['code']) != len(p[0]['scopelist']):
+		print(len(p[0]['code']), len(p[0]['scopelist']), 'Index')
 
 def p_arguments(p):
 	'''
@@ -3125,6 +3412,8 @@ def p_arguments(p):
 	p[0]['symbol'] = '(' + p[2]['symbol'] + ')'
 	p[0]['code'] = p[2]['code']
 	p[0]['scopelist'] = p[2]['scopelist']
+	if len(p[0]['code']) != len(p[0]['scopelist']):
+		print(len(p[0]['code']), len(p[0]['scopelist']), 'Arguments')
 
 def p_arguments_head(p):
 	'''
@@ -3143,6 +3432,8 @@ def p_arguments_head(p):
 		p[0]['symbol'] = p[1]['symbol'] + p[2]['symbol'] +p[3]['symbol']
 		p[0]['code'] = p[1]['code']
 		p[0]['scopelist'] = p[1]['scopelist']
+	if len(p[0]['code']) != len(p[0]['scopelist']):
+		print(len(p[0]['code']), len(p[0]['scopelist']), 'ArgumentsHead')
 
 def p_arguments_head_mid(p):
 	'''
@@ -3176,6 +3467,8 @@ def p_arguments_head_mid(p):
 		p[0]['scopelist'] = p[3]['scopelist']
 	if len(p)==2 and p.slice[1].type=="Type":
 		p[0]['symbol'] = p[1]['place']
+	if len(p[0]['code']) != len(p[0]['scopelist']):
+		print(len(p[0]['code']), len(p[0]['scopelist']), 'ArgumentsHeadMid')
 
 
 def p_error(p):
