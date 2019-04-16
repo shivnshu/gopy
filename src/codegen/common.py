@@ -2,7 +2,7 @@ import sys
 import re
 
 # %esi store global starting address, that's why not part of usable registers
-usable_registers = ["%eax", "%ebx", "%ecx", "%edx", "%edi"]
+usable_registers = ["%eax", "%ebx", "%ecx", "%edx", "%edi", "%esi"]
 free_registers = usable_registers.copy()
 reserved_registers = []
 

@@ -22,6 +22,8 @@ func main() {
   fmt.printf("a = %d, b = %d, c = %s\n", a, b, c)
   d = 4
   fmt.printf("d: %d\n", d)
+  e = "aass"
+  fmt.printf("%s\n", e)
   test()
-  fmt.printf("e = %s\n", e)
+  //fmt.printf("e = %s\n", e)
 }

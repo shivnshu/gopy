@@ -299,12 +299,12 @@ def p_top_level_decl_list(p):
 		final_dict_code = {}
 		for key in p[1]['dict_code']:
 		  if key in p[2]['dict_code']:
-		    final_dict_code[key] = p[1]['dict_code'][key] + p[2]['dict_code'][key]
+		    final_dict_code[key] = (p[1]['dict_code'][key][0] + p[2]['dict_code'][key][0], p[1]['dict_code'][key][1] + p[2]['dict_code'][key][1])
 		  else:
-		    final_dict_code[key] = p[1]['dict_code'][key]
+		    final_dict_code[key] = (p[1]['dict_code'][key][0], p[1]['dict_code'][key][1])
 		for key in p[2]['dict_code']:
 		  if not key in p[1]['dict_code']:
-		    final_dict_code[key] = p[2]['dict_code'][key]
+		    final_dict_code[key] = (p[2]['dict_code'][key][0], p[2]['dict_code'][key][1])
 		p[0]['dict_code'] = final_dict_code
 	if len(p)==2 and p.slice[1].type=="empty":
 		sym_table = symTableDict[symTableSt[-1]]
@@ -335,6 +335,7 @@ def p_top_level_decl(p):
 	if len(p)==2 and p.slice[1].type=="Declaration":
 		p[0]['dict_code']['global_decl'] = code_optimization(p[1]['global_decl'], p[1]['scope_global_decl'])
 		p[0]['dict_code']['const_decl'] = code_optimization(p[1]['const_decl'], p[1]['scope_const_decl'])
+		#print(p[0]['dict_code']['const_decl'])
 	if len(p)==2 and p.slice[1].type=="FunctionDecl":
 		p[0]['dict_code'].update(p[1]['dict_code'])
 	if len(p)==2 and p.slice[1].type=="MethodDecl":

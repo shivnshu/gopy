@@ -16,18 +16,13 @@ def asm_gen(line, activation_record, func_name, context, data_section, activatio
         res += [toks[0] + " " + toks[1]]
     elif (toks[0] == "push_param"):
         param_type = getTokType(toks[1])
-        print("aaa", activation_record.getName())
         if (param_type == "register"):
             res += ["push " + get_register(toks[1])]
             free_register(toks[1])
         elif (param_type == "variable"):
             (offset, jmp), typ = activation_record.getVarTuple(toks[1], activation_records)
-            reg_ = get_register("_pqr")
-            res += ["movl %ebp, " + reg_]
-            while (jmp > 0):
-                res += ["movl ("+reg_+"), " + reg_]
-                jmp -= 1
-            if typ == "global" or typ == "const":
+            print("AAAA", jmp, toks[1], func_name)
+            if typ == "global":
                 print("Error: unsupported code", line)
                 sys.exit(0)
             elif typ == "const":
@@ -38,8 +33,13 @@ def asm_gen(line, activation_record, func_name, context, data_section, activatio
                     res += ["movl $" + toks[1] + ", " + reg_1]
                     res += ["push (" + reg_1 + ")"]
             else:
+                reg_ = get_register("_pqr")
+                res += ["movl %ebp, " + reg_]
+                while (jmp > 0):
+                    res += ["movl ("+reg_+"), " + reg_]
+                    jmp -= 1
                 res += ["push " + str(offset) + "("+reg_+")"]
-            free_register("_pqr")
+                free_register("_pqr")
         elif (param_type == "positive-integer"):
             res += ["push " + "$" + toks[1]]
         elif (param_type == "address"):
