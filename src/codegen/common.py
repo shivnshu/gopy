@@ -73,6 +73,7 @@ unary_op_list = ["+", "-", "!"]
 def getCodeType(code):
     code = re.sub(r'".*"', 'string', code)
     toks = code.split()
+    print(toks, "IN GETCODETYPE")
     if (len(toks) == 3 and ":=" in code and (toks[2][0] not in unary_op_list or getTokType(toks[2][1:]) != "variable")):
         return "assignments"
     if (len(toks) == 3 and ("." in toks[0] or "." in toks[2])):
@@ -83,6 +84,8 @@ def getCodeType(code):
         return "binary-op"
     if  (len(toks)==6 and toks[1]==":=" and (toks[4][0] in binary_op_list or toks[4][0:2] in binary_op_list)):
         return "binary-op"
+    if  (len(toks)==6 and toks[1]==":=" and (toks[3][0] in binary_op_list or toks[3][0:2] in binary_op_list)):
+            return "binary-op"
     if (toks[0] == "if"):
         return "ifstmt"
     if (toks[0] == "goto"):

@@ -5,7 +5,7 @@ def asm_gen(line, activation_record, context, activation_records):
     res = []
     toks = line.split()
     #print(toks)
-    float_regs = ["%st0","%st1","%st2","%st3","%st4","%st5","%st6","%st7"]
+    # float_regs = ["%st0","%st1","%st2","%st3","%st4","%st5","%st6","%st7"]
     '''
     Some niggas like pow are left out
     '''
@@ -17,6 +17,8 @@ def asm_gen(line, activation_record, context, activation_records):
     if(len(toks) == 6):
         type_casting = 1
 
+    print("typeca", type_casting)
+    print()
     if(type_casting == 0):
         if (toks[op_ind][0] == "+"):
             op = "add "
@@ -57,13 +59,24 @@ def asm_gen(line, activation_record, context, activation_records):
             op = "inequality"
             ty = str(toks[op_ind][2:])
 
+    if "int" in toks[op_ind]:
+        ty = "int"
+    elif "float" in toks[op_ind]:
+        ty = "float"
+    elif "bool" in toks[op_ind]:
+        ty = "bool"
+    elif len(ty) == 0:
+        ty = "int"
+    else:
+        print("Error: bin_op unknown", ty, "of length", len(ty))
+
+
     print(ty,toks)
     #print(op)
-    #print(ty1)
+    # print(ty)
     #print(ty2)
     #print(len(toks))
-    
-    if (ty == "int"):
+    if (ty == "int" or ty == "bool"):
         r0 = get_register(toks[0])
         r1 = get_register(toks[2])
         r2 = get_register(toks[4])
@@ -151,7 +164,7 @@ def asm_gen(line, activation_record, context, activation_records):
             res.append("_rel_op_" + str(context["rel_op_num"]) + "_end:")
             context["rel_op_num"] += 1
         elif (toks[3][0:2] == "==" or toks[3][0:2] == "!=" or toks[3][0] == "<" or toks[3][0] == ">" or toks[3][0:2] == "<=" or toks[3][0:2] == ">="):
-            #print("HHHH")
+            # print("HHHH")
             jmp_instr = {"==": "je", "<": "jg", ">": "jl", "<=": "jge", ">=": "jle", "!=": "jne"}
             if (toks[3][0] in jmp_instr):
                 jmp_stmt = jmp_instr[toks[3][0]]
@@ -182,15 +195,15 @@ def asm_gen(line, activation_record, context, activation_records):
         elif(op == "imul "):
             res += ["fmul"]
         elif(toks[3][0] == "/"):
-            res += ["fdiv " + "%st1, " + "%st0"]
-            res += ["fstp " + "%st0"]
+            res += ["fdiv " + "%st(1), " + "%st(0)"]
+            res += ["fstp " + "%st(0)"]
         elif(toks[3][0:2] == "==" or toks[3][0:2] == "!=" or toks[3][0] == "<" or toks[3][0] == ">" or toks[3][0:2] == "<=" or toks[3][0:2] == ">="):
             jmp_instr = {"==": "je", "<": "jb", ">": "ja", "<=": "jbe", ">=": "jae", "!=": "jne"}
             if (toks[3][0] in jmp_instr):
                 jmp_stmt = jmp_instr[toks[3][0]]
             if (toks[3][0:2] in jmp_instr):
                 jmp_stmt = jmp_instr[toks[3][0:2]]
-            res += ["fxch " + "%st1" ]
+            res += ["fxch " + "%st(1)" ]
             res += ["fcomip"]
             res += ["fstp   %st(0)"]
             res.append(jmp_stmt + " _rel_op_" + str(context["rel_op_num"]) + "_true")
@@ -209,47 +222,33 @@ def asm_gen(line, activation_record, context, activation_records):
         return res, context
 
     elif (ty == 'float' and type_casting == 1):
-        #cast = 1
-        #oper = toks[op_ind][0]
-        #print(op)
-        #if(toks[4] == "cast-to-float"):
-        #    cast = 2
-        #if cast == 1:
-        #    r0 = get_register(toks[3])
-        #    oper = toks[4][0]
-        #    #print(oper)
-        #    if (oper == "+"):
-        #        op = "add "
-        #    elif (oper == "-"):
-        #        op = "subl "
-        #    elif (oper == "*"):
-        #        op = "imul "
-        #else:
-        #    r0 = get_register(toks[5])
         op_tobe_cast = -1
+        res += ["subl $4, %esp"]
         if op_ind == 3:
             r0 = get_register(toks[5])
+            res += ["movl " + r0 + ", (%esp)"]
             op_tobe_cast = 2
         else :
             r0 = get_register(toks[3])
+            res += ["movl " + r0 + ", (%esp)"]
             op_tobe_cast = 1
             #print(op)
         if (op == "add"):
-            res += ["fiadd " + r0]
+            res += ["fiadd (%esp)"]
         elif(op == "subl"):
             if op_tobe_cast == 1:
                 res += ["fchs"]
-                res += ["fiadd " + r0]
+                res += ["fiadd (%esp)"]
             else:
-                res += ["neg " + r0]
-                res += ["fiadd " + r0]
+                res += ["negl (%esp)"]
+                res += ["fiadd (%esp)"]
         elif(op == "mul"):
-            res += ["fimul " + r0]
+            res += ["fimul (%esp)"]
         elif(op == "div"):
             if op_tobe_cast == 1:
-                res += ["fidivr " + r0]
+                res += ["fidivr (%esp)"]
             else:
-                res += ["fidiv " + r0]
+                res += ["fidiv (%esp)"]
         elif(op == "inequality"):
             jmp_instr = {"==": "je", "<": "jb", ">": "ja", "<=": "jbe", ">=": "jae", "!=": "jne"}
             if (toks[op_ind][0] in jmp_instr):
@@ -258,9 +257,9 @@ def asm_gen(line, activation_record, context, activation_records):
                 jmp_stmt = jmp_instr[toks[op_ind][0:2]]
 
             res += ["fld1"]
-            res += ["fimul" + r0]
+            res += ["fimul (%esp)"]
             if op_tobe_cast == 2:
-                res += ["fxch " + "%st1" ]
+                res += ["fxch " + "%st(1)" ]
 
             res += ["fcomip"]
             res += ["fstp   %st(0)"]

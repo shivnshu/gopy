@@ -44,7 +44,7 @@ def asm_gen(code_line, func_name, scope, data_section):
     global activation_records
     activation_record = activation_records[scope]
     code_type = getCodeType(code_line)
-    print(code_line,code_type)
+    print(code_line,code_type, "IN CODEGEN")
     #print("AAA:" + code_type)
     if (code_type == "assignments"):
         res, context = assignments.asm_gen(code_line, activation_record, context, data_section, activation_records)

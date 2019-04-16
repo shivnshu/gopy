@@ -166,6 +166,8 @@ def asm_gen(line, activation_record, context, data_section, activation_records):
                 res.append("movl " + reg + ", " + dst_entry)
                 free_register("_tmp")
     elif (right_type == "float"):
+        if left_type == "register":
+            free_register(toks[0])
         #print("HELLO")
         #print(toks)
         float_name = "float_" + str(context["counter"])
@@ -183,14 +185,15 @@ def asm_gen(line, activation_record, context, data_section, activation_records):
         if (context["float_stack"][-1] != toks[2]):
             l = len(context["float_stack"])
             ind = context["float_stack"].index(toks[2])
-            reg = "%st" + str(l - ind)
+            reg = "%st(" + str(l - ind) + ")"
             res += ["fld" + " "+reg]
         res += ["fstp " + dst_entry]
         context["float_vals"].append(toks[0])
         #context["float_vals"][toks[0]] = context["float_vals"][toks[2]]
     elif (right_type == 'float-variable'):
-
-        (offset, size), typ = activation_record.getVarTuple(toks[2])
+        if left_type == "register":
+            free_register(toks[0])
+        (offset, size), typ = activation_record.getVarTuple(toks[2], activation_records)
         # print(toks, "with offset", offset)
         if typ == "global":
             src_entry = str(offset) + "(%esi)"
