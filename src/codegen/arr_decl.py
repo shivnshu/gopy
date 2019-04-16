@@ -4,6 +4,7 @@ from common import get_register, free_register, getTokType, reserve_register, un
 size_of = {'int': '4', 'float': '4', 'char': '1', "*int": '4', "*float": '4', "*char": '4', "string": '4'}
 
 def asm_gen(line, activation_record, context, activation_records):
+    print("Inside arr_del", line)
     global size_of
     res = []
     toks = line.split()

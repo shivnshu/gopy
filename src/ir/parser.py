@@ -16,7 +16,7 @@ from code_optimization import code_optimization
 
 symTableDict = {'rootSymTable': SymbolTable(None, 'rootSymTable')}
 symTableSt = ['rootSymTable']
-actRecordDict = {'root': ActivationRecord('root', None)}
+actRecordDict = {'root': ActivationRecord('root')}
 actRecordSt = ['root']
 counter = 0
 label_counter = 0
@@ -88,9 +88,9 @@ def p_keyword_lcurly(p):
 	  pname = None
 	else:
 	  pname = actRecordSt[-1]
-	actRecord = ActivationRecord(key, pname)
-	actRecordDict[key] = actRecord
-	actRecordSt += [actRecord.getName()]
+	#actRecord = ActivationRecord(key)
+	#actRecordDict[key] = actRecord
+	#actRecordSt += [actRecord.getName()]
 	if len(p[0]['code']) != len(p[0]['scopelist']):
 		print(len(p[0]['code']), len(p[0]['scopelist']), 'keyword_lcurly')
 
@@ -107,10 +107,10 @@ def p_keyword_rcurly(p):
 	p[0]['scopelist'] = []
 	p[0]['dict_code'] = {}
 	sym_table = symTableDict[symTableSt[-1]]
-	act_record = actRecordDict[actRecordSt[-1]]
-	act_record.setLocalVarsInputArgs(sym_table)
+	#act_record = actRecordDict[actRecordSt[-1]]
+	#act_record.setLocalVarsInputArgs(sym_table)
 	symTableSt = symTableSt[:-1]
-	actRecordSt = actRecordSt[:-1]
+	#actRecordSt = actRecordSt[:-1]
 	if len(p[0]['code']) != len(p[0]['scopelist']):
 		print(len(p[0]['code']), len(p[0]['scopelist']), 'keyword_rcurly')
 
@@ -309,7 +309,7 @@ def p_top_level_decl_list(p):
 	if len(p)==2 and p.slice[1].type=="empty":
 		sym_table = symTableDict[symTableSt[-1]]
 		act_record = actRecordDict[actRecordSt[-1]]
-		act_record.setLocalVarsInputArgs(sym_table)
+		act_record.setLocalVarsInputArgs(sym_table, symTableDict)
 		act_record.setGlobalVars(act_record.getLocalVars())
 	if len(p[0]['code']) != len(p[0]['scopelist']):
 		print(len(p[0]['code']), len(p[0]['scopelist']), 'TopLevelDeclList')
@@ -666,6 +666,8 @@ def p_func_call_stmt(p):
 	#actRecordSt += ["root"]
 	#print(actRecordSt)
 	if len(p)==4 and p.slice[3].type=="FuncCallStmt" and p.slice[2].type=="DOT" and p.slice[1].type=="IDENTIFIER":
+		actRecord = actRecordDict[p[1]]
+		actRecord.setParent(actRecordSt[-1])
 		b = False
 		for scope in symTableSt:
 			if p[1] in symTableDict[scope].symbols:
@@ -700,6 +702,8 @@ def p_func_call_stmt(p):
 		  p[0]['code'] += ["ret_param " + name]
 		  p['scopelist'] += [actRecordSt[-1]]
 	if len(p)==5 and p.slice[4].type=="RPAREN" and p.slice[3].type=="ExpressionListBot" and p.slice[2].type=="LPAREN" and p.slice[1].type=="IDENTIFIER":
+		actRecord = actRecordDict[p[1]]
+		actRecord.setParent(actRecordSt[-1])
 		b = False
 		for scope in symTableSt:
 		  if p[1] in symTableDict[scope].symbols:
@@ -2018,7 +2022,7 @@ def p_function_decl(p):
 	scope = symTableSt[-1]
 	table = symTableDict[scope]
 	entry = symTableDict[symTableSt[-1]].get(func_name)
-	act_record.setLocalVarsInputArgs(this_func_sym_table)
+	act_record.setLocalVarsInputArgs(this_func_sym_table, symTableDict)
 	#act_record.storeOldStPtr("%rbp")
 	act_record.setRetValues(entry)
 	p[0]['code'] = p[2]['code'] + p[3]['code']
@@ -2125,7 +2129,10 @@ def p_function_name(p):
 	  pname = None
 	else:
 	  pname = actRecordSt[-1]
-	actRecord = ActivationRecord(p[1], pname)
+	actRecord = ActivationRecord(p[1])
+	if (p[1] == "main"):
+	   actRecord.setParent("root")
+	symtab.removeMe(symtab.getName(), symTableDict)
 	actRecordDict[p[1]] = actRecord
 	actRecordSt += [actRecord.getName()]
 	if len(p[0]['code']) != len(p[0]['scopelist']):

@@ -167,6 +167,7 @@ def asm_gen(line, activation_record, context, data_section, activation_records):
             dst_entry = get_register(toks[0])
             unreserve_register("%eax")
         res += ["push $" + str(len(string_lit) + 1)]
+        print("inside ass", line)
         res += ["call malloc"]
         index = 0
         for ch_lit in string_lit:

@@ -2,7 +2,7 @@ import sys
 from common import get_register, free_register, getTokType, reserve_register, unreserve_register
 
 size_of = {'int': '4', 'float': '4', 'char': '1', "*int": '4', "*float": '4', "*char": '4', "string": '4'}
-lang_datatypes = ["int", "float", "bool"]
+lang_datatypes = ["int", "float", "bool", "*int", "*float", "string", "*bool"]
 
 def asm_gen(line, activation_record, activation_records):
     res = []

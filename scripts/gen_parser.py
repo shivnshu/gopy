@@ -53,7 +53,7 @@ output += "from code_optimization import code_optimization\n\n"
 output += "symTableDict = {'rootSymTable': SymbolTable(None, 'rootSymTable')}\n"
 output += "symTableSt = ['rootSymTable']\n"
 
-output += "actRecordDict = {'root': ActivationRecord('root', None)}\n"
+output += "actRecordDict = {'root': ActivationRecord('root')}\n"
 output += "actRecordSt = ['root']\n"
 
 output += "counter = 0\n"

@@ -8,18 +8,18 @@ if (actRecordSt == []):
   pname = None
 else:
   pname = actRecordSt[-1]
-actRecord = ActivationRecord(key, pname)
-actRecordDict[key] = actRecord
-actRecordSt += [actRecord.getName()]
+#actRecord = ActivationRecord(key)
+#actRecordDict[key] = actRecord
+#actRecordSt += [actRecord.getName()]
 >>
 
 keyword_rcurly : RCURLY
 <<0
 sym_table = symTableDict[symTableSt[-1]]
-act_record = actRecordDict[actRecordSt[-1]]
-act_record.setLocalVarsInputArgs(sym_table)
+#act_record = actRecordDict[actRecordSt[-1]]
+#act_record.setLocalVarsInputArgs(sym_table)
 symTableSt = symTableSt[:-1]
-actRecordSt = actRecordSt[:-1]
+#actRecordSt = actRecordSt[:-1]
 >>
 
 SourceFile  : PackageClause ImportDeclList TopLevelDeclList
@@ -94,7 +94,7 @@ p[0]['dict_code'] = final_dict_code
 <<2
 sym_table = symTableDict[symTableSt[-1]]
 act_record = actRecordDict[actRecordSt[-1]]
-act_record.setLocalVarsInputArgs(sym_table)
+act_record.setLocalVarsInputArgs(sym_table, symTableDict)
 act_record.setGlobalVars(act_record.getLocalVars())
 >>
 
@@ -278,6 +278,8 @@ p[0]['namelist'] = []
 #print(actRecordSt)
 >>
 <<1
+actRecord = actRecordDict[p[1]]
+actRecord.setParent(actRecordSt[-1])
 b = False
 for scope in symTableSt:
 	if p[1] in symTableDict[scope].symbols:
@@ -314,6 +316,8 @@ for name in p[0]['namelist']:
   p['scopelist'] += [actRecordSt[-1]]
 >>
 <<3
+actRecord = actRecordDict[p[1]]
+actRecord.setParent(actRecordSt[-1])
 b = False
 for scope in symTableSt:
   if p[1] in symTableDict[scope].symbols:
@@ -951,7 +955,7 @@ func_name = p[2]['func_name']
 scope = symTableSt[-1]
 table = symTableDict[scope]
 entry = symTableDict[symTableSt[-1]].get(func_name)
-act_record.setLocalVarsInputArgs(this_func_sym_table)
+act_record.setLocalVarsInputArgs(this_func_sym_table, symTableDict)
 #act_record.storeOldStPtr("%rbp")
 act_record.setRetValues(entry)
 p[0]['code'] = p[2]['code'] + p[3]['code']
@@ -1016,7 +1020,10 @@ if (actRecordSt == []):
   pname = None
 else:
   pname = actRecordSt[-1]
-actRecord = ActivationRecord(p[1], pname)
+actRecord = ActivationRecord(p[1])
+if (p[1] == "main"):
+   actRecord.setParent("root")
+symtab.removeMe(symtab.getName(), symTableDict)
 actRecordDict[p[1]] = actRecord
 actRecordSt += [actRecord.getName()]
 >>

@@ -17,7 +17,6 @@ def get_type_size(type, symTable):
         return type_to_size[type]
     if (type[0] == "*"):
         return 4
-    print(symTable.getSymbols())
     b = False
     while (symTable is not None):
         if type in symTable.getSymbols():
@@ -169,10 +168,30 @@ class SymbolTable(object):
     def __init__(self, parent, name):
         self.name = name
         self.parent = parent
+        self.children = []
         self.symbols = {}
+        if parent != None:
+            parent.addChild(name)
 
     def getSymbols(self):
         return self.symbols
+
+    def addChild(self, name):
+        self.children += [name]
+
+    def getChildren(self):
+        return self.children
+
+    def removeMe(self, name, symTableDict):
+        print("Remobi", name)
+        for key in symTableDict:
+            symTableDict[key].removeChild(name)
+
+    def removeChild(self, name):
+        try:
+            self.children.remove(name)
+        except:
+            pass
 
     def getVarSymbols(self):
         res = {}
@@ -206,6 +225,7 @@ class SymbolTable(object):
             print("Parent:", self.parent.getName())
         else:
             print("Parent:", None)
+        print("Children:", self.children)
         for sym in self.symbols:
             self.symbols[sym].prettyPrint()
         print()
@@ -220,9 +240,9 @@ class SymbolTable(object):
 
 
 class ActivationRecord:
-    def __init__(self, name, parent_name):
+    def __init__(self, name):
         self.name = name
-        self.parent = parent_name
+        self.parent = None
         self.ret_values = []
         self.input_args = {}
         self.old_st_ptrs = {}
@@ -237,6 +257,9 @@ class ActivationRecord:
 
     def getName(self):
         return self.name
+
+    def setParent(self, pname):
+        self.parent = pname
 
     # def storeOldStPtr(self, name):
     #     self.old_st_ptrs[name] = (self.pos_offset, 4)
@@ -253,8 +276,7 @@ class ActivationRecord:
     def getRetValues(self):
         return self.ret_values
 
-    def setLocalVarsInputArgs(self, sym_table):
-        global type_to_size
+    def setLocalVarsHelper(self, sym_table, symTableDict):
         varSymbols = sym_table.getVarSymbols()
         for symbol in varSymbols:
             var_entry = varSymbols[symbol]
@@ -265,7 +287,19 @@ class ActivationRecord:
                 self.offset -= size
                 self.local_vars[var_entry.getName()] = (self.offset, size)
                 self.var_signs[var_entry.getName()] = var_entry.getSign()
-            else:
+        for sym_table_name in sym_table.getChildren():
+            self.setLocalVarsHelper(symTableDict[sym_table_name], symTableDict)
+
+
+    def setLocalVarsInputArgs(self, sym_table, symTableDict):
+        print("SetLoacl", sym_table.getName(), sym_table.getChildren())
+        global type_to_size
+        self.setLocalVarsHelper(sym_table, symTableDict)
+        varSymbols = sym_table.getVarSymbols()
+        for symbol in varSymbols:
+            var_entry = varSymbols[symbol]
+            var_type = var_entry.getType()
+            if (var_entry.getIsLocal() == False):
                 size = get_type_size(var_type, sym_table)
                 self.input_args[var_entry.getName()] = (self.pos_offset, size)
                 self.pos_offset += size
