@@ -8,12 +8,15 @@ type_to_size["string"] = 4 # Since storing address
 type_to_size["*int"] = 4
 type_to_size["*char"] = 4
 type_to_size["*float"] = 4
-lang_datatypes = ["int", "char", "float", "string", "*int", "*char", "*float"]
+type_to_size["bool"] = 4
+lang_datatypes = ["int", "bool", "char", "float", "string", "*int", "*char", "*float"]
 
 def get_type_size(type, symTable):
     global lang_datatypes
     if type in lang_datatypes:
         return type_to_size[type]
+    if (type[0] == "*"):
+        return 4
     print(symTable.getSymbols())
     b = False
     while (symTable is not None):
@@ -25,7 +28,8 @@ def get_type_size(type, symTable):
         print("Error: Type " + type + " not found")
         sys.exit(0)
     struct_entry = symTable.getSymbols()[type]
-    return struct_entry.getSize()
+    return 4 # storing ptr
+    # return struct_entry.getSize()
 
 
 class SymbolTableEntry:
@@ -53,6 +57,8 @@ class SymbolTableVariableEntry(SymbolTableEntry):
     def setType(self, typ, sym_table):
         global lang_datatypes
         self.variableType = typ
+        if (typ[0] == "*"):
+            typ = typ[1:]
         if sym_table == None or typ in lang_datatypes:
             return
         symTable = sym_table
@@ -214,8 +220,9 @@ class SymbolTable(object):
 
 
 class ActivationRecord:
-    def __init__(self, name):
+    def __init__(self, name, parent_name):
         self.name = name
+        self.parent = parent_name
         self.ret_values = []
         self.input_args = {}
         self.old_st_ptrs = {}
@@ -230,6 +237,9 @@ class ActivationRecord:
 
     def getName(self):
         return self.name
+
+    def setParent(self, name):
+        self.parent = parent
 
     # def storeOldStPtr(self, name):
     #     self.old_st_ptrs[name] = (self.pos_offset, 4)
@@ -253,12 +263,13 @@ class ActivationRecord:
             var_entry = varSymbols[symbol]
             var_type = var_entry.getType()
             if (var_entry.getIsLocal() == True):
-                size = (1 + var_entry.getDim()) * get_type_size(var_type, sym_table)
+                # size = (1 + var_entry.getDim()) * get_type_size(var_type, sym_table)
+                size = get_type_size(var_type, sym_table)
                 self.offset -= size
                 self.local_vars[var_entry.getName()] = (self.offset, size)
                 self.var_signs[var_entry.getName()] = var_entry.getSign()
             else:
-                size = type_to_size[var_type]
+                size = get_type_size(var_type, sym_table)
                 self.input_args[var_entry.getName()] = (self.pos_offset, size)
                 self.pos_offset += size
                 self.var_signs[var_entry.getName()] = var_entry.getSign()
@@ -284,16 +295,28 @@ class ActivationRecord:
     def getSign(self, var_name):
         return self.var_signs[var_name]
 
-    def getVarTuple(self,var_name):
+    def getVarTuple(self,var_name,actRecordDict):
+
         if var_name in self.local_vars:
-            return self.local_vars[var_name], ""
+            (off, _) = self.local_vars[var_name]
+            return (off, 0), ""
         if var_name in self.input_args:
-            return self.input_args[var_name], ""
-        if var_name in self.global_vars:
-            return self.global_vars[var_name], "global"
+            (off, _) = self.input_args[var_name]
+            return (off, 0), ""
         if var_name in self.const_vars:
             return (None, None), "const"
-        return (None, None), ""
+        if var_name in self.global_vars:
+            return self.global_vars[var_name], "global"
+        if self.parent == None:
+            print("Error(actRecord):", var_name, "could not be found in activation record")
+            sys.exit(0)
+        precord = actRecordDict[self.parent]
+        if precord is not None:
+            (off, jmp), typ = precord.getVarTuple(var_name, actRecordDict)
+            return (off, jmp+1), typ
+
+        print("Error(actRecord):", var_name, "could not be found in activation record")
+        sys.exit(0)
 
     def prettyPrint(self):
-        print("Name:", self.name, "Ret value:", self.ret_values, "Input Params:", self.input_args, "OldStPtrs:", self.old_st_ptrs, "SavedRegs:", self.saved_regs, "LocalVars:", self.local_vars, "GlobalVars:", self.global_vars, "ConstVars:", self.const_vars, "VarSigns:", self.var_signs, "\n")
+        print("Name:", self.name, "Ret value:", self.ret_values, "Input Params:", self.input_args, "OldStPtrs:", self.old_st_ptrs, "SavedRegs:", self.saved_regs, "LocalVars:", self.local_vars, "GlobalVars:", self.global_vars, "ConstVars:", self.const_vars, "VarSigns:", self.var_signs, "Parent: ", self.parent, "\n")

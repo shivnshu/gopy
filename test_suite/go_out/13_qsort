@@ -1,0 +1,861 @@
+4999 2604 732 495 3447 517 2787 110 1791 804 
+3573 4930 1367 2471 66 534 3465 504 3030 3693 
+2206 4308 725 3628 3651 2024 2352 2399 4357 1080 
+1384 99 834 4710 3094 2869 3133 4877 405 2280 
+3816 143 3964 1196 1155 3577 197 1608 1194 3195 
+2064 1986 2600 3041 753 2695 4430 953 2515 2679 
+4966 4571 4125 4717 2395 4433 3929 4994 1012 3767 
+3902 1202 1811 484 3466 2982 193 186 1836 2134 
+1608 1480 2582 3974 3893 1664 3587 2187 4450 609 
+4311 4532 2581 2824 4411 3252 1212 1193 1859 1827 
+Partition 0 99
+J loop yes 1827 4999
+J loop yes 1859 4999
+J loop yes 1193 4999
+J loop yes 1212 4999
+J loop yes 3252 4999
+J loop yes 4411 4999
+J loop yes 2824 4999
+J loop yes 2581 4999
+J loop yes 4532 4999
+J loop yes 4311 4999
+J loop yes 609 4999
+J loop yes 4450 4999
+J loop yes 2187 4999
+J loop yes 3587 4999
+J loop yes 1664 4999
+J loop yes 3893 4999
+J loop yes 3974 4999
+J loop yes 2582 4999
+J loop yes 1480 4999
+J loop yes 1608 4999
+J loop yes 2134 4999
+J loop yes 1836 4999
+J loop yes 186 4999
+J loop yes 193 4999
+J loop yes 2982 4999
+J loop yes 3466 4999
+J loop yes 484 4999
+J loop yes 1811 4999
+J loop yes 1202 4999
+J loop yes 3902 4999
+J loop yes 3767 4999
+J loop yes 1012 4999
+J loop yes 4994 4999
+J loop yes 3929 4999
+J loop yes 4433 4999
+J loop yes 2395 4999
+J loop yes 4717 4999
+J loop yes 4125 4999
+J loop yes 4571 4999
+J loop yes 4966 4999
+J loop yes 2679 4999
+J loop yes 2515 4999
+J loop yes 953 4999
+J loop yes 4430 4999
+J loop yes 2695 4999
+J loop yes 753 4999
+J loop yes 3041 4999
+J loop yes 2600 4999
+J loop yes 1986 4999
+J loop yes 2064 4999
+J loop yes 3195 4999
+J loop yes 1194 4999
+J loop yes 1608 4999
+J loop yes 197 4999
+J loop yes 3577 4999
+J loop yes 1155 4999
+J loop yes 1196 4999
+J loop yes 3964 4999
+J loop yes 143 4999
+J loop yes 3816 4999
+J loop yes 2280 4999
+J loop yes 405 4999
+J loop yes 4877 4999
+J loop yes 3133 4999
+J loop yes 2869 4999
+J loop yes 3094 4999
+J loop yes 4710 4999
+J loop yes 834 4999
+J loop yes 99 4999
+J loop yes 1384 4999
+J loop yes 1080 4999
+J loop yes 4357 4999
+J loop yes 2399 4999
+J loop yes 2352 4999
+J loop yes 2024 4999
+J loop yes 3651 4999
+J loop yes 3628 4999
+J loop yes 725 4999
+J loop yes 4308 4999
+J loop yes 2206 4999
+J loop yes 3693 4999
+J loop yes 3030 4999
+J loop yes 504 4999
+J loop yes 3465 4999
+J loop yes 534 4999
+J loop yes 66 4999
+J loop yes 2471 4999
+J loop yes 1367 4999
+J loop yes 4930 4999
+J loop yes 3573 4999
+J loop yes 804 4999
+J loop yes 1791 4999
+J loop yes 110 4999
+J loop yes 2787 4999
+J loop yes 517 4999
+J loop yes 3447 4999
+J loop yes 495 4999
+J loop yes 732 4999
+J loop yes 2604 4999
+Returning value: 0
+Value returned: 0
+Partition 1 99
+J loop yes 1827 2604
+J loop yes 1859 2604
+J loop yes 1193 2604
+J loop yes 1212 2604
+J loop yes 2581 2604
+I loop yes 3447 2604
+I loop yes 2787 2604
+J loop yes 609 2604
+J loop yes 2187 2604
+J loop yes 1664 2604
+I loop yes 3573 2604
+I loop yes 4930 2604
+J loop yes 2582 2604
+J loop yes 1480 2604
+J loop yes 1608 2604
+J loop yes 2134 2604
+J loop yes 1836 2604
+J loop yes 186 2604
+J loop yes 193 2604
+J loop yes 484 2604
+J loop yes 1811 2604
+J loop yes 1202 2604
+I loop yes 3465 2604
+I loop yes 3030 2604
+I loop yes 3693 2604
+J loop yes 1012 2604
+I loop yes 4308 2604
+I loop yes 3628 2604
+I loop yes 3651 2604
+J loop yes 2395 2604
+I loop yes 4357 2604
+J loop yes 2515 2604
+J loop yes 953 2604
+I loop yes 4710 2604
+I loop yes 3094 2604
+I loop yes 2869 2604
+I loop yes 3133 2604
+I loop yes 4877 2604
+J loop yes 753 2604
+I loop yes 3816 2604
+J loop yes 2600 2604
+J loop yes 1986 2604
+J loop yes 2064 2604
+I loop yes 3964 2604
+J loop yes 1194 2604
+J loop yes 1608 2604
+J loop yes 197 2604
+Returning value: 44
+Value returned: 44
+Partition 1 44
+J loop yes 3195 3252
+I loop yes 4411 3252
+J loop yes 3041 3252
+I loop yes 3447 3252
+I loop yes 4532 3252
+J loop yes 2695 3252
+I loop yes 4311 3252
+I loop yes 4450 3252
+I loop yes 3587 3252
+I loop yes 3573 3252
+I loop yes 4930 3252
+I loop yes 3893 3252
+I loop yes 3974 3252
+I loop yes 3466 3252
+I loop yes 3465 3252
+I loop yes 3902 3252
+J loop yes 3133 3252
+J loop yes 2869 3252
+J loop yes 3094 3252
+I loop yes 3693 3252
+I loop yes 3767 3252
+I loop yes 4308 3252
+I loop yes 4994 3252
+I loop yes 3628 3252
+I loop yes 3651 3252
+I loop yes 3929 3252
+I loop yes 4433 3252
+I loop yes 4717 3252
+I loop yes 4357 3252
+I loop yes 4125 3252
+I loop yes 4571 3252
+I loop yes 4966 3252
+Returning value: 32
+Value returned: 32
+Partition 1 32
+I loop yes 4411 3577
+I loop yes 3964 3577
+I loop yes 4532 3577
+I loop yes 3816 3577
+I loop yes 4311 3577
+I loop yes 4450 3577
+I loop yes 3587 3577
+I loop yes 4930 3577
+I loop yes 3893 3577
+I loop yes 3974 3577
+I loop yes 4430 3577
+I loop yes 3902 3577
+I loop yes 4877 3577
+I loop yes 3693 3577
+I loop yes 3767 3577
+I loop yes 4308 3577
+I loop yes 4994 3577
+I loop yes 3628 3577
+I loop yes 3651 3577
+I loop yes 3929 3577
+I loop yes 4433 3577
+I loop yes 4717 3577
+Returning value: 27
+Value returned: 27
+Partition 1 27
+J loop yes 4433 4710
+J loop yes 3929 4710
+J loop yes 3651 4710
+J loop yes 3628 4710
+J loop yes 4308 4710
+J loop yes 3767 4710
+J loop yes 3693 4710
+J loop yes 3902 4710
+J loop yes 4357 4710
+J loop yes 4125 4710
+J loop yes 4430 4710
+J loop yes 3974 4710
+J loop yes 3893 4710
+I loop yes 4966 4710
+J loop yes 4571 4710
+J loop yes 3587 4710
+J loop yes 4450 4710
+J loop yes 4311 4710
+J loop yes 3816 4710
+Returning value: 5
+Value returned: 5
+Partition 1 5
+I loop yes 4994 4717
+I loop yes 4877 4717
+I loop yes 4966 4717
+Returning value: 4
+Value returned: 4
+Partition 1 4
+J loop yes 4877 4930
+I loop yes 4994 4930
+Returning value: 2
+Value returned: 2
+Partition 1 2
+Returning value: 1
+Value returned: 1
+Partition 3 4
+Returning value: 3
+Value returned: 3
+Partition 6 27
+I loop yes 4311 3816
+I loop yes 4450 3816
+I loop yes 4571 3816
+I loop yes 4532 3816
+I loop yes 3893 3816
+I loop yes 3974 3816
+I loop yes 4430 3816
+I loop yes 4125 3816
+I loop yes 4357 3816
+I loop yes 3902 3816
+I loop yes 3964 3816
+J loop yes 3651 3816
+J loop yes 3628 3816
+I loop yes 4308 3816
+Returning value: 21
+Value returned: 21
+Partition 6 21
+J loop yes 4308 4710
+J loop yes 4411 4710
+J loop yes 3929 4710
+J loop yes 3964 4710
+J loop yes 3902 4710
+J loop yes 4357 4710
+J loop yes 4125 4710
+J loop yes 4430 4710
+J loop yes 3974 4710
+J loop yes 3893 4710
+J loop yes 4532 4710
+J loop yes 4571 4710
+J loop yes 4433 4710
+J loop yes 4450 4710
+J loop yes 4311 4710
+Returning value: 6
+Value returned: 6
+Partition 7 21
+J loop yes 4308 4311
+J loop yes 3929 4311
+J loop yes 3964 4311
+J loop yes 3902 4311
+I loop yes 4450 4311
+I loop yes 4433 4311
+I loop yes 4571 4311
+I loop yes 4532 4311
+J loop yes 4125 4311
+Returning value: 13
+Value returned: 13
+Partition 7 13
+J loop yes 4357 4411
+I loop yes 4450 4411
+I loop yes 4433 4411
+I loop yes 4571 4411
+I loop yes 4532 4411
+Returning value: 11
+Value returned: 11
+Partition 7 11
+I loop yes 4450 4430
+I loop yes 4433 4430
+I loop yes 4571 4430
+Returning value: 10
+Value returned: 10
+Partition 7 10
+J loop yes 4433 4532
+J loop yes 4450 4532
+Returning value: 7
+Value returned: 7
+Partition 8 10
+J loop yes 4433 4450
+Returning value: 8
+Value returned: 8
+Partition 9 10
+Returning value: 9
+Value returned: 9
+Partition 12 13
+Returning value: 12
+Value returned: 12
+Partition 14 21
+I loop yes 4125 3974
+J loop yes 3929 3974
+J loop yes 3964 3974
+J loop yes 3902 3974
+Returning value: 16
+Value returned: 16
+Partition 14 16
+J loop yes 4125 4308
+Returning value: 14
+Value returned: 14
+Partition 15 16
+Returning value: 15
+Value returned: 15
+Partition 17 21
+J loop yes 3893 3902
+I loop yes 3964 3902
+I loop yes 3929 3902
+Returning value: 19
+Value returned: 19
+Partition 17 19
+J loop yes 3929 3974
+J loop yes 3964 3974
+Returning value: 17
+Value returned: 17
+Partition 18 19
+J loop yes 3929 3964
+Returning value: 18
+Value returned: 18
+Partition 20 21
+Returning value: 20
+Value returned: 20
+Partition 22 27
+J loop yes 3587 3767
+J loop yes 3693 3767
+J loop yes 3651 3767
+J loop yes 3628 3767
+Returning value: 22
+Value returned: 22
+Partition 23 27
+J loop yes 3587 3628
+I loop yes 3651 3628
+I loop yes 3693 3628
+Returning value: 25
+Value returned: 25
+Partition 23 25
+J loop yes 3693 3767
+J loop yes 3651 3767
+Returning value: 23
+Value returned: 23
+Partition 24 25
+Returning value: 24
+Value returned: 24
+Partition 26 27
+Returning value: 26
+Value returned: 26
+Partition 28 32
+J loop yes 3447 3465
+I loop yes 3466 3465
+I loop yes 3573 3465
+Returning value: 30
+Value returned: 30
+Partition 28 30
+J loop yes 3573 3577
+J loop yes 3466 3577
+Returning value: 28
+Value returned: 28
+Partition 29 30
+Returning value: 29
+Value returned: 29
+Partition 31 32
+Returning value: 31
+Value returned: 31
+Partition 33 44
+I loop yes 3094 2679
+I loop yes 2869 2679
+I loop yes 3133 2679
+I loop yes 3030 2679
+I loop yes 2982 2679
+I loop yes 2695 2679
+I loop yes 2787 2679
+I loop yes 3041 2679
+I loop yes 2824 2679
+I loop yes 3195 2679
+Returning value: 43
+Value returned: 43
+Partition 33 43
+J loop yes 3195 3252
+J loop yes 2824 3252
+J loop yes 3041 3252
+J loop yes 2787 3252
+J loop yes 2695 3252
+J loop yes 2982 3252
+J loop yes 3030 3252
+J loop yes 3133 3252
+J loop yes 2869 3252
+J loop yes 3094 3252
+Returning value: 33
+Value returned: 33
+Partition 34 43
+J loop yes 2824 3094
+J loop yes 3041 3094
+J loop yes 2787 3094
+J loop yes 2695 3094
+J loop yes 2982 3094
+J loop yes 3030 3094
+Returning value: 35
+Value returned: 35
+Partition 34 35
+J loop yes 3133 3195
+Returning value: 34
+Value returned: 34
+Partition 36 43
+J loop yes 2824 2869
+I loop yes 3030 2869
+I loop yes 2982 2869
+J loop yes 2787 2869
+Returning value: 39
+Value returned: 39
+Partition 36 39
+J loop yes 3041 3094
+J loop yes 2982 3094
+J loop yes 3030 3094
+Returning value: 36
+Value returned: 36
+Partition 37 39
+J loop yes 2982 3030
+Returning value: 37
+Value returned: 37
+Partition 38 39
+Returning value: 38
+Value returned: 38
+Partition 40 43
+Returning value: 41
+Value returned: 41
+Partition 40 41
+J loop yes 2824 2869
+Returning value: 40
+Value returned: 40
+Partition 42 43
+Returning value: 42
+Value returned: 42
+Partition 45 99
+I loop yes 1608 1155
+I loop yes 1194 1155
+I loop yes 1196 1155
+I loop yes 2064 1155
+I loop yes 1986 1155
+I loop yes 2600 1155
+I loop yes 2280 1155
+J loop yes 732 1155
+J loop yes 495 1155
+J loop yes 517 1155
+J loop yes 110 1155
+J loop yes 609 1155
+I loop yes 2515 1155
+J loop yes 804 1155
+I loop yes 1384 1155
+I loop yes 2399 1155
+I loop yes 2395 1155
+I loop yes 2352 1155
+I loop yes 2024 1155
+I loop yes 2206 1155
+I loop yes 1202 1155
+I loop yes 1811 1155
+J loop yes 186 1155
+Returning value: 76
+Value returned: 76
+Partition 45 76
+I loop yes 1859 1827
+J loop yes 1608 1827
+J loop yes 1480 1827
+J loop yes 1811 1827
+J loop yes 1202 1827
+I loop yes 2064 1827
+I loop yes 1986 1827
+I loop yes 2600 1827
+J loop yes 1367 1827
+I loop yes 2280 1827
+I loop yes 2604 1827
+I loop yes 2581 1827
+I loop yes 2515 1827
+I loop yes 2187 1827
+Returning value: 62
+Value returned: 62
+Partition 45 62
+I loop yes 1859 1836
+I loop yes 2134 1836
+I loop yes 2582 1836
+I loop yes 2206 1836
+I loop yes 2064 1836
+I loop yes 1986 1836
+I loop yes 2600 1836
+I loop yes 2471 1836
+I loop yes 2024 1836
+I loop yes 2280 1836
+I loop yes 2604 1836
+I loop yes 2581 1836
+I loop yes 2515 1836
+I loop yes 2352 1836
+I loop yes 2187 1836
+I loop yes 2395 1836
+Returning value: 61
+Value returned: 61
+Partition 45 61
+J loop yes 2395 2399
+J loop yes 2187 2399
+J loop yes 2352 2399
+J loop yes 2280 2399
+J loop yes 2024 2399
+I loop yes 2582 2399
+J loop yes 1986 2399
+Returning value: 50
+Value returned: 50
+Partition 45 50
+J loop yes 2471 2515
+I loop yes 2581 2515
+I loop yes 2604 2515
+I loop yes 2582 2515
+Returning value: 48
+Value returned: 48
+Partition 45 48
+J loop yes 2582 2600
+J loop yes 2581 2600
+Returning value: 45
+Value returned: 45
+Partition 46 48
+I loop yes 2600 2581
+Returning value: 47
+Value returned: 47
+Partition 46 47
+Returning value: 46
+Value returned: 46
+Partition 49 50
+Returning value: 49
+Value returned: 49
+Partition 51 61
+I loop yes 2064 1986
+I loop yes 2206 1986
+I loop yes 2024 1986
+I loop yes 2280 1986
+I loop yes 2134 1986
+I loop yes 2399 1986
+I loop yes 2352 1986
+Returning value: 59
+Value returned: 59
+Partition 51 59
+J loop yes 2352 2395
+J loop yes 2187 2395
+J loop yes 2134 2395
+J loop yes 2280 2395
+J loop yes 2024 2395
+J loop yes 2206 2395
+J loop yes 2064 2395
+Returning value: 51
+Value returned: 51
+Partition 52 59
+I loop yes 2206 2064
+I loop yes 2280 2064
+I loop yes 2134 2064
+I loop yes 2187 2064
+Returning value: 57
+Value returned: 57
+Partition 52 57
+J loop yes 2187 2352
+J loop yes 2134 2352
+J loop yes 2280 2352
+J loop yes 2206 2352
+Returning value: 52
+Value returned: 52
+Partition 53 57
+J loop yes 2187 2206
+J loop yes 2134 2206
+I loop yes 2352 2206
+Returning value: 54
+Value returned: 54
+Partition 53 54
+Returning value: 53
+Value returned: 53
+Partition 55 57
+J loop yes 2187 2206
+J loop yes 2134 2206
+Returning value: 55
+Value returned: 55
+Partition 56 57
+Returning value: 56
+Value returned: 56
+Partition 58 59
+Returning value: 58
+Value returned: 58
+Partition 60 61
+Returning value: 60
+Value returned: 60
+Partition 63 76
+J loop yes 1608 1664
+J loop yes 1608 1664
+J loop yes 1480 1664
+J loop yes 1202 1664
+J loop yes 1194 1664
+J loop yes 1196 1664
+J loop yes 1193 1664
+J loop yes 1367 1664
+J loop yes 1212 1664
+I loop yes 1791 1664
+Returning value: 65
+Value returned: 65
+Partition 63 65
+J loop yes 1791 1827
+J loop yes 1811 1827
+Returning value: 63
+Value returned: 63
+Partition 64 65
+J loop yes 1791 1811
+Returning value: 64
+Value returned: 64
+Partition 66 76
+I loop yes 1367 1212
+Returning value: 71
+Value returned: 71
+Partition 66 71
+J loop yes 1384 1664
+J loop yes 1480 1664
+J loop yes 1608 1664
+J loop yes 1608 1664
+J loop yes 1367 1664
+Returning value: 66
+Value returned: 66
+Partition 67 71
+I loop yes 1608 1367
+I loop yes 1608 1367
+I loop yes 1480 1367
+Returning value: 70
+Value returned: 70
+Partition 67 70
+I loop yes 1608 1384
+I loop yes 1608 1384
+Returning value: 69
+Value returned: 69
+Partition 67 69
+I loop yes 1608 1480
+Returning value: 68
+Value returned: 68
+Partition 67 68
+Returning value: 67
+Value returned: 67
+Partition 72 76
+J loop yes 1193 1202
+J loop yes 1196 1202
+J loop yes 1194 1202
+Returning value: 72
+Value returned: 72
+Partition 73 76
+J loop yes 1193 1194
+I loop yes 1196 1194
+Returning value: 74
+Value returned: 74
+Partition 73 74
+J loop yes 1196 1202
+Returning value: 73
+Value returned: 73
+Partition 75 76
+Returning value: 75
+Value returned: 75
+Partition 77 99
+I loop yes 193 186
+J loop yes 143 186
+I loop yes 534 186
+I loop yes 484 186
+I loop yes 504 186
+I loop yes 1012 186
+I loop yes 725 186
+I loop yes 1080 186
+I loop yes 804 186
+I loop yes 834 186
+I loop yes 609 186
+I loop yes 517 186
+I loop yes 953 186
+I loop yes 495 186
+I loop yes 732 186
+Returning value: 94
+Value returned: 94
+Partition 77 94
+J loop yes 732 1155
+J loop yes 495 1155
+J loop yes 953 1155
+J loop yes 517 1155
+J loop yes 405 1155
+J loop yes 609 1155
+J loop yes 834 1155
+J loop yes 753 1155
+J loop yes 804 1155
+J loop yes 1080 1155
+J loop yes 725 1155
+J loop yes 1012 1155
+J loop yes 504 1155
+J loop yes 484 1155
+J loop yes 534 1155
+J loop yes 197 1155
+J loop yes 193 1155
+Returning value: 77
+Value returned: 77
+Partition 78 94
+I loop yes 197 193
+I loop yes 534 193
+I loop yes 484 193
+I loop yes 504 193
+I loop yes 1012 193
+I loop yes 725 193
+I loop yes 1080 193
+I loop yes 804 193
+I loop yes 753 193
+I loop yes 834 193
+I loop yes 609 193
+I loop yes 405 193
+I loop yes 517 193
+I loop yes 953 193
+I loop yes 495 193
+Returning value: 93
+Value returned: 93
+Partition 78 93
+J loop yes 495 732
+J loop yes 517 732
+J loop yes 405 732
+J loop yes 609 732
+J loop yes 725 732
+I loop yes 1012 732
+Returning value: 83
+Value returned: 83
+Partition 78 83
+J loop yes 804 953
+J loop yes 753 953
+Returning value: 79
+Value returned: 79
+Partition 78 79
+Returning value: 78
+Value returned: 78
+Partition 80 83
+I loop yes 804 753
+I loop yes 834 753
+Returning value: 82
+Value returned: 82
+Partition 80 82
+J loop yes 834 953
+J loop yes 804 953
+Returning value: 80
+Value returned: 80
+Partition 81 82
+Returning value: 81
+Value returned: 81
+Partition 84 93
+J loop yes 495 725
+J loop yes 517 725
+J loop yes 405 725
+J loop yes 609 725
+J loop yes 197 725
+J loop yes 534 725
+J loop yes 484 725
+J loop yes 504 725
+Returning value: 84
+Value returned: 84
+Partition 85 93
+J loop yes 495 504
+J loop yes 405 504
+I loop yes 534 504
+Returning value: 88
+Value returned: 88
+Partition 85 88
+J loop yes 609 725
+J loop yes 534 725
+J loop yes 517 725
+Returning value: 85
+Value returned: 85
+Partition 86 88
+I loop yes 534 517
+Returning value: 87
+Value returned: 87
+Partition 86 87
+J loop yes 534 609
+Returning value: 86
+Value returned: 86
+Partition 89 93
+I loop yes 405 197
+I loop yes 484 197
+I loop yes 504 197
+Returning value: 92
+Value returned: 92
+Partition 89 92
+J loop yes 484 495
+J loop yes 405 495
+Returning value: 89
+Value returned: 89
+Partition 90 92
+I loop yes 484 405
+Returning value: 91
+Value returned: 91
+Partition 90 91
+J loop yes 484 495
+Returning value: 90
+Value returned: 90
+Partition 95 99
+J loop yes 66 110
+Returning value: 96
+Value returned: 96
+Partition 95 96
+J loop yes 143 186
+Returning value: 95
+Value returned: 95
+Partition 97 99
+J loop yes 66 99
+Returning value: 97
+Value returned: 97
+Partition 98 99
+Returning value: 98
+Value returned: 98
+4999 4994 4966 4930 4877 4717 4710 4571 4532 4450 
+4433 4430 4411 4357 4311 4308 4125 3974 3964 3929 
+3902 3893 3816 3767 3693 3651 3628 3587 3577 3573 
+3466 3465 3447 3252 3195 3133 3094 3041 3030 2982 
+2869 2824 2787 2695 2679 2604 2600 2582 2581 2515 
+2471 2399 2395 2352 2280 2206 2187 2134 2064 2024 
+1986 1859 1836 1827 1811 1791 1664 1608 1608 1480 
+1384 1367 1212 1202 1196 1194 1193 1155 1080 1012 
+953 834 804 753 732 725 609 534 517 504 
+495 484 405 197 193 186 143 110 99 66 
