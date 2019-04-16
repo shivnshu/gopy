@@ -17,8 +17,6 @@ def asm_gen(line, activation_record, context, activation_records):
     if(len(toks) == 6):
         type_casting = 1
 
-    print("typeca", type_casting)
-    print()
     if(type_casting == 0):
         if (toks[op_ind][0] == "+"):
             op = "add "
@@ -71,7 +69,6 @@ def asm_gen(line, activation_record, context, activation_records):
         print("Error: bin_op unknown", ty, "of length", len(ty))
 
 
-    print(ty,toks)
     #print(op)
     # print(ty)
     #print(ty2)
@@ -179,7 +176,6 @@ def asm_gen(line, activation_record, context, activation_records):
             res.append("_rel_op_" + str(context["rel_op_num"]) + "_end:")
             context["rel_op_num"] += 1
 
-        print("Getting freed " + toks[2],toks[4])
         free_register(toks[2])
         free_register(toks[4])
 

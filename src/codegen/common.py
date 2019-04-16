@@ -25,12 +25,12 @@ def get_register(name):
         print("Debug: mapping", register_mapping)
         print("Error: out of registers")
         sys.exit(0)
-    print("Debug: get", name)
+    # print("Debug: get", name)
     for reg in free_registers:
         if reg not in reserved_registers:
             register_mapping[name] = reg
             free_registers.remove(reg)
-            print("Gor Register " + reg)
+            # print("Gor Register " + reg)
             return reg
     print("Error: could not find free unreserved register")
     sys.exit(0)
@@ -51,7 +51,7 @@ def free_register(name):
     # print("Debug: free", name)
     if (register_mapping[name] in usable_registers):
         free_registers += [register_mapping[name]]
-    print("Freed Register " + register_mapping[name])
+    # print("Freed Register " + register_mapping[name])
     del register_mapping[name]
 
 def reserve_register(reg):
@@ -92,7 +92,6 @@ def getCodeType(code):
     toks = code.split()
     if (len(toks) == 3 and ":=" in code and (toks[2][0] not in unary_op_list or getTokType(toks[2][1:]) != "variable") and isAssOrStruct(toks[0], toks[2])):
         return "assignments"
-    print(toks, "OMGIN GETCODETYPE")
     if (len(toks) == 3 and ("." in toks[0] or "." in toks[2])):
         return "structs"
     if (len(toks) == 2 and ("call" in toks or "push_param" in toks or "ret_param" in toks or "ret" in toks or "ret_alloc" in toks)):

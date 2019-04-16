@@ -30,7 +30,7 @@ for record_name in actRecordDict:
   actRecordDict[record_name].setGlobalVars(actRecordDict["root"].getGlobalVars())
   actRecordDict[record_name].setConstVars(actRecordDict["root"].getConstVars())
 p[0]['dict_code'] = p[3]['dict_code']
-print(symTableDict)
+#print(symTableDict)
 for key in symTableDict:
     symTableDict[key].prettyPrint()
 print()
@@ -559,7 +559,6 @@ AliasDecl : IDENTIFIER EQ Type
 
 TypeDef : IDENTIFIER Type
 <<0
-print(p[2])
 scope = symTableSt[-1]
 symTable = symTableDict[scope]
 var = VarEntry(p[1])
