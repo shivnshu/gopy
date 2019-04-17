@@ -57,16 +57,20 @@ def asm_gen(line, activation_record, context, activation_records):
             op = "inequality"
             ty = str(toks[op_ind][2:])
 
-    #print(ty)
+    print(ty,toks)
     #print(op)
     #print(ty1)
     #print(ty2)
     #print(len(toks))
-
+    
     if (ty == "int"):
         r0 = get_register(toks[0])
         r1 = get_register(toks[2])
         r2 = get_register(toks[4])
+
+        #print("R0 " + r0)
+        #print("R1 " + r0)
+        #print("R2 " + r0)
 
         if (toks[3][0] == "+" or toks[3][0] == "-" or toks[3][0] == "*"):
             res.append(op + r2 + ", " + r1)
@@ -147,6 +151,7 @@ def asm_gen(line, activation_record, context, activation_records):
             res.append("_rel_op_" + str(context["rel_op_num"]) + "_end:")
             context["rel_op_num"] += 1
         elif (toks[3][0:2] == "==" or toks[3][0:2] == "!=" or toks[3][0] == "<" or toks[3][0] == ">" or toks[3][0:2] == "<=" or toks[3][0:2] == ">="):
+            #print("HHHH")
             jmp_instr = {"==": "je", "<": "jg", ">": "jl", "<=": "jge", ">=": "jle", "!=": "jne"}
             if (toks[3][0] in jmp_instr):
                 jmp_stmt = jmp_instr[toks[3][0]]
@@ -161,6 +166,7 @@ def asm_gen(line, activation_record, context, activation_records):
             res.append("_rel_op_" + str(context["rel_op_num"]) + "_end:")
             context["rel_op_num"] += 1
 
+        print("Getting freed " + toks[2],toks[4])
         free_register(toks[2])
         free_register(toks[4])
 

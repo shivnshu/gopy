@@ -30,6 +30,7 @@ def get_register(name):
         if reg not in reserved_registers:
             register_mapping[name] = reg
             free_registers.remove(reg)
+            print("Gor Register " + reg)
             return reg
     print("Error: could not find free unreserved register")
     sys.exit(0)
@@ -50,6 +51,7 @@ def free_register(name):
     # print("Debug: free", name)
     if (register_mapping[name] in usable_registers):
         free_registers += [register_mapping[name]]
+    print("Freed Register " + register_mapping[name])
     del register_mapping[name]
 
 def reserve_register(reg):
@@ -77,9 +79,9 @@ def getCodeType(code):
         return "structs"
     if (len(toks) == 2 and ("call" in toks or "push_param" in toks or "ret_param" in toks or "ret" in toks or "ret_alloc" in toks)):
         return "function-call"
-    if  (len(toks)==5 and toks[1]==":=" and (toks[3][0] in binary_op_list or toks[3][0:1] in binary_op_list)):
+    if  (len(toks)==5 and toks[1]==":=" and (toks[3][0] in binary_op_list or toks[3][0:2] in binary_op_list)):
         return "binary-op"
-    if  (len(toks)==6 and toks[1]==":=" and (toks[4][0] in binary_op_list or toks[4][0:1] in binary_op_list)):
+    if  (len(toks)==6 and toks[1]==":=" and (toks[4][0] in binary_op_list or toks[4][0:2] in binary_op_list)):
         return "binary-op"
     if (toks[0] == "if"):
         return "ifstmt"
